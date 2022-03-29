@@ -2,7 +2,7 @@
 pub enum Algorithm {
     Aes128,
     Des,
-    TripleDES,
+    TripleDes,
     Cast,
     Rc4,
     Rc2,

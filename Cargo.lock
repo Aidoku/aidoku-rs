@@ -5,10 +5,3 @@ version = 3
 [[package]]
 name = "aidoku_imports"
 version = "0.1.0"
-
-[[package]]
-name = "example_source"
-version = "0.1.0"
-dependencies = [
- "aidoku_imports",
-]
