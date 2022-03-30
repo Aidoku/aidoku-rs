@@ -28,7 +28,7 @@ extern "C" {
 
     // load data
     /// is the value undefined || null?
-    #[link_name = "json_is_nulli"]
+    #[link_name = "json_is_null"]
     fn json_is_null(ctx: Rid) -> bool;
     #[link_name = "json_read_bool"]
     fn json_read_bool(ctx: Rid) -> bool;
