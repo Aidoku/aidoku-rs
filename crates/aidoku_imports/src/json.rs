@@ -1,6 +1,17 @@
 pub type Rid = i32;
 use super::iterator::Rid as IterRid;
 
+#[repr(C)]
+enum JsonType {
+    Null,
+    Int,
+    Float,
+    String,
+    Bool,
+    Array,
+    Object,
+}
+
 #[link(wasm_import_module = "json")]
 extern "C" {
     #[link_name = "json_parse"]
@@ -8,7 +19,7 @@ extern "C" {
     #[link_name = "json_copy"]
     fn json_copy(rid: Rid) -> Rid;
     #[link_name = "json_destroy"]
-    fn json_destroy(rid: Rid) -> Rid;
+    fn json_destroy(rid: Rid);
 
     // create
     #[link_name = "json_create_array"]
@@ -20,16 +31,15 @@ extern "C" {
     #[link_name = "json_create_string"]
     fn json_create_string(buf: *const u8, len: usize) -> Rid;
     #[link_name = "json_create_bool"]
-    fn json_create_bool() -> Rid;
+    fn json_create_bool(value: bool) -> Rid;
     #[link_name = "json_create_float"]
-    fn json_create_float() -> Rid;
+    fn json_create_float(value: f32) -> Rid;
     #[link_name = "json_create_int"]
-    fn json_create_int() -> Rid;
+    fn json_create_int(value: i32) -> Rid;
 
     // load data
-    /// is the value undefined || null?
-    #[link_name = "json_is_null"]
-    fn json_is_null(ctx: Rid) -> bool;
+    #[link_name = "json_typeof"]
+    fn json_typeof(ctx: Rid) -> JsonType;
     #[link_name = "json_read_bool"]
     fn json_read_bool(ctx: Rid) -> bool;
     #[link_name = "json_read_int"]
