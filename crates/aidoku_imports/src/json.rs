@@ -17,8 +17,6 @@ extern "C" {
     fn json_create_object() -> Rid;
     #[link_name = "json_create_null"]
     fn json_create_null() -> Rid;
-    #[link_name = "json_create_undefined"]
-    fn json_create_undefined() -> Rid;
     #[link_name = "json_create_string"]
     fn json_create_string(buf: *const u8, len: usize) -> Rid;
     #[link_name = "json_create_bool"]
@@ -30,8 +28,8 @@ extern "C" {
 
     // load data
     /// is the value undefined || null?
-    #[link_name = "json_is_nullish"]
-    fn json_is_nullish(ctx: Rid) -> bool;
+    #[link_name = "json_is_nulli"]
+    fn json_is_null(ctx: Rid) -> bool;
     #[link_name = "json_read_bool"]
     fn json_read_bool(ctx: Rid) -> bool;
     #[link_name = "json_read_int"]
