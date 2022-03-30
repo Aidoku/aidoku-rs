@@ -20,7 +20,7 @@ extern "C" {
     #[link_name = "json_create_undefined"]
     fn json_create_undefined() -> Rid;
     #[link_name = "json_create_string"]
-    fn json_create_string(bytes: *const u8, len: usize) -> Rid;
+    fn json_create_string(buf: *const u8, len: usize) -> Rid;
     #[link_name = "json_create_bool"]
     fn json_create_bool() -> Rid;
     #[link_name = "json_create_float"]
@@ -40,6 +40,8 @@ extern "C" {
     fn json_read_float(ctx: Rid) -> f32;
     #[link_name = "json_read_string"]
     fn json_read_string(ctx: Rid, buf: *mut u8, len: usize);
+    #[link_name = "json_read_string_len"]
+    fn json_read_string_len(ctx: Rid) -> Rid;
 
     // array
     #[link_name = "json_array_len"]
