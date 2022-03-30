@@ -5,10 +5,14 @@ pub use value::{JsValue, JsValueRef};
 
 #[link(wasm_import_module = "js")]
 extern "C" {
+    #[link_name = "javascript_create_ctx"]
     fn __wasm_javascript_create_ctx() -> JsCtx;
+    #[link_name = "javascript_destroy_ctx"]
     fn __wasm_javascript_destroy_ctx(ctx: JsCtx);
 
+    #[link_name = "javascript_eval"]
     fn __wasm_javascript_eval(ctx: JsCtx, script: *const u8, script_len: usize) -> ValueRef;
+    #[link_name = "javascript_eval_url"]
     fn __wasm_javascript_eval_url(ctx: JsCtx, url: *const u8, url_len: usize) -> ValueRef;
 }
 

@@ -17,4 +17,4 @@ strip = "debuginfo"
 lto = true
 
 [dependencies]
-aidoku_imports = { path = "../crates/aidoku_imports" }
+aidoku_imports = { path = "../../crates/aidoku_imports" }

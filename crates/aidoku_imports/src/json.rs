@@ -1,65 +1,69 @@
-type Ctx = i32;
+pub type Rid = i32;
+use super::iterator::Rid as IterRid;
 
 #[link(wasm_import_module = "json")]
 extern "C" {
-    fn __wasm_json_parse(data: *const u8, len: usize) -> Ctx;
-    fn __wasm_json_clone(ctx: Ctx) -> Ctx;
-    fn __wasm_json_free(ctx: Ctx);
+    #[link_name = "json_parse"]
+    fn json_parse(bytes: *const u8, size: usize) -> Rid;
+    #[link_name = "json_copy"]
+    fn json_copy(rid: Rid) -> Rid;
+    #[link_name = "json_destroy"]
+    fn json_destroy(rid: Rid) -> Rid;
 
-    fn __wasm_json_cast_string(ctx: Ctx, len: *mut usize) -> *const u8;
-    fn __wasm_json_cast_bool(ctx: Ctx) -> bool;
-    fn __wasm_json_cast_int(ctx: Ctx) -> i32;
-    fn __wasm_json_cast_float(ctx: Ctx) -> f32;
-    fn __wasm_json_cast_object(ctx: Ctx) -> Ctx;
-    fn __wasm_json_cast_array(ctx: Ctx) -> Ctx;
+    // create
+    #[link_name = "json_create_array"]
+    fn json_create_array() -> Rid;
+    #[link_name = "json_create_object"]
+    fn json_create_object() -> Rid;
+    #[link_name = "json_create_null"]
+    fn json_create_null() -> Rid;
+    #[link_name = "json_create_undefined"]
+    fn json_create_undefined() -> Rid;
+    #[link_name = "json_create_string"]
+    fn json_create_string(bytes: *const u8, len: usize) -> Rid;
+    #[link_name = "json_create_bool"]
+    fn json_create_bool() -> Rid;
+    #[link_name = "json_create_float"]
+    fn json_create_float() -> Rid;
+    #[link_name = "json_create_int"]
+    fn json_create_int() -> Rid;
 
-    fn __wasm_json_object_len(ctx: Ctx);
-    fn __wasm_json_object_keys(ctx: Ctx);
-    fn __wasm_json_object_values(ctx: Ctx);
-    fn __wasm_json_object_delete(ctx: Ctx, key: *const u8, key_len: usize);
+    // load data
+    /// is the value undefined || null?
+    #[link_name = "json_is_nullish"]
+    fn json_is_nullish(ctx: Rid) -> bool;
+    #[link_name = "json_read_bool"]
+    fn json_read_bool(ctx: Rid) -> bool;
+    #[link_name = "json_read_int"]
+    fn json_read_int(ctx: Rid) -> i32;
+    #[link_name = "json_read_float"]
+    fn json_read_float(ctx: Rid) -> f32;
+    #[link_name = "json_read_string"]
+    fn json_read_string(ctx: Rid, buf: *mut u8, len: usize);
 
-    fn __wasm_json_object_get_string(
-        ctx: Ctx,
-        key: *const u8,
-        key_len: usize,
-        len: *mut usize,
-    ) -> *const u8;
-    fn __wasm_json_object_get_bool(ctx: Ctx, key: *const u8, key_len: usize) -> bool;
-    fn __wasm_json_object_get_int(ctx: Ctx, key: *const u8, key_len: usize) -> i32;
-    fn __wasm_json_object_get_float(ctx: Ctx, key: *const u8, key_len: usize) -> f32;
-    fn __wasm_json_object_get_object(ctx: Ctx, key: *const u8, key_len: usize) -> Ctx;
-    fn __wasm_json_object_get_array(ctx: Ctx, key: *const u8, key_len: usize) -> Ctx;
+    // array
+    #[link_name = "json_array_len"]
+    fn json_array_len(arr: Rid) -> usize;
+    #[link_name = "json_array_get"]
+    fn json_array_get(arr: Rid, idx: usize) -> Rid;
+    #[link_name = "json_array_set"]
+    fn json_array_set(arr: Rid, idx: usize, value: Rid);
+    #[link_name = "json_array_append"]
+    fn json_array_append(arr: Rid, value: Rid);
+    #[link_name = "json_array_remove"]
+    fn json_array_remove(arr: Rid, idx: usize);
 
-    fn __wasm_json_object_set_null(ctx: Ctx, key: *const u8, key_len: usize);
-    fn __wasm_json_object_set_string(
-        ctx: Ctx,
-        key: *const u8,
-        key_len: usize,
-        value: *const u8,
-        len: usize,
-    );
-    fn __wasm_json_object_set_bool(ctx: Ctx, key: *const u8, key_len: usize, value: bool);
-    fn __wasm_json_object_set_int(ctx: Ctx, key: *const u8, key_len: usize, value: i32);
-    fn __wasm_json_object_set_float(ctx: Ctx, key: *const u8, key_len: usize, value: f32);
-    fn __wasm_json_object_set_object(ctx: Ctx, key: *const u8, key_len: usize, value: Ctx);
-    fn __wasm_json_object_set_array(ctx: Ctx, key: *const u8, key_len: usize, value: Ctx);
-
-    fn __wasm_json_array_len(ctx: Ctx);
-    fn __wasm_json_array_values(ctx: Ctx);
-    fn __wasm_json_array_delete(ctx: Ctx, index: usize);
-
-    fn __wasm_json_array_get_string(ctx: Ctx, index: usize, len: *mut usize) -> *const u8;
-    fn __wasm_json_array_get_bool(ctx: Ctx, index: usize) -> bool;
-    fn __wasm_json_array_get_int(ctx: Ctx, index: usize) -> i32;
-    fn __wasm_json_array_get_float(ctx: Ctx, index: usize) -> f32;
-    fn __wasm_json_array_get_object(ctx: Ctx, index: usize) -> Ctx;
-    fn __wasm_json_array_get_array(ctx: Ctx, index: usize) -> Ctx;
-
-    fn __wasm_json_array_push_null(ctx: Ctx);
-    fn __wasm_json_array_push_string(ctx: Ctx, value: *const u8, len: usize);
-    fn __wasm_json_array_push_bool(ctx: Ctx, value: bool);
-    fn __wasm_json_array_push_int(ctx: Ctx, value: i32);
-    fn __wasm_json_array_push_float(ctx: Ctx, value: f32);
-    fn __wasm_json_array_push_object(ctx: Ctx, value: Ctx);
-    fn __wasm_json_array_push_array(ctx: Ctx, value: Ctx);
+    // object
+    #[link_name = "json_object_len"]
+    fn json_object_len(arr: Rid) -> usize;
+    #[link_name = "json_object_get"]
+    fn json_object_get(arr: Rid, key: *const u8, len: usize) -> Rid;
+    #[link_name = "json_object_set"]
+    fn json_object_set(arr: Rid, key: *const u8, len: usize, value: Rid);
+    #[link_name = "json_object_keys"]
+    fn json_object_keys(arr: Rid) -> IterRid;
+    #[link_name = "json_object_values"]
+    fn json_object_values(arr: Rid) -> IterRid;
+    #[link_name = "json_object_remove"]
+    fn json_object_remove(arr: Rid, idx: usize);
 }
