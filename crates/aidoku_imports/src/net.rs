@@ -26,16 +26,22 @@ extern "C" {
     );
     #[link_name = "request_set_body"]
     fn __wasm_request_set_body(rd: Rid, value: *const u8, len: usize);
-    #[link_name = "request_data"]
-    fn __wasm_request_data(rd: Rid, size: *mut usize) -> *const u8;
-
+    #[link_name = "request_send"]
+    fn __wasm_request_send(rd: Rid);
+    #[link_name = "request_get_data"]
+    fn __wasm_request_get_data(rd: Rid, buffer: *mut u8, size: usize);
+    #[link_name = "request_get_data_size"]
+    fn __wasm_request_get_data_size(rd: Rid) -> usize;
+    #[link_name = "request_close"]
+    fn __wasm_request_close(rd: Rid);
     #[link_name = "request_json"]
     fn __wasm_request_json(rd: Rid) -> JsonRid;
 }
 
+const CHUNK_SIZE: usize = 0x80;
+
 /// A type that makes a HTTP request.
 pub struct Request(Rid);
-
 impl Request {
     /// Start a new request with a URL and HTTP method
     ///
@@ -65,12 +71,39 @@ impl Request {
         self
     }
 
+    fn send(&self) {
+        unsafe { __wasm_request_send(self.0) }
+    }
+
+    fn close(&self) {
+        unsafe { __wasm_request_close(self.0) }
+    }
+
     /// Get the raw data from the response
-    pub fn data<'a>(self) -> &'a [u8] {
-        unsafe {
-            let mut len = 0;
-            let ptr = __wasm_request_data(self.0, &mut len);
-            core::slice::from_raw_parts(ptr, len)
+    pub fn data<'a>(self) -> Vec<u8> {
+        self.send();
+        let size = unsafe { __wasm_request_get_data_size(self.0) };
+        let mut buffer: Vec<u8> = Vec::with_capacity(size);
+        let mut offset: usize = 0;
+        while offset < size {
+            let ending_offset = offset + CHUNK_SIZE;
+            let chunk = if ending_offset < size {
+                &mut buffer[offset..ending_offset]
+            } else {
+                &mut buffer[offset..]
+            };
+            unsafe { __wasm_request_get_data(self.0, chunk.as_mut_ptr(), chunk.len()) }
+            offset = ending_offset;
         }
+        self.close();
+        buffer
+    }
+
+    /// Get the data as JSON
+    pub fn json(self) -> JsonRid {
+        self.send();
+        let rid = unsafe { __wasm_request_json(self.0) };
+        self.close();
+        rid
     }
 }
