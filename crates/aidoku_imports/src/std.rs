@@ -130,6 +130,19 @@ impl ValueRef {
     }
 }
 
+impl Clone for ValueRef {
+    fn clone(&self) -> Self {
+        let rid = unsafe { copy(self.0) };
+        Self(rid)
+    }
+}
+
+impl Drop for ValueRef {
+    fn drop(&mut self) {
+        unsafe { destroy(self.0) }
+    }
+}
+
 impl From<i32> for ValueRef {
     fn from(val: i32) -> Self {
         let rid = unsafe { create_int(val) };
@@ -155,7 +168,7 @@ impl From<bool> for ValueRef {
 //        String Ref
 // =========================
 impl StringRef {
-    pub fn read(&self) -> String {
+    pub fn read(self) -> String {
         let rid = self.0;
         let len = unsafe { string_len(rid) };
         let mut string = String::with_capacity(len);
@@ -178,6 +191,19 @@ impl From<&str> for StringRef {
     fn from(string: &str) -> Self {
         let rid = unsafe { create_string(string.as_ptr(), string.len()) };
         Self(rid)
+    }
+}
+
+impl Clone for StringRef {
+    fn clone(&self) -> Self {
+        let rid = unsafe { copy(self.0) };
+        Self(rid)
+    }
+}
+
+impl Drop for StringRef {
+    fn drop(&mut self) {
+        unsafe { destroy(self.0) }
     }
 }
 
@@ -225,6 +251,19 @@ impl Iterator for ArrayRef {
     }
 }
 
+impl Clone for ArrayRef {
+    fn clone(&self) -> Self {
+        let rid = unsafe { copy(self.0) };
+        Self(rid, self.1)
+    }
+}
+
+impl Drop for ArrayRef {
+    fn drop(&mut self) {
+        unsafe { destroy(self.0) }
+    }
+}
+
 // =========================
 //        Object Ref
 // =========================
@@ -259,5 +298,18 @@ impl ObjectRef {
     pub fn values(&mut self) -> ArrayRef {
         let rid = unsafe { object_values(self.0) };
         ArrayRef(rid, 0)
+    }
+}
+
+impl Clone for ObjectRef {
+    fn clone(&self) -> Self {
+        let rid = unsafe { copy(self.0) };
+        Self(rid)
+    }
+}
+
+impl Drop for ObjectRef {
+    fn drop(&mut self) {
+        unsafe { destroy(self.0) }
     }
 }
