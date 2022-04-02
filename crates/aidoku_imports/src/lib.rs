@@ -1,9 +1,5 @@
-pub mod browser;
-pub mod crypto;
-pub mod dates;
 pub mod error;
 pub mod html;
-pub mod iterator;
-pub mod js;
 pub mod json;
 pub mod net;
+pub mod std;

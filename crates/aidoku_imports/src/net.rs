@@ -1,13 +1,19 @@
-type Rid = usize;
-use super::json::Rid as JsonRid;
+type Rid = i32;
+use super::std::Rid as ValueRid;
+
+const BUFFER_CHUNK_SIZE: usize = 0x80;
 
 #[repr(C)]
 pub enum HttpMethod {
     Get,
-    Post,
     Head,
+    Post,
     Put,
     Delete,
+    Connect,
+    Options,
+    Trace,
+    Patch,
 }
 
 #[link(wasm_import_module = "net")]
@@ -35,10 +41,8 @@ extern "C" {
     #[link_name = "request_close"]
     fn __wasm_request_close(rd: Rid);
     #[link_name = "request_json"]
-    fn __wasm_request_json(rd: Rid) -> JsonRid;
+    fn __wasm_request_json(rd: Rid) -> ValueRid;
 }
-
-const CHUNK_SIZE: usize = 0x80;
 
 /// A type that makes a HTTP request.
 pub struct Request(Rid);
@@ -86,7 +90,7 @@ impl Request {
         let mut buffer: Vec<u8> = Vec::with_capacity(size);
         let mut offset: usize = 0;
         while offset < size {
-            let ending_offset = offset + CHUNK_SIZE;
+            let ending_offset = offset + BUFFER_CHUNK_SIZE;
             let chunk = if ending_offset < size {
                 &mut buffer[offset..ending_offset]
             } else {
@@ -100,7 +104,7 @@ impl Request {
     }
 
     /// Get the data as JSON
-    pub fn json(self) -> JsonRid {
+    pub fn json(self) -> Rid {
         self.send();
         let rid = unsafe { __wasm_request_json(self.0) };
         self.close();
