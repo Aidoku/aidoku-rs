@@ -18,3 +18,4 @@ lto = true
 
 [dependencies]
 aidoku_imports = { path = "../../crates/aidoku_imports" }
+wee_alloc = "0.4.5"
