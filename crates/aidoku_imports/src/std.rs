@@ -1,5 +1,9 @@
 pub type Rid = i32;
 
+use alloc::string::String;
+
+pub use super::alloc::vec::Vec;
+
 use super::error::{AidokuError, Result, ValueCastError};
 
 const BUFFER_CHUNK_SIZE: usize = 0x80;
@@ -168,7 +172,7 @@ impl From<bool> for ValueRef {
 //        String Ref
 // =========================
 impl StringRef {
-    pub fn read(self) -> String {
+    pub fn read<'a>(self) -> String {
         let rid = self.0;
         let len = unsafe { string_len(rid) };
         let mut string = String::with_capacity(len);
@@ -187,9 +191,13 @@ impl StringRef {
     }
 }
 
-impl From<&str> for StringRef {
-    fn from(string: &str) -> Self {
-        let rid = unsafe { create_string(string.as_ptr(), string.len()) };
+impl<S> From<S> for StringRef
+where
+    S: AsRef<str>,
+{
+    fn from(string: S) -> Self {
+        let string_slice = string.as_ref();
+        let rid = unsafe { create_string(string_slice.as_ptr(), string_slice.len()) };
         Self(rid)
     }
 }

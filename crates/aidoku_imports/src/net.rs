@@ -1,6 +1,8 @@
 type Rid = i32;
 use super::std::{Rid as ValueRid, ValueRef};
 
+pub use super::alloc::vec::Vec;
+
 const BUFFER_CHUNK_SIZE: usize = 0x80;
 
 #[repr(C)]
