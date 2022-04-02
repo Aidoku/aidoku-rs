@@ -1,5 +1,5 @@
 type Rid = i32;
-use super::std::Rid as ValueRid;
+use super::std::{Rid as ValueRid, ValueRef};
 
 const BUFFER_CHUNK_SIZE: usize = 0x80;
 
@@ -104,10 +104,10 @@ impl Request {
     }
 
     /// Get the data as JSON
-    pub fn json(self) -> Rid {
+    pub fn json(self) -> ValueRef {
         self.send();
         let rid = unsafe { __wasm_request_json(self.0) };
         self.close();
-        rid
+        ValueRef::new(rid)
     }
 }
