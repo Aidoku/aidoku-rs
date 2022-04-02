@@ -1,9 +1,14 @@
 #![no_std]
 #![no_main]
-#![feature(core_intrinsics)]
+#![feature(core_intrinsics, alloc_error_handler)]
 
 #[cfg_attr(not(test), panic_handler)]
 pub unsafe fn panic_handle(_info: &core::panic::PanicInfo) -> ! {
+    core::intrinsics::abort()
+}
+
+#[cfg_attr(not(test), alloc_error_handler)]
+pub unsafe fn alloc_error_handle(_: core::alloc::Layout) -> ! {
     core::intrinsics::abort()
 }
 
