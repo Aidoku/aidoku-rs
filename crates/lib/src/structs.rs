@@ -103,7 +103,6 @@ pub struct Filter<'a> {
     pub kind: FilterType,
     pub name: &'a str,
     pub value_ptr: *const i32,
-    pub value2_ptr: *const i32,
 }
 
 pub struct Manga<'a> {
@@ -145,6 +144,20 @@ pub struct Page<'a> {
     pub url: &'a str,
     pub base64: &'a str,
     pub text: &'a str,
+}
+
+impl<'a> Filter<'a> {
+    pub fn create(&self) -> i32 {
+        unsafe {
+            create_filter(
+                self.kind,
+                self.name.as_ptr(),
+                self.name.len(),
+                self.value_ptr,
+                0 as *const u8,
+            )
+        }
+    }
 }
 
 impl<'a> Listing<'a> {

@@ -1,16 +1,39 @@
 type Rid = i32;
 
+use super::StringRef;
+
 #[link(wasm_import_module = "html")]
 extern "C" {
-    fn scraper_parse(data: *const u8, size: usize) -> Rid;
-    fn scraper_select(rid: Rid, selector: *const u8, selector_len: usize) -> Rid;
-    // ????
-    fn scraper_attr(rid: Rid, selector: *const u8, selector_len: usize) -> Rid;
-    // Uhh, what?
-    fn scraper_text(rid: Rid, buf: *const u8);
-    fn scraper_array_size(rid: Rid) -> usize;
-    fn scraper_array_get(rid: Rid, index: usize) -> Rid;
-    fn scraper_free(rid: Rid);
+    #[link_name = "parse"]
+    fn scraper_parse(string: *const u8, len: usize) -> i32;
+    #[link_name = "close"]
+    fn scraper_free(rid: i32);
+
+    #[link_name = "select"]
+    fn scraper_select(rid: i32, selector: *const u8, selector_len: usize) -> i32;
+    #[link_name = "first"]
+    fn scraper_first(rid: i32) -> i32;
+    #[link_name = "body"]
+    fn scraper_body(rid: i32) -> i32;
+    #[link_name = "text"]
+    fn scraper_text(rid: i32) -> i32;
+    #[link_name = "array"]
+    fn scraper_array(rid: i32) -> i32;
+    #[link_name = "attr"]
+    fn scraper_attr(rid: i32, selector: *const u8, selector_len: usize) -> i32;
+    #[link_name = "html"]
+    fn scraper_html(rid: i32) -> i32;
+    #[link_name = "outer_html"]
+    fn scraper_outer_html(rid: i32) -> i32;
+
+    #[link_name = "id"]
+    fn scraper_id(rid: i32) -> i32;
+    #[link_name = "tag_name"]
+    fn scraper_tag_name(rid: i32) -> i32;
+    #[link_name = "class_name"]
+    fn scraper_class_name(rid: i32) -> i32;
+    #[link_name = "has_class"]
+    fn scraper_has_class(rid: i32, class_name: *const u8, class_length: usize) -> bool;
 }
 
 pub struct Node(Rid);
@@ -30,25 +53,23 @@ impl Node {
         Self(rid)
     }
 
-    pub fn attr<'a>() -> &'a str {
-        todo!()
+    pub fn attr(&self, selector: &str) -> StringRef {
+        let rid = unsafe { scraper_attr(self.0, selector.as_ptr(), selector.len()) };
+        StringRef(rid)
     }
 
-    pub fn text<'a>(&self) -> &'a str {
-        todo!()
+    pub fn text(&self) -> StringRef {
+        let rid = unsafe { scraper_text(self.0) };
+        StringRef(rid)
     }
 
-    pub fn array_len(&self) -> usize {
-        unsafe { scraper_array_size(self.0) }
+    pub fn id(&self) -> StringRef {
+        let rid = unsafe { scraper_id(self.0) };
+        StringRef(rid)
     }
 
-    pub fn array_get(&self, index: usize) -> Option<Self> {
-        let rid = unsafe { scraper_array_get(self.0, index) };
-        if rid > -1 {
-            Some(Self(rid))
-        } else {
-            None
-        }
+    pub fn close(&mut self) {
+        drop(self)
     }
 }
 

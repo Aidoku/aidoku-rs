@@ -9,8 +9,11 @@ pub fn manga_list_request(_: TokenStream, input: TokenStream) -> TokenStream {
     quote! {
         #func
         #[no_mangle]
-        pub unsafe extern "C" fn manga_list_request(filters: *const i32, page: i32) -> i32 {
-            let resp = #func_name(alloc::vec::Vec::new(), page);
+        pub unsafe extern "C" fn manga_list_request(filters_rid: i32, page: i32) -> i32 {
+            use aidoku::std::Vec;
+            let mut filters: Vec<> = Vec::new();
+
+            let resp: Result<aidoku::MangaPageResult> = #func_name(filters, page);
             match resp {
                 Ok(resp) => resp,
                 Err(_) => -1,
