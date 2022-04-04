@@ -7,15 +7,5 @@ publish = false
 [lib]
 crate-type = ["cdylib"]
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-opt = "s"
-strip = "debuginfo"
-lto = true
-
 [dependencies]
-aidoku_imports = { path = "../../crates/aidoku_imports" }
-wee_alloc = "0.4.5"
+aidoku = { path = "../../crates/lib" }

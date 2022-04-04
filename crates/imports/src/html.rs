@@ -21,6 +21,10 @@ impl Node {
         Self(rid)
     }
 
+    pub fn from(rid: Rid) -> Self {
+        Self(rid)
+    }
+
     pub fn select(&self, selector: &str) -> Self {
         let rid = unsafe { scraper_select(self.0, selector.as_ptr(), selector.len()) };
         Self(rid)

@@ -1,0 +1,2 @@
+# Aidoku Imports
+This covers the main imports that Aidoku will interface. Do note it does not contain Aidoku-specific imports, those can be found in the lib crate (we intend on making an anime app that reuses the same imports). 

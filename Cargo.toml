@@ -1,2 +1,11 @@
 [workspace]
 members = ["crates/*", "examples/*"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+opt = "s"
+strip = "debuginfo"
+lto = true

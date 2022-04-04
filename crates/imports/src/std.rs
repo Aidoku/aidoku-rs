@@ -2,8 +2,6 @@ pub type Rid = i32;
 
 use alloc::string::String;
 
-pub use super::alloc::vec::Vec;
-
 use super::error::{AidokuError, Result, ValueCastError};
 
 const BUFFER_CHUNK_SIZE: usize = 0x80;
@@ -58,7 +56,7 @@ extern "C" {
 
 pub struct ValueRef(Rid);
 
-pub struct ArrayRef(Rid, usize);
+pub struct ArrayRef(pub Rid, usize);
 pub struct ObjectRef(Rid);
 pub struct StringRef(Rid);
 

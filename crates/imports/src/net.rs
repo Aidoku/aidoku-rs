@@ -1,7 +1,8 @@
 type Rid = i32;
+use super::html::Node;
 use super::std::{Rid as ValueRid, ValueRef};
 
-pub use super::alloc::vec::Vec;
+use super::alloc::vec::Vec;
 
 const BUFFER_CHUNK_SIZE: usize = 0x80;
 
@@ -20,15 +21,26 @@ pub enum HttpMethod {
 
 #[link(wasm_import_module = "net")]
 extern "C" {
+    #[link_name = "init"]
     fn request_init(method: HttpMethod) -> Rid;
+    #[link_name = "set_url"]
     fn request_set_url(rd: Rid, value: *const u8, len: usize);
+    #[link_name = "set_header"]
     fn request_set_header(rd: Rid, key: *const u8, key_len: usize, val: *const u8, val_len: usize);
+    #[link_name = "set_body"]
     fn request_set_body(rd: Rid, value: *const u8, len: usize);
+    #[link_name = "send"]
     fn request_send(rd: Rid);
+    #[link_name = "get_data"]
     fn request_get_data(rd: Rid, buffer: *mut u8, size: usize);
+    #[link_name = "get_data_size"]
     fn request_get_data_size(rd: Rid) -> usize;
+    #[link_name = "close"]
     fn request_close(rd: Rid);
+    #[link_name = "json"]
     fn request_json(rd: Rid) -> ValueRid;
+    #[link_name = "html"]
+    fn request_html(rd: Rid) -> ValueRid;
 }
 
 /// A type that makes a HTTP request.
@@ -96,5 +108,13 @@ impl Request {
         let rid = unsafe { request_json(self.0) };
         self.close();
         ValueRef::new(rid)
+    }
+
+    /// Get the data as a HTML scraper
+    pub fn html(self) -> Node {
+        self.send();
+        let rid = unsafe { request_html(self.0) };
+        self.close();
+        Node::from(rid)
     }
 }
