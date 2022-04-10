@@ -6,6 +6,6 @@ panic = "abort"
 
 [profile.release]
 panic = "abort"
-opt = "s"
+opt-level = "s"
 strip = "debuginfo"
 lto = true
