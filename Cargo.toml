@@ -7,5 +7,5 @@ panic = "abort"
 [profile.release]
 panic = "abort"
 opt-level = "s"
-strip = "debuginfo"
+strip = true
 lto = true
