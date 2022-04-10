@@ -1,6 +1,6 @@
 type Rid = i32;
 use super::html::Node;
-use super::std::{Rid as ValueRid, ValueRef};
+use super::std::{Rid as ValueRid, ValueRef, StringRef};
 
 use super::alloc::vec::Vec;
 
@@ -35,8 +35,8 @@ extern "C" {
     #[link_name = "set_body"]
     fn request_set_body(rd: Rid, value: *const u8, len: usize);
 
-    // #[link_name = "get_url"]
-    // fn request_get_url(rd: Rid) -> Rid;
+    #[link_name = "get_url"]
+    fn request_get_url(rd: Rid) -> Rid;
     #[link_name = "get_data"]
     fn request_get_data(rd: Rid, buffer: *mut u8, size: usize);
     #[link_name = "get_data_size"]
@@ -85,6 +85,12 @@ impl Request {
 
     fn close(&self) {
         unsafe { request_close(self.0) }
+    }
+
+    /// Get the URL of the request
+    pub fn url(&self) -> StringRef {
+        let rid = unsafe { request_get_url(self.0) };
+        StringRef(rid)
     }
 
     /// Get the raw data from the response

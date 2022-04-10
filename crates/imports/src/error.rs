@@ -9,6 +9,7 @@ pub struct AidokuError {
 pub enum AidokuErrorKind {
     ValueCast(ValueCastError),
     Utf8Error(Utf8Error),
+    Unimplemented,
 }
 
 pub enum ValueCastError {

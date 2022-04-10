@@ -1,5 +1,5 @@
-use super::std::{ Vec, String };
-use aidoku_imports::{ Rid, ValueRef };
+use super::std::{Vec, String};
+use aidoku_imports::{Rid, ValueRef};
 
 #[link(wasm_import_module = "aidoku")]
 extern "C" {

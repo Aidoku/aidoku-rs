@@ -1,11 +1,15 @@
 #![no_std]
 use aidoku::{
     error::Result,
+    std::String,
     // prelude::*,
     std::Vec,
     Filter,
+    Listing,
     Manga,
     MangaPageResult,
+    Chapter,
+    Page,
 };
 
 #[no_mangle]
@@ -33,11 +37,83 @@ pub unsafe extern "C" fn __wasm_get_manga_list(filters_rid: i32, page: i32) -> i
             }
         }
     }
-
     let resp: aidoku::error::Result<aidoku::MangaPageResult> = get_manga_list(filters, page);
     match resp {
         Ok(resp) => resp.create(),
-        Err(_) => -2,
+        Err(_) => -1,
+    }
+}
+
+#[no_mangle]
+#[export_name = "get_manga_listing"]
+pub unsafe extern "C" fn __wasm_get_manga_listing(listing_rid: i32, page: i32) -> i32 {
+    let name = match aidoku::std::ObjectRef(listing_rid).get("name").as_string() {
+        Ok(name) => name,
+        Err(_) => return -1,
+    };
+    let listing = Listing {
+        name: name.read()
+    };
+    let resp: Result<MangaPageResult> = get_manga_listing(listing, page);
+    match resp {
+        Ok(resp) => resp.create(),
+        Err(_) => -1,
+    }
+}
+
+#[no_mangle]
+#[export_name = "get_manga_details"]
+pub unsafe extern "C" fn __wasm_get_manga_details(manga_rid: i32) -> i32 {
+    let id = match aidoku::std::ObjectRef(manga_rid).get("id").as_string() {
+        Ok(id) => id,
+        Err(_) => return -1,
+    };
+    let resp: Result<Manga> = get_manga_details(id.read());
+    match resp {
+        Ok(resp) => resp.create(),
+        Err(_) => -1,
+    }
+}
+
+#[no_mangle]
+#[export_name = "get_chapter_list"]
+pub unsafe extern "C" fn __wasm_get_chapter_list(manga_rid: i32) -> i32 {
+    let id = match aidoku::std::ObjectRef(manga_rid).get("id").as_string() {
+        Ok(id) => id,
+        Err(_) => return -1,
+    };
+    let resp: Result<Vec<Chapter>> = get_chapter_list(id.read());
+    match resp {
+        Ok(resp) => {
+            let mut arr = aidoku::std::ArrayRef::new();
+            for item in resp {
+                let rid = item.create();
+                arr.insert(aidoku::std::ValueRef::new(rid));
+            }
+            arr.0
+        },
+        Err(_) => -1,
+    }
+}
+
+#[no_mangle]
+#[export_name = "get_page_list"]
+pub unsafe extern "C" fn __wasm_get_page_list(chapter_rid: i32) -> i32 {
+    let id = match aidoku::std::ObjectRef(chapter_rid).get("id").as_string() {
+        Ok(id) => id,
+        Err(_) => return -1,
+    };
+    let resp: Result<Vec<Page>> = get_page_list(id.read());
+    match resp {
+        Ok(resp) => {
+            let mut arr = aidoku::std::ArrayRef::new();
+            for item in resp {
+                let rid = item.create();
+                arr.insert(aidoku::std::ValueRef::new(rid));
+            }
+            arr.0
+        },
+        Err(_) => -1,
     }
 }
 
@@ -61,4 +137,23 @@ fn get_manga_list<'a>(_: Vec<Filter>, _: i32) -> Result<MangaPageResult<'a>> {
         manga: manga,
         has_more: false,
     })
+}
+
+fn get_manga_listing<'a>(_: Listing, _: i32) -> Result<MangaPageResult<'a>> {
+    Ok(MangaPageResult {
+        manga: Vec::new(),
+        has_more: false,
+    })
+}
+
+fn get_manga_details<'a>(_: String) -> Result<Manga<'a>> {
+    Err(aidoku::error::AidokuError { reason: aidoku::error::AidokuErrorKind::Unimplemented })
+}
+
+fn get_chapter_list<'a>(_: String) -> Result<Vec<Chapter<'a>>> {
+    Err(aidoku::error::AidokuError { reason: aidoku::error::AidokuErrorKind::Unimplemented })
+}
+
+fn get_page_list<'a>(_: String) -> Result<Vec<Page<'a>>> {
+    Err(aidoku::error::AidokuError { reason: aidoku::error::AidokuErrorKind::Unimplemented })
 }

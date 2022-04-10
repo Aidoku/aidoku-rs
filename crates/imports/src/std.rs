@@ -59,7 +59,7 @@ extern "C" {
 
 pub struct ValueRef(Rid);
 
-pub struct ArrayRef(pub Rid, usize);
+pub struct ArrayRef(pub Rid, pub usize);
 pub struct ObjectRef(pub Rid);
 pub struct StringRef(pub Rid);
 

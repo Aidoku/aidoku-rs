@@ -1,6 +1,6 @@
 type Rid = i32;
 
-use super::StringRef;
+use super::{StringRef, ArrayRef};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
@@ -16,12 +16,12 @@ extern "C" {
     #[link_name = "attr"]
     fn scraper_attr(rid: i32, selector: *const u8, selector_len: usize) -> i32;
     
-    // #[link_name = "first"]
-    // fn scraper_first(rid: i32) -> i32;
-    // #[link_name = "last"]
-    // fn scraper_last(rid: i32) -> i32;
-    // #[link_name = "array"]
-    // fn scraper_array(rid: i32) -> i32;
+    #[link_name = "first"]
+    fn scraper_first(rid: i32) -> i32;
+    #[link_name = "last"]
+    fn scraper_last(rid: i32) -> i32;
+    #[link_name = "array"]
+    fn scraper_array(rid: i32) -> i32;
 
     #[link_name = "base_uri"]
     fn scraper_base_uri(rid: i32) -> i32;
@@ -40,10 +40,10 @@ extern "C" {
     fn scraper_tag_name(rid: i32) -> i32;
     #[link_name = "class_name"]
     fn scraper_class_name(rid: i32) -> i32;
-    // #[link_name = "has_class"]
-    // fn scraper_has_class(rid: i32, class_name: *const u8, class_length: usize) -> bool;
-    // #[link_name = "has_attr"]
-    // fn scraper_has_attr(rid: i32, attr_name: *const u8, attr_length: usize) -> bool;
+    #[link_name = "has_class"]
+    fn scraper_has_class(rid: i32, class_name: *const u8, class_length: usize) -> bool;
+    #[link_name = "has_attr"]
+    fn scraper_has_attr(rid: i32, attr_name: *const u8, attr_length: usize) -> bool;
 }
 
 pub struct Node(Rid);
@@ -70,6 +70,21 @@ impl Node {
     pub fn attr(&self, selector: &str) -> StringRef {
         let rid = unsafe { scraper_attr(self.0, selector.as_ptr(), selector.len()) };
         StringRef(rid)
+    }
+
+    pub fn first(&self) -> Self {
+        let rid = unsafe { scraper_first(self.0) };
+        Self(rid)
+    }
+
+    pub fn last(&self) -> Self {
+        let rid = unsafe { scraper_last(self.0) };
+        Self(rid)
+    }
+
+    pub fn array(&self) -> ArrayRef {
+        let rid = unsafe { scraper_array(self.0) };
+        ArrayRef(rid, 0)
     }
 
     pub fn base_uri(&self) -> StringRef {
@@ -110,6 +125,14 @@ impl Node {
     pub fn class_name(&self) -> StringRef {
         let rid = unsafe { scraper_class_name(self.0) };
         StringRef(rid)
+    }
+
+    pub fn has_class(&self, class_name: &str) -> bool {
+        unsafe { scraper_has_class(self.0, class_name.as_ptr(), class_name.len()) }
+    }
+
+    pub fn has_attr(&self, attr_name: &str) -> bool {
+        unsafe { scraper_has_attr(self.0, attr_name.as_ptr(), attr_name.len()) }
     }
 }
 
