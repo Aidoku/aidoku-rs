@@ -1,9 +1,8 @@
-use super::std::Vec;
-use aidoku_imports::Rid;
+use super::std::{ Vec, String };
+use aidoku_imports::{ Rid, ValueRef };
 
 #[link(wasm_import_module = "aidoku")]
 extern "C" {
-
     fn create_manga(
         id: *const u8,
         id_len: usize,
@@ -70,6 +69,24 @@ pub enum FilterType {
     Genre = 9,
 }
 
+impl FilterType {
+    pub fn from_i64(value: i64) -> FilterType {
+        match value {
+            0 => FilterType::Base,
+            1 => FilterType::Group,
+            2 => FilterType::Text,
+            3 => FilterType::Check,
+            4 => FilterType::Select,
+            5 => FilterType::Sort,
+            6 => FilterType::SortSelection,
+            7 => FilterType::Title,
+            8 => FilterType::Author,
+            9 => FilterType::Genre,
+            _ => FilterType::Base,
+        }
+    }
+}
+
 #[repr(C)]
 pub enum MangaStatus {
     Unknown = 0,
@@ -95,10 +112,10 @@ pub enum MangaViewer {
     Scroll = 4,
 }
 
-pub struct Filter<'a> {
+pub struct Filter {
     pub kind: FilterType,
-    pub name: &'a str,
-    pub value_ptr: *const i32,
+    pub name: String,
+    pub value: ValueRef,
 }
 
 pub struct Manga<'a> {
@@ -120,8 +137,8 @@ pub struct MangaPageResult<'a> {
     pub has_more: bool,
 }
 
-pub struct Listing<'a> {
-    pub name: &'a str,
+pub struct Listing {
+    pub name: String,
 }
 
 pub struct Chapter<'a> {
@@ -141,26 +158,6 @@ pub struct Page<'a> {
     pub base64: &'a str,
     pub text: &'a str,
 }
-
-// impl<'a> Filter<'a> {
-//     pub fn create(&self) -> i32 {
-//         unsafe {
-//             create_filter(
-//                 self.kind,
-//                 self.name.as_ptr(),
-//                 self.name.len(),
-//                 self.value_ptr,
-//                 0 as *const u8,
-//             )
-//         }
-//     }
-// }
-
-// impl<'a> Listing<'a> {
-//     pub fn create(self) -> i32 {
-//         unsafe { create_listing(self.name.as_ptr(), self.name.len(), 0) }
-//     }
-// }
 
 impl<'a> Manga<'a> {
     pub fn create(self) -> i32 {
@@ -206,7 +203,7 @@ impl<'a> MangaPageResult<'a> {
         let mut arr = aidoku_imports::ArrayRef::new();
         for manga in self.manga {
             let manga_descriptor = manga.create();
-            arr.insert(aidoku_imports::ValueRef::new(manga_descriptor));
+            arr.insert(ValueRef::new(manga_descriptor));
         }
         unsafe { create_manga_result(arr.0, self.has_more) }
     }

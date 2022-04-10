@@ -33,6 +33,7 @@ pub mod std {
     extern crate alloc;
     pub use aidoku_imports::*;
     pub use alloc::vec::Vec;
+    pub use alloc::string::String;
 }
 
 pub mod prelude {

@@ -9,24 +9,32 @@ use aidoku::{
 };
 
 #[no_mangle]
-pub unsafe extern "C" fn get_manga_list(_filters_rid: i32, page: i32) -> i32 {
-    // let mut filters: aidoku::std::Vec<aidoku::Filter> = Vec::new();
-    // if filters_rid > -1 {
-    //     let filters_ref = aidoku::std::ValueRef::new(filters_rid);
-    //     if let Ok(arr) = filters_ref.as_array() {
-    //         for item in arr {
-    //             let filter = aidoku::Filter {
-    //                 kind: aidoku::FilterType::Text,
-    //                 name: "",
-    //                 value_ptr: 0 as *const i32,
-    //                 value2_ptr: 0 as *const i32,
-    //             };
-    //             filter.value_ptr = filter.create();
-    //             filters.push(filter);
-    //         }
-    //     }
-    // }
-    let resp: aidoku::error::Result<aidoku::MangaPageResult> = get_manga_list_rs(Vec::new(), page);
+#[export_name = "get_manga_list"]
+pub unsafe extern "C" fn __wasm_get_manga_list(filters_rid: i32, page: i32) -> i32 {
+    let mut filters: Vec<Filter> = Vec::new();
+    if filters_rid > -1 {
+        let filters_ref = aidoku::std::ValueRef::new(filters_rid);
+        if let Ok(arr) = filters_ref.as_array() {
+            for item in arr {
+                let filter_ref = match item.as_object() {
+                    Ok(filter_ref) => filter_ref,
+                    Err(_) => continue,
+                };
+                let name = match filter_ref.get("name").as_string() {
+                    Ok(name) => name,
+                    Err(_) => continue,
+                };
+                let filter = Filter {
+                    kind: aidoku::FilterType::from_i64(filter_ref.get("type").as_int().unwrap_or(0)),
+                    name: name.read(),
+                    value: filter_ref.get("value")
+                };
+                filters.push(filter);
+            }
+        }
+    }
+
+    let resp: aidoku::error::Result<aidoku::MangaPageResult> = get_manga_list(filters, page);
     match resp {
         Ok(resp) => resp.create(),
         Err(_) => -2,
@@ -34,7 +42,7 @@ pub unsafe extern "C" fn get_manga_list(_filters_rid: i32, page: i32) -> i32 {
 }
 
 // #[manga_list_request]
-fn get_manga_list_rs(_: Vec<Filter>, _: i32) -> Result<MangaPageResult> {
+fn get_manga_list<'a>(_: Vec<Filter>, _: i32) -> Result<MangaPageResult<'a>> {
     let mut manga: Vec<Manga> = Vec::new();
     manga.push(Manga {
         id: "1",
