@@ -16,7 +16,7 @@ pub enum Kind {
     Bool,
     Array,
     Object,
-    Date, // This doesn't get used, yet...
+    Date,
 }
 
 #[link(wasm_import_module = "std")]
@@ -29,16 +29,19 @@ extern "C" {
     fn create_object() -> Rid;
     fn create_string(buf: *const u8, len: usize) -> Rid;
     fn create_bool(value: bool) -> Rid;
-    fn create_float(value: f32) -> Rid;
-    fn create_int(value: i32) -> Rid;
+    fn create_float(value: f64) -> Rid;
+    fn create_int(value: i64) -> Rid;
+    // fn create_date() -> Rid;
 
     #[link_name = "typeof"]
     fn value_kind(ctx: Rid) -> Kind;
     fn string_len(ctx: Rid) -> usize;
     fn read_string(ctx: Rid, buf: *mut u8, len: usize);
-    fn read_int(ctx: Rid) -> i32;
-    fn read_float(ctx: Rid) -> f32;
+    fn read_int(ctx: Rid) -> i64;
+    fn read_float(ctx: Rid) -> f64;
     fn read_bool(ctx: Rid) -> bool;
+    // fn read_date(ctx: Rid) -> f64;
+    // fn read_date_string(ctx: Rid, format: *mut u8, format_length: usize, locale: *mut u8, locale_length: usize, timezone: *mut u8, timezone_length: usize) -> f64;
 
     fn object_len(arr: Rid) -> usize;
     fn object_get(arr: Rid, key: *const u8, len: usize) -> Rid;
@@ -104,7 +107,7 @@ impl ValueRef {
         }
     }
 
-    pub fn as_int(&self) -> Result<i32> {
+    pub fn as_int(&self) -> Result<i64> {
         if self.kind() == Kind::Int {
             let val = unsafe { read_int(self.0) };
             Ok(val)
@@ -113,7 +116,7 @@ impl ValueRef {
         }
     }
 
-    pub fn as_float(&self) -> Result<f32> {
+    pub fn as_float(&self) -> Result<f64> {
         if self.kind() == Kind::Float {
             let val = unsafe { read_float(self.0) };
             Ok(val)
@@ -147,6 +150,13 @@ impl Drop for ValueRef {
 
 impl From<i32> for ValueRef {
     fn from(val: i32) -> Self {
+        let rid = unsafe { create_int(val as i64) };
+        Self(rid)
+    }
+}
+
+impl From<i64> for ValueRef {
+    fn from(val: i64) -> Self {
         let rid = unsafe { create_int(val) };
         Self(rid)
     }
@@ -154,6 +164,13 @@ impl From<i32> for ValueRef {
 
 impl From<f32> for ValueRef {
     fn from(val: f32) -> Self {
+        let rid = unsafe { create_float(val as f64) };
+        Self(rid)
+    }
+}
+
+impl From<f64> for ValueRef {
+    fn from(val: f64) -> Self {
         let rid = unsafe { create_float(val) };
         Self(rid)
     }

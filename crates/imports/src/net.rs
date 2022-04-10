@@ -23,20 +23,25 @@ pub enum HttpMethod {
 extern "C" {
     #[link_name = "init"]
     fn request_init(method: HttpMethod) -> Rid;
+    #[link_name = "send"]
+    fn request_send(rd: Rid);
+    #[link_name = "close"]
+    fn request_close(rd: Rid);
+
     #[link_name = "set_url"]
     fn request_set_url(rd: Rid, value: *const u8, len: usize);
     #[link_name = "set_header"]
     fn request_set_header(rd: Rid, key: *const u8, key_len: usize, val: *const u8, val_len: usize);
     #[link_name = "set_body"]
     fn request_set_body(rd: Rid, value: *const u8, len: usize);
-    #[link_name = "send"]
-    fn request_send(rd: Rid);
+
+    // #[link_name = "get_url"]
+    // fn request_get_url(rd: Rid) -> Rid;
     #[link_name = "get_data"]
     fn request_get_data(rd: Rid, buffer: *mut u8, size: usize);
     #[link_name = "get_data_size"]
     fn request_get_data_size(rd: Rid) -> usize;
-    #[link_name = "close"]
-    fn request_close(rd: Rid);
+
     #[link_name = "json"]
     fn request_json(rd: Rid) -> ValueRid;
     #[link_name = "html"]
