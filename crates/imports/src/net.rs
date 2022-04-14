@@ -90,7 +90,7 @@ impl Request {
     /// Get the URL of the request
     pub fn url(&self) -> StringRef {
         let rid = unsafe { request_get_url(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     /// Get the raw data from the response

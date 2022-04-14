@@ -25,12 +25,14 @@ pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
                             Ok(name) => name,
                             Err(_) => continue,
                         };
-                        let filter = Filter {
-                            kind: aidoku::FilterType::from_i64(filter_ref.get("type").as_int().unwrap_or(0)),
-                            name: name.read(),
-                            value: filter_ref.get("value")
-                        };
-                        filters.push(filter);
+                        if let Ok(fiter_type) = filter_ref.get("type").as_int() {
+                            let filter = Filter {
+                                kind: aidoku::FilterType::from(fiter_type as i32),
+                                name: name.read(),
+                                value: filter_ref.get("value")
+                            };
+                            filters.push(filter);
+                        }
                     }
                 }
             }
@@ -53,7 +55,7 @@ pub fn get_manga_listing(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_manga_listing"]
         pub unsafe extern "C" fn __wasm_get_manga_listing(listing_rid: i32, page: i32) -> i32 {
-            let name = match aidoku::std::ObjectRef(listing_rid).get("name").as_string() {
+            let name = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(listing_rid)).get("name").as_string() {
                 Ok(name) => name,
                 Err(_) => return -1,
             };
@@ -78,11 +80,11 @@ pub fn get_manga_details(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_manga_details"]
         pub unsafe extern "C" fn __wasm_get_manga_details(manga_rid: i32) -> i32 {
-            let id = match aidoku::std::ObjectRef(manga_rid).get("id").as_string() {
-                Ok(id) => id,
+            let id = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(manga_rid)).get("id").as_string() {
+                Ok(id) => id.read(),
                 Err(_) => return -1,
             };
-            let resp: Result<Manga> = #func_name(id.read());
+            let resp: Result<Manga> = #func_name(id);
             match resp {
                 Ok(resp) => resp.create(),
                 Err(_) => -1,
@@ -102,11 +104,11 @@ pub fn get_chapter_list(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_chapter_list"]
         pub unsafe extern "C" fn __wasm_get_chapter_list(manga_rid: i32) -> i32 {
-            let id = match aidoku::std::ObjectRef(manga_rid).get("id").as_string() {
-                Ok(id) => id,
+            let id = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(manga_rid)).get("id").as_string() {
+                Ok(id) => id.read(),
                 Err(_) => return -1,
             };
-            let resp: Result<Vec<Chapter>> = #func_name(id.read());
+            let resp: Result<Vec<Chapter>> = #func_name(id);
             match resp {
                 Ok(resp) => {
                     let mut arr = aidoku::std::ArrayRef::new();
@@ -114,7 +116,9 @@ pub fn get_chapter_list(_: TokenStream, input: TokenStream) -> TokenStream {
                         let rid = item.create();
                         arr.insert(aidoku::std::ValueRef::new(rid));
                     }
-                    arr.0
+                    let rid = arr.0.0;
+                    core::mem::forget(arr.0);
+                    rid
                 }
                 Err(_) => -1,
             }
@@ -133,11 +137,11 @@ pub fn get_page_list(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_page_list"]
         pub unsafe extern "C" fn __wasm_get_page_list(chapter_rid: i32) -> i32 {
-            let id = match aidoku::std::ObjectRef(chapter_rid).get("id").as_string() {
-                Ok(id) => id,
+            let id = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid)).get("id").as_string() {
+                Ok(id) => id.read(),
                 Err(_) => return -1,
             };
-            let resp: Result<Vec<Page>> = #func_name(id.read());
+            let resp: Result<Vec<Page>> = #func_name(id);
             match resp {
                 Ok(resp) => {
                     let mut arr = aidoku::std::ArrayRef::new();
@@ -145,7 +149,9 @@ pub fn get_page_list(_: TokenStream, input: TokenStream) -> TokenStream {
                         let rid = item.create();
                         arr.insert(aidoku::std::ValueRef::new(rid));
                     }
-                    arr.0
+                    let rid = arr.0.0;
+                    core::mem::forget(arr.0);
+                    rid
                 }
                 Err(_) => -1,
             }

@@ -1,6 +1,6 @@
 type Rid = i32;
 
-use super::{StringRef, ArrayRef};
+use super::{StringRef, ArrayRef, ValueRef};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
@@ -69,7 +69,7 @@ impl Node {
 
     pub fn attr(&self, selector: &str) -> StringRef {
         let rid = unsafe { scraper_attr(self.0, selector.as_ptr(), selector.len()) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn first(&self) -> Self {
@@ -84,47 +84,47 @@ impl Node {
 
     pub fn array(&self) -> ArrayRef {
         let rid = unsafe { scraper_array(self.0) };
-        ArrayRef(rid, 0)
+        ArrayRef(ValueRef::new(rid), 0)
     }
 
     pub fn base_uri(&self) -> StringRef {
         let rid = unsafe { scraper_base_uri(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn body(&self) -> StringRef {
         let rid = unsafe { scraper_body(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn text(&self) -> StringRef {
         let rid = unsafe { scraper_text(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn html(&self) -> StringRef {
         let rid = unsafe { scraper_html(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn outer_html(&self) -> StringRef {
         let rid = unsafe { scraper_outer_html(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn id(&self) -> StringRef {
         let rid = unsafe { scraper_id(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn tag_name(&self) -> StringRef {
         let rid = unsafe { scraper_tag_name(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn class_name(&self) -> StringRef {
         let rid = unsafe { scraper_class_name(self.0) };
-        StringRef(rid)
+        StringRef(ValueRef::new(rid))
     }
 
     pub fn has_class(&self, class_name: &str) -> bool {

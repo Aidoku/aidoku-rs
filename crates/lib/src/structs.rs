@@ -70,7 +70,7 @@ pub enum FilterType {
 }
 
 impl FilterType {
-    pub fn from_i64(value: i64) -> FilterType {
+    pub fn from(value: i32) -> FilterType {
         match value {
             0 => FilterType::Base,
             1 => FilterType::Group,
@@ -83,6 +83,21 @@ impl FilterType {
             8 => FilterType::Author,
             9 => FilterType::Genre,
             _ => FilterType::Base,
+        }
+    }
+
+    pub fn to_int(&self) -> i32 {
+        match self {
+            FilterType::Base => 0,
+            FilterType::Group => 1,
+            FilterType::Text => 2,
+            FilterType::Check => 3,
+            FilterType::Select => 4,
+            FilterType::Sort => 5,
+            FilterType::SortSelection => 6,
+            FilterType::Title => 7,
+            FilterType::Author => 8,
+            FilterType::Genre => 9,
         }
     }
 }
@@ -118,22 +133,22 @@ pub struct Filter {
     pub value: ValueRef,
 }
 
-pub struct Manga<'a> {
-    pub id: &'a str,
-    pub cover: &'a str,
-    pub title: &'a str,
-    pub author: &'a str,
-    pub artist: &'a str,
-    pub description: &'a str,
-    pub url: &'a str,
-    pub categories: Vec<&'a str>,
+pub struct Manga {
+    pub id: String,
+    pub cover: String,
+    pub title: String,
+    pub author: String,
+    pub artist: String,
+    pub description: String,
+    pub url: String,
+    pub categories: Vec<String>,
     pub status: MangaStatus,
     pub nsfw: MangaContentRating,
     pub viewer: MangaViewer,
 }
 
-pub struct MangaPageResult<'a> {
-    pub manga: Vec<Manga<'a>>,
+pub struct MangaPageResult {
+    pub manga: Vec<Manga>,
     pub has_more: bool,
 }
 
@@ -141,25 +156,25 @@ pub struct Listing {
     pub name: String,
 }
 
-pub struct Chapter<'a> {
-    pub id: &'a str,
-    pub title: &'a str,
+pub struct Chapter {
+    pub id: String,
+    pub title: String,
     pub volume: f32,
     pub chapter: f32,
     pub date_updated: f64,
-    pub scanlator: &'a str,
-    pub url: &'a str,
-    pub lang: &'a str,
+    pub scanlator: String,
+    pub url: String,
+    pub lang: String,
 }
 
-pub struct Page<'a> {
+pub struct Page {
     pub index: i32,
-    pub url: &'a str,
-    pub base64: &'a str,
-    pub text: &'a str,
+    pub url: String,
+    pub base64: String,
+    pub text: String,
 }
 
-impl<'a> Manga<'a> {
+impl Manga {
     pub fn create(self) -> i32 {
         let categories_ptr = &self
             .categories
@@ -198,18 +213,18 @@ impl<'a> Manga<'a> {
     }
 }
 
-impl<'a> MangaPageResult<'a> {
+impl MangaPageResult {
     pub fn create(self) -> i32 {
         let mut arr = aidoku_imports::ArrayRef::new();
         for manga in self.manga {
             let manga_descriptor = manga.create();
             arr.insert(ValueRef::new(manga_descriptor));
         }
-        unsafe { create_manga_result(arr.0, self.has_more) }
+        unsafe { create_manga_result(arr.0.0, self.has_more) }
     }
 }
 
-impl<'a> Chapter<'a> {
+impl Chapter {
     pub fn create(self) -> i32 {
         unsafe {
             create_chapter(
@@ -231,7 +246,7 @@ impl<'a> Chapter<'a> {
     }
 }
 
-impl<'a> Page<'a> {
+impl Page {
     pub fn create(self) -> i32 {
         unsafe {
             create_page(
