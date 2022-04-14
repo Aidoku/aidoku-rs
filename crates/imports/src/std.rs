@@ -108,7 +108,7 @@ impl ValueRef {
 
     pub fn as_int(&self) -> Result<i64> {
         let kind = self.kind();
-        if kind == Kind::Int || kind == Kind::Float || kind == Kind::String {
+        if kind == Kind::Int || kind == Kind::Float || kind == Kind::Bool || kind == Kind::String {
             let val = unsafe { read_int(self.0) };
             Ok(val)
         } else {

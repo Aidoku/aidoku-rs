@@ -29,7 +29,7 @@ pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
                             let filter = Filter {
                                 kind: aidoku::FilterType::from(fiter_type as i32),
                                 name: name.read(),
-                                value: filter_ref.get("value")
+                                value: filter_ref.get("value").clone()
                             };
                             filters.push(filter);
                         }
@@ -56,10 +56,10 @@ pub fn get_manga_listing(_: TokenStream, input: TokenStream) -> TokenStream {
         #[export_name = "get_manga_listing"]
         pub unsafe extern "C" fn __wasm_get_manga_listing(listing_rid: i32, page: i32) -> i32 {
             let name = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(listing_rid)).get("name").as_string() {
-                Ok(name) => name,
+                Ok(name) => name.read(),
                 Err(_) => return -1,
             };
-            let listing = Listing { name: name.read() };
+            let listing = Listing { name: name };
             let resp: Result<MangaPageResult> = #func_name(listing, page);
             match resp {
                 Ok(resp) => resp.create(),
