@@ -1,5 +1,5 @@
-# Aidoku Rust Source
-**NOTE:** This isn't compatible with the current version of Aidoku (yet), it's just meant for drafting out the new format.
+# Aidoku Rust Source API
+**NOTE:** This library currently requires Rust nightly, which can be installed with `rustup default nightly`.
 
 ## Setup
 To make a new source:
@@ -42,27 +42,27 @@ use aidoku::{
 };
 
 #[get_manga_list]
-fn get_manga_list<'a>(_: Vec<Filter>, _: i32) -> Result<MangaPageResult<'a>> {
+fn get_manga_list(_: Vec<Filter>, _: i32) -> Result<MangaPageResult> {
     todo!()
 }
 
 #[get_manga_listing]
-fn get_manga_listing<'a>(_: Listing, _: i32) -> Result<MangaPageResult<'a>> {
+fn get_manga_listing(_: Listing, _: i32) -> Result<MangaPageResult> {
     todo!()
 }
 
 #[get_manga_details]
-fn get_manga_details<'a>(_: String) -> Result<Manga<'a>> {
+fn get_manga_details(_: String) -> Result<Manga> {
     todo!()
 }
 
 #[get_chapter_list]
-fn get_chapter_list<'a>(_: String) -> Result<Vec<Chapter<'a>>> {
+fn get_chapter_list(_: String) -> Result<Vec<Chapter>> {
     todo!()
 }
 
 #[get_page_list]
-fn get_page_list<'a>(_: String) -> Result<Vec<Page<'a>>> {
+fn get_page_list(_: String) -> Result<Vec<Page>> {
     todo!()
 }
 ```

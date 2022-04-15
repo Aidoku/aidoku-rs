@@ -1,15 +1,13 @@
 type Rid = i32;
 
-use super::{StringRef, ArrayRef, ValueRef};
+use super::{StringRef, ArrayRef, ValueRef, destroy};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
     #[link_name = "parse"]
     fn scraper_parse(string: *const u8, len: usize) -> i32;
-    // #[link_name = "parse_fragment"]
-    // fn scraper_parse_fragment(string: *const u8, len: usize) -> i32;
-    #[link_name = "close"]
-    fn scraper_free(rid: i32);
+    #[link_name = "parse_fragment"]
+    fn scraper_parse_fragment(string: *const u8, len: usize) -> i32;
 
     #[link_name = "select"]
     fn scraper_select(rid: i32, selector: *const u8, selector_len: usize) -> i32;
@@ -51,6 +49,11 @@ pub struct Node(Rid);
 impl Node {
     pub fn new(buf: &[u8]) -> Self {
         let rid = unsafe { scraper_parse(buf.as_ptr(), buf.len()) };
+        Self(rid)
+    }
+
+    pub fn new_fragment(buf: &[u8]) -> Self {
+        let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
         Self(rid)
     }
 
@@ -138,6 +141,6 @@ impl Node {
 
 impl Drop for Node {
     fn drop(&mut self) {
-        unsafe { scraper_free(self.0) }
+        unsafe { destroy(self.0) }
     }
 }

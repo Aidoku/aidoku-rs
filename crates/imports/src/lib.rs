@@ -1,6 +1,7 @@
 #![no_std]
 extern crate alloc;
 
+pub mod defaults;
 pub mod error;
 pub mod html;
 pub mod json;

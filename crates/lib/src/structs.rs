@@ -174,6 +174,11 @@ pub struct Page {
     pub text: String,
 }
 
+pub struct DeepLink {
+    pub manga: Option<Manga>,
+    pub chapter: Option<Chapter>,
+}
+
 impl Manga {
     pub fn create(self) -> i32 {
         let categories_ptr = &self

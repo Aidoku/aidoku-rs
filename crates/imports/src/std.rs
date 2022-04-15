@@ -230,12 +230,6 @@ impl Clone for StringRef {
     }
 }
 
-// impl Drop for StringRef {
-//     fn drop(&mut self) {
-//         unsafe { destroy(self.0) }
-//     }
-// }
-
 // =========================
 //        Array Ref
 // =========================
