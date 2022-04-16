@@ -307,12 +307,12 @@ impl ObjectRef {
         unsafe { object_remove(self.0.0, key.as_ptr(), key.len()) };
     }
 
-    pub fn keys(self) -> ArrayRef {
+    pub fn keys(&self) -> ArrayRef {
         let rid = unsafe { object_keys(self.0.0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
 
-    pub fn values(self) -> ArrayRef {
+    pub fn values(&self) -> ArrayRef {
         let rid = unsafe { object_values(self.0.0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
