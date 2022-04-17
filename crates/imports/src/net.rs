@@ -3,8 +3,7 @@ use super::html::Node;
 use super::std::{Rid as ValueRid, ValueRef, StringRef};
 
 use super::alloc::vec::Vec;
-
-const BUFFER_CHUNK_SIZE: usize = 0x80;
+use super::alloc::string::String;
 
 #[repr(C)]
 pub enum HttpMethod {
@@ -98,19 +97,16 @@ impl Request {
         self.send();
         let size = unsafe { request_get_data_size(self.0) };
         let mut buffer: Vec<u8> = Vec::with_capacity(size);
-        let mut offset: usize = 0;
-        while offset < size {
-            let ending_offset = offset + BUFFER_CHUNK_SIZE;
-            let chunk = if ending_offset < size {
-                &mut buffer[offset..ending_offset]
-            } else {
-                &mut buffer[offset..]
-            };
-            unsafe { request_get_data(self.0, chunk.as_mut_ptr(), chunk.len()) }
-            offset = ending_offset;
+        unsafe {
+            request_get_data(self.0, buffer.as_mut_ptr(), size);
+            buffer.set_len(size);
         }
         self.close();
         buffer
+    }
+
+    pub fn string<'a>(self) -> String {
+        String::from_utf8(self.data()).unwrap_or(String::new())
     }
 
     /// Get the data as JSON

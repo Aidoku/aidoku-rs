@@ -3,6 +3,8 @@ pub type Rid = i32;
 use alloc::string::String;
 use alloc::vec::Vec;
 
+use super::html::Node;
+
 use super::error::{AidokuError, Result, ValueCastError};
 
 #[repr(C)]
@@ -56,7 +58,7 @@ extern "C" {
     fn array_remove(arr: Rid, idx: usize);
 }
 
-pub struct ValueRef(pub Rid, bool);
+pub struct ValueRef(pub Rid, pub bool);
 
 pub struct ArrayRef(pub ValueRef, pub usize);
 pub struct ObjectRef(pub ValueRef);
@@ -144,6 +146,10 @@ impl ValueRef {
             Err(AidokuError::from(ValueCastError::NotBool))
         }
     }
+
+    pub fn as_node(&self) -> Node {
+        Node::from(self.0)
+    }
 }
 
 impl Clone for ValueRef {
@@ -201,8 +207,7 @@ impl From<bool> for ValueRef {
 // =========================
 impl StringRef {
     pub fn read<'a>(self) -> String {
-        let rid = self.0.0;
-        let len = unsafe { string_len(rid) };
+        let len = unsafe { string_len(self.0.0) };
         let mut buf = Vec::with_capacity(len);
         unsafe {
             read_string(self.0.0, buf.as_mut_ptr(), len);
@@ -271,6 +276,19 @@ impl Iterator for ArrayRef {
         let value_ref = self.get(self.1);
         self.1 += 1;
         Some(value_ref)
+    }
+}
+
+impl FromIterator<ValueRef> for ArrayRef {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = ValueRef>,
+    {
+        let mut array = Self::new();
+        for value in iter {
+            array.insert(value);
+        }
+        array
     }
 }
 
