@@ -53,6 +53,11 @@ extern "C" {
         text: *const u8,
         text_len: usize,
     ) -> i32;
+
+    fn create_deeplink(
+        manga: i32,
+        chapter: i32,
+    ) -> i32;
 }
 
 #[repr(C)]
@@ -262,6 +267,25 @@ impl Page {
                 self.base64.len(),
                 self.text.as_ptr(),
                 self.text.len(),
+            )
+        }
+    }
+}
+
+impl DeepLink {
+    pub fn create(self) -> i32 {
+        let manga = match self.manga {
+            Some(manga) => manga.create(),
+            None => -1,
+        };
+        let chapter = match self.chapter {
+            Some(chapter) => chapter.create(),
+            None => -1,
+        };
+        unsafe {
+            create_deeplink(
+                manga,
+                chapter,
             )
         }
     }

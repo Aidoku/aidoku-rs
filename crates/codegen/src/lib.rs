@@ -176,15 +176,7 @@ pub fn handle_url(_: TokenStream, input: TokenStream) -> TokenStream {
             };
             let resp: Result<DeepLink> = #func_name(url);
             match resp {
-                Ok(resp) => {
-                    if let Some(manga) = resp.manga {
-                        manga.create()
-                    } else if let Some(chapter) = resp.chapter {
-                        chapter.create()
-                    } else {
-                        -1
-                    }
-                },
+                Ok(resp) => resp.create(),
                 Err(_) => -1,
             }
         }
