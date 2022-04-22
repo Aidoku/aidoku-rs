@@ -4,25 +4,30 @@ version = 3
 
 [[package]]
 name = "aidoku"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "aidoku_codegen",
  "aidoku_imports",
+ "aidoku_macros",
+ "aidoku_proc_macros",
  "wee_alloc",
 ]
 
 [[package]]
-name = "aidoku_codegen"
+name = "aidoku_imports"
+version = "0.1.0"
+
+[[package]]
+name = "aidoku_macros"
+version = "0.1.0"
+
+[[package]]
+name = "aidoku_proc_macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn",
 ]
-
-[[package]]
-name = "aidoku_imports"
-version = "0.1.0"
 
 [[package]]
 name = "cfg-if"

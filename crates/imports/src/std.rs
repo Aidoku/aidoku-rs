@@ -58,6 +58,11 @@ extern "C" {
     fn array_remove(arr: Rid, idx: usize);
 }
 
+pub fn print(string: &str) {
+    extern "C" { fn print(string: *const u8, size: usize); }
+    unsafe { print(string.as_ptr(), string.len()); }
+}
+
 pub struct ValueRef(pub Rid, pub bool);
 
 pub struct ArrayRef(pub ValueRef, pub usize);
