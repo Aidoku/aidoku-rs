@@ -5,3 +5,4 @@ macro_rules! format {
         aidoku::std::format(core::format_args!($($arg)*))
     }}
 }
+
