@@ -1,5 +1,5 @@
 #![no_std]
-#![feature(core_intrinsics, alloc_error_handler)]
+#![feature(core_intrinsics, alloc_error_handler, fmt_internals)]
 
 // Setup allocator
 
@@ -34,8 +34,14 @@ pub mod std {
     pub use aidoku_imports::*;
     pub use alloc::vec::Vec;
     pub use alloc::string::String;
+    pub fn format(args: core::fmt::Arguments) -> crate::std::String {
+        let mut string = crate::std::String::with_capacity(args.estimated_capacity());
+        string.write_fmt(args).expect("error formatting string");
+        string
+    }
 }
 
 pub mod prelude {
-    pub use aidoku_codegen::*;
+    pub use aidoku_macros::*;
+    pub use aidoku_proc_macros::*;
 }
