@@ -161,6 +161,23 @@ pub fn get_page_list(_: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
+pub fn modify_image_request(_: TokenStream, input: TokenStream) -> TokenStream {
+    let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
+    let func_name = &func.sig.ident;
+    quote! {
+        #func
+
+        #[no_mangle]
+        #[export_name = "modify_image_request"]
+        pub unsafe extern "C" fn __wasm_modify_image_request(request_rid: i32) {
+            let request = aidoku::std::net::Request(request_rid);
+            #func_name(request);
+        }
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
 pub fn handle_url(_: TokenStream, input: TokenStream) -> TokenStream {
     let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
     let func_name = &func.sig.ident;

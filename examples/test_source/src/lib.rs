@@ -1,6 +1,6 @@
 #![no_std]
 use aidoku::{
-    error::Result, prelude::*, std::String, std::Vec,
+    error::Result, prelude::*, std::String, std::Vec, std::net::Request,
     Chapter, Filter, Listing, Manga, MangaPageResult, Page, DeepLink,
 };
 
@@ -26,6 +26,11 @@ fn get_chapter_list(_: String) -> Result<Vec<Chapter>> {
 
 #[get_page_list]
 fn get_page_list(_: String) -> Result<Vec<Page>> {
+    todo!()
+}
+
+#[modify_image_request]
+fn modify_image_request(_: Request) {
     todo!()
 }
 

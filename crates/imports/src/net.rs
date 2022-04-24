@@ -48,7 +48,7 @@ extern "C" {
 }
 
 /// A type that makes a HTTP request.
-pub struct Request(Rid);
+pub struct Request(pub Rid);
 impl Request {
     /// Start a new request with a URL and HTTP method
     ///
