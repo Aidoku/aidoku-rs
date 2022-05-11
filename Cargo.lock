@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "aidoku"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "aidoku_imports",
  "aidoku_macros",
@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "aidoku_imports"
-version = "0.1.1"
+version = "0.1.2"
 
 [[package]]
 name = "aidoku_macros"

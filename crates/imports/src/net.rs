@@ -8,14 +8,10 @@ use super::alloc::string::String;
 #[repr(C)]
 pub enum HttpMethod {
     Get,
-    Head,
     Post,
     Put,
+    Head,
     Delete,
-    Connect,
-    Options,
-    Trace,
-    Patch,
 }
 
 #[link(wasm_import_module = "net")]

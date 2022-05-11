@@ -32,7 +32,7 @@ extern "C" {
     fn create_bool(value: bool) -> Rid;
     fn create_float(value: f64) -> Rid;
     fn create_int(value: i64) -> Rid;
-    // fn create_date() -> Rid;
+    fn create_date(value: f64) -> Rid;
 
     #[link_name = "typeof"]
     fn value_kind(ctx: Rid) -> Kind;
@@ -41,7 +41,7 @@ extern "C" {
     fn read_int(ctx: Rid) -> i64;
     fn read_float(ctx: Rid) -> f64;
     fn read_bool(ctx: Rid) -> bool;
-    // fn read_date(ctx: Rid) -> f64;
+    fn read_date(ctx: Rid) -> f64;
     fn read_date_string(ctx: Rid, format: *const u8, format_length: usize, locale: *const u8, locale_length: usize, timezone: *const u8, timezone_length: usize) -> f64;
 
     fn object_len(arr: Rid) -> usize;
@@ -61,6 +61,10 @@ extern "C" {
 pub fn print(string: &str) {
     extern "C" { fn print(string: *const u8, size: usize); }
     unsafe { print(string.as_ptr(), string.len()); }
+}
+
+pub fn current_date() -> f64 {
+    unsafe { read_date(create_date(-1.0)) }
 }
 
 pub struct ValueRef(pub Rid, pub bool);
@@ -143,9 +147,11 @@ impl ValueRef {
         }
     }
 
-    pub fn as_date(&self, format: &str) -> Result<f64> {
+    pub fn as_date(&self, format: &str, locale: Option<&str>, timezone: Option<&str>) -> Result<f64> {
         if self.kind() == Kind::String {
-            let val = unsafe { read_date_string(self.0, format.as_ptr(), format.len(), &[] as *const u8, 0, &[] as *const u8, 0) };
+            let locale_val = locale.unwrap_or("");
+            let timezone_val = timezone.unwrap_or("");
+            let val = unsafe { read_date_string(self.0, format.as_ptr(), format.len(), locale_val.as_ptr(), locale_val.len(), timezone_val.as_ptr(), timezone_val.len()) };
             Ok(val)
         } else {
             Err(AidokuError::from(ValueCastError::NotBool))
