@@ -29,7 +29,8 @@ pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
                             let filter = Filter {
                                 kind: aidoku::FilterType::from(fiter_type as i32),
                                 name: name.read(),
-                                value: filter_ref.get("value").clone()
+                                value: filter_ref.get("value").clone(),
+                                object: filter_ref.clone(),
                             };
                             filters.push(filter);
                         }

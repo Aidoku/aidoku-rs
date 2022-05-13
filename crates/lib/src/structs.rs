@@ -1,5 +1,5 @@
 use super::std::{Vec, String};
-use aidoku_imports::{Rid, ValueRef};
+use aidoku_imports::{Rid, ValueRef, ObjectRef};
 
 #[link(wasm_import_module = "aidoku")]
 extern "C" {
@@ -136,6 +136,7 @@ pub struct Filter {
     pub kind: FilterType,
     pub name: String,
     pub value: ValueRef,
+    pub object: ObjectRef,
 }
 
 pub struct Manga {
