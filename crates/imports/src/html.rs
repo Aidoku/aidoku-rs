@@ -18,8 +18,10 @@ extern "C" {
     fn scraper_first(rid: i32) -> i32;
     #[link_name = "last"]
     fn scraper_last(rid: i32) -> i32;
-    #[link_name = "array"]
-    fn scraper_array(rid: i32) -> i32;
+    #[link_name = "next"]
+    fn scraper_next(rid: i32) -> i32;
+    #[link_name = "previous"]
+    fn scraper_previous(rid: i32) -> i32;
 
     #[link_name = "base_uri"]
     fn scraper_base_uri(rid: i32) -> i32;
@@ -27,6 +29,8 @@ extern "C" {
     fn scraper_body(rid: i32) -> i32;
     #[link_name = "text"]
     fn scraper_text(rid: i32) -> i32;
+    #[link_name = "array"]
+    fn scraper_array(rid: i32) -> i32;
     #[link_name = "html"]
     fn scraper_html(rid: i32) -> i32;
     #[link_name = "outer_html"]
@@ -84,11 +88,17 @@ impl Node {
         let rid = unsafe { scraper_last(self.0) };
         Self(rid)
     }
-
-    pub fn array(&self) -> ArrayRef {
-        let rid = unsafe { scraper_array(self.0) };
-        ArrayRef(ValueRef::new(rid), 0)
+    
+    pub fn next(&self) -> Self {
+        let rid = unsafe { scraper_next(self.0) };
+        Self(rid)
     }
+    
+    pub fn previous(&self) -> Self {
+        let rid = unsafe { scraper_previous(self.0) };
+        Self(rid)
+    }
+
 
     pub fn base_uri(&self) -> StringRef {
         let rid = unsafe { scraper_base_uri(self.0) };
@@ -103,6 +113,11 @@ impl Node {
     pub fn text(&self) -> StringRef {
         let rid = unsafe { scraper_text(self.0) };
         StringRef(ValueRef::new(rid))
+    }
+    
+    pub fn array(&self) -> ArrayRef {
+        let rid = unsafe { scraper_array(self.0) };
+        ArrayRef(ValueRef::new(rid), 0)
     }
 
     pub fn html(&self) -> StringRef {
