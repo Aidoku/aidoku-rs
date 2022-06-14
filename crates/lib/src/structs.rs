@@ -159,10 +159,38 @@ pub struct Manga {
     pub viewer: MangaViewer,
 }
 
+impl Default for Manga {
+    /// Creates an empty `Manga` object.
+    fn default() -> Self {
+        Manga { 
+            id: String::new(), 
+            cover: String::new(), 
+            title: String::new(), 
+            author: String::new(), 
+            artist: String::new(), 
+            description: String::new(), 
+            url: String::new(), 
+            categories: Vec::new(), 
+            status: MangaStatus::Unknown, 
+            nsfw: MangaContentRating::Safe, 
+            viewer: MangaViewer::Default, 
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct MangaPageResult {
     pub manga: Vec<Manga>,
     pub has_more: bool,
+}
+
+impl Default for MangaPageResult {
+    fn default() -> Self {
+        MangaPageResult { 
+            manga: Vec::new(), 
+            has_more: false 
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -182,6 +210,21 @@ pub struct Chapter {
     pub lang: String,
 }
 
+impl Default for Chapter {
+    fn default() -> Self {
+        Chapter { 
+            id: String::new(), 
+            title: String::new(), 
+            volume: -1.0, 
+            chapter: -1.0, 
+            date_updated: -1.0, 
+            scanlator: String::new(), 
+            url: String::new(), 
+            lang: String::new() 
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Page {
     pub index: i32,
@@ -190,10 +233,27 @@ pub struct Page {
     pub text: String,
 }
 
+impl Default for Page {
+    fn default() -> Self {
+        Page {
+            index: 0,
+            url: String::new(),
+            base64: String::new(),
+            text: String::new(),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct DeepLink {
     pub manga: Option<Manga>,
     pub chapter: Option<Chapter>,
+}
+
+impl Default for DeepLink {
+    fn default() -> Self {
+        DeepLink { manga: None, chapter: None }
+    }
 }
 
 impl Manga {
