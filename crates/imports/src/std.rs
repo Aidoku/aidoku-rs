@@ -8,7 +8,7 @@ use super::html::Node;
 use super::error::{AidokuError, Result, ValueCastError};
 
 #[repr(C)]
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum Kind {
     Null,
     Int,
