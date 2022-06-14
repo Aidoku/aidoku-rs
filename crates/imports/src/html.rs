@@ -208,3 +208,10 @@ impl Drop for Node {
         unsafe { destroy(self.0) }
     }
 }
+
+impl Clone for Node {
+    fn clone(&self) -> Node {
+        let valref = ValueRef::new(self.0);
+        valref.clone().as_node()
+    }
+}
