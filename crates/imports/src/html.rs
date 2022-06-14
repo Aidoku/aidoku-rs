@@ -212,6 +212,7 @@ impl Drop for Node {
 impl Clone for Node {
     fn clone(&self) -> Node {
         let valref = ValueRef::new(self.0);
+        #[allow(clippy::redundant_clone)]
         valref.clone().as_node()
     }
 }
