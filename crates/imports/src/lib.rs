@@ -7,5 +7,5 @@ pub mod html;
 pub mod json;
 pub mod net;
 mod std;
-pub use std::*;
 pub use core::fmt::Write;
+pub use std::*;

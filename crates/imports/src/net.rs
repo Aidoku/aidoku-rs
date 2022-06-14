@@ -1,9 +1,9 @@
 type Rid = i32;
 use super::html::Node;
-use super::std::{Rid as ValueRid, ValueRef, StringRef};
+use super::std::{Rid as ValueRid, StringRef, ValueRef};
 
-use super::alloc::vec::Vec;
 use super::alloc::string::String;
+use super::alloc::vec::Vec;
 
 #[repr(C)]
 pub enum HttpMethod {

@@ -42,7 +42,15 @@ extern "C" {
     fn read_float(ctx: Rid) -> f64;
     fn read_bool(ctx: Rid) -> bool;
     fn read_date(ctx: Rid) -> f64;
-    fn read_date_string(ctx: Rid, format: *const u8, format_length: usize, locale: *const u8, locale_length: usize, timezone: *const u8, timezone_length: usize) -> f64;
+    fn read_date_string(
+        ctx: Rid,
+        format: *const u8,
+        format_length: usize,
+        locale: *const u8,
+        locale_length: usize,
+        timezone: *const u8,
+        timezone_length: usize,
+    ) -> f64;
 
     fn object_len(arr: Rid) -> usize;
     fn object_get(arr: Rid, key: *const u8, len: usize) -> Rid;
@@ -60,8 +68,12 @@ extern "C" {
 
 pub fn print<T: AsRef<str>>(string: T) {
     let string = string.as_ref();
-    extern "C" { fn print(string: *const u8, size: usize); }
-    unsafe { print(string.as_ptr(), string.len()); }
+    extern "C" {
+        fn print(string: *const u8, size: usize);
+    }
+    unsafe {
+        print(string.as_ptr(), string.len());
+    }
 }
 
 /// Gets the current time as a Unix timestamp.
@@ -150,17 +162,22 @@ impl ValueRef {
     }
 
     /// Converts a textual representaion of a date to a Unix timestamp.
-    /// 
+    ///
     /// # Arguments
     /// * `format`: The date format, as compatible with
     /// [NSDateFormatter](https://nsdateformatter.com/).
-    /// * `locale`: The locale identifier for this date string. 
+    /// * `locale`: The locale identifier for this date string.
     /// Also available on [NSDateFormatter](https://nsdateformatter.com/).
-    /// * `timezone`: The time zone for this date, as compatible with 
+    /// * `timezone`: The time zone for this date, as compatible with
     /// [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
-    /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), 
+    /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones),
     /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
-    pub fn as_date<T: Default + AsRef<str>>(&self, format: T, locale: Option<T>, timezone: Option<T>) -> Result<f64> {
+    pub fn as_date<T: Default + AsRef<str>>(
+        &self,
+        format: T,
+        locale: Option<T>,
+        timezone: Option<T>,
+    ) -> Result<f64> {
         if self.kind() == Kind::String {
             let locale = locale.unwrap_or_default();
             let timezone = timezone.unwrap_or_default();
@@ -168,16 +185,16 @@ impl ValueRef {
             let format = format.as_ref();
             let locale_val = locale.as_ref();
             let timezone_val = timezone.as_ref();
-            let val = unsafe { 
+            let val = unsafe {
                 read_date_string(
-                    self.0, 
-                    format.as_ptr(), 
-                    format.len(), 
+                    self.0,
+                    format.as_ptr(),
+                    format.len(),
                     locale_val.as_ptr(),
-                    locale_val.len(), 
-                    timezone_val.as_ptr(), 
-                    timezone_val.len()
-                ) 
+                    locale_val.len(),
+                    timezone_val.as_ptr(),
+                    timezone_val.len(),
+                )
             };
             Ok(val)
         } else {
@@ -252,21 +269,26 @@ impl Default for ValueRef {
 // =========================
 impl StringRef {
     pub fn read(self) -> String {
-        let len = unsafe { string_len(self.0.0) };
+        let len = unsafe { string_len(self.0 .0) };
         let mut buf = Vec::with_capacity(len);
         unsafe {
-            read_string(self.0.0, buf.as_mut_ptr(), len);
+            read_string(self.0 .0, buf.as_mut_ptr(), len);
             buf.set_len(len);
         };
         String::from_utf8(buf).unwrap_or_default()
     }
 
     /// Convenience method that calls [ValueRef::as_date](aidoku_imports::std::ValueRef::as_date).
-    /// 
+    ///
     /// # Returns
     /// If, for some reason, this StringRef is not a string, returns `-1`,
     /// else returns the parsed Unix timestamp.
-    pub fn as_date<T: Default + AsRef<str>>(&self, format: T, locale: Option<T>, timezone: Option<T>) -> f64 {
+    pub fn as_date<T: Default + AsRef<str>>(
+        &self,
+        format: T,
+        locale: Option<T>,
+        timezone: Option<T>,
+    ) -> f64 {
         self.0.as_date(format, locale, timezone).unwrap_or(-1.0)
     }
 }
@@ -284,7 +306,7 @@ where
 
 impl Clone for StringRef {
     fn clone(&self) -> Self {
-        let rid = unsafe { copy(self.0.0) };
+        let rid = unsafe { copy(self.0 .0) };
         Self(ValueRef::new(rid))
     }
 }
@@ -306,7 +328,7 @@ impl ArrayRef {
     }
 
     pub fn len(&self) -> usize {
-        unsafe { array_len(self.0.0) }
+        unsafe { array_len(self.0 .0) }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -314,20 +336,20 @@ impl ArrayRef {
     }
 
     pub fn get(&self, index: usize) -> ValueRef {
-        let rid = unsafe { array_get(self.0.0, index) };
+        let rid = unsafe { array_get(self.0 .0, index) };
         ValueRef::new(rid)
     }
 
     pub fn set(&mut self, index: usize, value: ValueRef) {
-        unsafe { array_set(self.0.0, index, value.0) };
+        unsafe { array_set(self.0 .0, index, value.0) };
     }
 
     pub fn insert(&mut self, value: ValueRef) {
-        unsafe { array_append(self.0.0, value.0) };
+        unsafe { array_append(self.0 .0, value.0) };
     }
 
     pub fn remove(&mut self, index: usize) {
-        unsafe { array_remove(self.0.0, index) };
+        unsafe { array_remove(self.0 .0, index) };
     }
 }
 
@@ -359,7 +381,7 @@ impl FromIterator<ValueRef> for ArrayRef {
 
 impl Clone for ArrayRef {
     fn clone(&self) -> Self {
-        let rid = unsafe { copy(self.0.0) };
+        let rid = unsafe { copy(self.0 .0) };
         Self(ValueRef::new(rid), self.1)
     }
 }
@@ -381,7 +403,7 @@ impl ObjectRef {
     }
 
     pub fn len(&self) -> usize {
-        unsafe { object_len(self.0.0) }
+        unsafe { object_len(self.0 .0) }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -389,32 +411,32 @@ impl ObjectRef {
     }
 
     pub fn get(&self, key: &str) -> ValueRef {
-        let rid = unsafe { object_get(self.0.0, key.as_ptr(), key.len()) };
+        let rid = unsafe { object_get(self.0 .0, key.as_ptr(), key.len()) };
         ValueRef::new(rid)
     }
 
     pub fn set(&mut self, key: &str, value: ValueRef) {
-        unsafe { object_set(self.0.0, key.as_ptr(), key.len(), value.0) };
+        unsafe { object_set(self.0 .0, key.as_ptr(), key.len(), value.0) };
     }
 
     pub fn remove(&mut self, key: &str) {
-        unsafe { object_remove(self.0.0, key.as_ptr(), key.len()) };
+        unsafe { object_remove(self.0 .0, key.as_ptr(), key.len()) };
     }
 
     pub fn keys(&self) -> ArrayRef {
-        let rid = unsafe { object_keys(self.0.0) };
+        let rid = unsafe { object_keys(self.0 .0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
 
     pub fn values(&self) -> ArrayRef {
-        let rid = unsafe { object_values(self.0.0) };
+        let rid = unsafe { object_values(self.0 .0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
 }
 
 impl Clone for ObjectRef {
     fn clone(&self) -> Self {
-        let rid = unsafe { copy(self.0.0) };
+        let rid = unsafe { copy(self.0 .0) };
         Self(ValueRef::new(rid))
     }
 }

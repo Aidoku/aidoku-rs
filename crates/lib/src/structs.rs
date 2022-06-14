@@ -1,5 +1,5 @@
-use super::std::{Vec, String};
-use aidoku_imports::{Rid, ValueRef, ObjectRef};
+use super::std::{String, Vec};
+use aidoku_imports::{ObjectRef, Rid, ValueRef};
 
 #[link(wasm_import_module = "aidoku")]
 extern "C" {
@@ -54,16 +54,14 @@ extern "C" {
         text_len: usize,
     ) -> i32;
 
-    fn create_deeplink(
-        manga: i32,
-        chapter: i32,
-    ) -> i32;
+    fn create_deeplink(manga: i32, chapter: i32) -> i32;
 }
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub enum FilterType {
-    #[default] Base = 0,
+    #[default]
+    Base = 0,
     Group = 1,
     Text = 2,
     Check = 3,
@@ -111,7 +109,8 @@ impl FilterType {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub enum MangaStatus {
-    #[default] Unknown = 0,
+    #[default]
+    Unknown = 0,
     Ongoing = 1,
     Completed = 2,
     Cancelled = 3,
@@ -121,7 +120,8 @@ pub enum MangaStatus {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub enum MangaContentRating {
-    #[default] Safe = 0,
+    #[default]
+    Safe = 0,
     Suggestive = 1,
     Nsfw = 2,
 }
@@ -129,7 +129,8 @@ pub enum MangaContentRating {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub enum MangaViewer {
-    #[default] Default = 0,
+    #[default]
+    Default = 0,
     Rtl = 1,
     Ltr = 2,
     Vertical = 3,
@@ -184,15 +185,15 @@ pub struct Chapter {
 
 impl Default for Chapter {
     fn default() -> Self {
-        Chapter { 
-            id: String::new(), 
-            title: String::new(), 
-            volume: -1.0, 
-            chapter: -1.0, 
-            date_updated: -1.0, 
-            scanlator: String::new(), 
-            url: String::new(), 
-            lang: String::new() 
+        Chapter {
+            id: String::new(),
+            title: String::new(),
+            volume: -1.0,
+            chapter: -1.0,
+            date_updated: -1.0,
+            scanlator: String::new(),
+            url: String::new(),
+            lang: String::new(),
         }
     }
 }
@@ -257,7 +258,7 @@ impl MangaPageResult {
             let manga_descriptor = manga.create();
             arr.insert(ValueRef::new(manga_descriptor));
         }
-        unsafe { create_manga_result(arr.0.0, self.has_more) }
+        unsafe { create_manga_result(arr.0 .0, self.has_more) }
     }
 }
 
@@ -309,11 +310,6 @@ impl DeepLink {
             Some(chapter) => chapter.create(),
             None => -1,
         };
-        unsafe {
-            create_deeplink(
-                manga,
-                chapter,
-            )
-        }
+        unsafe { create_deeplink(manga, chapter) }
     }
 }

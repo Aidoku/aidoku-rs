@@ -15,7 +15,8 @@ pub fn initialize(_: TokenStream, input: TokenStream) -> TokenStream {
         pub unsafe extern "C" fn __wasm_initialize() {
             #func_name()
         }
-    }.into()
+    }
+    .into()
 }
 
 #[proc_macro_attribute]
@@ -59,7 +60,8 @@ pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
                 Err(_) => -1,
             }
         }
-    }.into()
+    }
+    .into()
 }
 
 #[proc_macro_attribute]

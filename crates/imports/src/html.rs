@@ -1,6 +1,6 @@
 type Rid = i32;
 
-use super::{StringRef, ArrayRef, ValueRef, destroy, copy};
+use super::{copy, destroy, ArrayRef, StringRef, ValueRef};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
     fn scraper_select(rid: i32, selector: *const u8, selector_len: usize) -> i32;
     #[link_name = "attr"]
     fn scraper_attr(rid: i32, selector: *const u8, selector_len: usize) -> i32;
-    
+
     #[link_name = "first"]
     fn scraper_first(rid: i32) -> i32;
     #[link_name = "last"]
@@ -85,14 +85,14 @@ impl Node {
     }
 
     /// Get an attribute value by its key.
-    /// To get an absolute URL from an attribute that may be a relative URL, 
+    /// To get an absolute URL from an attribute that may be a relative URL,
     /// prefix the key with `abs:`.
-    /// 
+    ///
     /// # Example
     /// ```ignore
     /// // Assumes that `el` is a Node
     /// let url = el.attr("abs:src");
-    /// ``` 
+    /// ```
     pub fn attr<T: AsRef<str>>(&self, attr: T) -> StringRef {
         let attr = attr.as_ref();
         let rid = unsafe { scraper_attr(self.0, attr.as_ptr(), attr.len()) };
@@ -112,7 +112,7 @@ impl Node {
     }
 
     /// Get the next sibling of the element
-     pub fn next(&self) -> Self {
+    pub fn next(&self) -> Self {
         let rid = unsafe { scraper_next(self.0) };
         Self(rid)
     }
@@ -136,10 +136,10 @@ impl Node {
 
     /// Get the **normalized, combined text** of this element and its children.
     /// Whitespace is normalized and trimmed.
-    /// 
-    /// For example, given HTML `<p>Hello <b>there</b> now! </p>`, 
+    ///
+    /// For example, given HTML `<p>Hello <b>there</b> now! </p>`,
     /// p.text() returns "Hello there now!"
-    /// 
+    ///
     /// Note that this method returns text that would be presented to a reader.
     /// The contents of data nodes (e.g. `<script>` tags) are not considered text.
     /// Use [html()](aidoku_imports::html::Node::html) to retrieve that content.
@@ -154,7 +154,7 @@ impl Node {
         ArrayRef(ValueRef::new(rid), 0)
     }
 
-    /// Get the node's inner HTML. 
+    /// Get the node's inner HTML.
     /// For example, on `<div><p></p></div>`, `div.html()` would return `<p></p>`.
     pub fn html(&self) -> StringRef {
         let rid = unsafe { scraper_html(self.0) };
@@ -175,7 +175,7 @@ impl Node {
         StringRef(ValueRef::new(rid))
     }
 
-    /// Get the name of the tag for this element. This will always be the 
+    /// Get the name of the tag for this element. This will always be the
     /// lowercased version. For example, `<DIV>` and `<div>` would both return
     /// `div`.
     pub fn tag_name(&self) -> StringRef {
@@ -183,7 +183,7 @@ impl Node {
         StringRef(ValueRef::new(rid))
     }
 
-    /// Get the literal value of this node's `class` attribute. For example, 
+    /// Get the literal value of this node's `class` attribute. For example,
     /// on `<div class="header gray">` this would return `header gray`.
     pub fn class_name(&self) -> StringRef {
         let rid = unsafe { scraper_class_name(self.0) };

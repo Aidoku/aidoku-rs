@@ -1,5 +1,10 @@
 #![no_std]
-#![feature(core_intrinsics, alloc_error_handler, fmt_internals, panic_info_message)]
+#![feature(
+    core_intrinsics,
+    alloc_error_handler,
+    fmt_internals,
+    panic_info_message
+)]
 
 // Setup allocator
 
@@ -12,23 +17,22 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 // Set panic handlers
 
 pub fn abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
-    extern "C" { 
+    extern "C" {
         #[link_name = "abort"]
-        fn _abort(message: *const u8, file: *const u8, line: i32, column: i32); 
+        fn _abort(message: *const u8, file: *const u8, line: i32, column: i32);
     }
     extern crate alloc;
-    use core::{alloc::Layout, ptr::copy};
     use alloc::alloc::alloc_zeroed;
+    use core::{alloc::Layout, ptr::copy};
 
     let message = message.as_ref();
     let file = file.as_ref();
 
     // Basically, AssemblyScript places 4 bytes before the string slice to denote
     // its length. This is why we need the extra 8 bytes.
-    let layout = Layout::from_size_align(
-        8 + message.len() + file.len(), 
-        core::mem::align_of::<u8>()
-    ).unwrap();
+    let layout =
+        Layout::from_size_align(8 + message.len() + file.len(), core::mem::align_of::<u8>())
+            .unwrap();
 
     unsafe {
         let message_len_ptr = alloc_zeroed(layout) as *mut i32;
@@ -42,12 +46,12 @@ pub fn abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
 
         let file_ptr = file_len_ptr.add(1) as *mut u8;
         copy::<u8>(file.as_ptr(), file_ptr, file.len());
-        
+
         _abort(
-            message_ptr, 
-            file_ptr, 
-            i32::try_from(line).unwrap_or(-1), 
-            i32::try_from(column).unwrap_or(-1)
+            message_ptr,
+            file_ptr,
+            i32::try_from(line).unwrap_or(-1),
+            i32::try_from(column).unwrap_or(-1),
         )
     }
     core::intrinsics::abort()
@@ -89,8 +93,8 @@ pub use aidoku_imports::error;
 pub mod std {
     extern crate alloc;
     pub use aidoku_imports::*;
-    pub use alloc::vec::Vec;
     pub use alloc::string::String;
+    pub use alloc::vec::Vec;
     pub fn format(args: core::fmt::Arguments) -> crate::std::String {
         let mut string = crate::std::String::with_capacity(args.estimated_capacity());
         string.write_fmt(args).expect("error formatting string");

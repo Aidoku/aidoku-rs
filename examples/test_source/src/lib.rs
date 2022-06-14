@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
-    error::Result, prelude::*, std::String, std::Vec, std::net::Request,
-    Chapter, Filter, Listing, Manga, MangaPageResult, Page, DeepLink,
+    error::Result, prelude::*, std::net::Request, std::String, std::Vec, Chapter, DeepLink, Filter,
+    Listing, Manga, MangaPageResult, Page,
 };
 
 #[get_manga_list]
