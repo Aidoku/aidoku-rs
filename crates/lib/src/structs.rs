@@ -61,9 +61,9 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum FilterType {
-    Base = 0,
+    #[default] Base = 0,
     Group = 1,
     Text = 2,
     Check = 3,
@@ -109,9 +109,9 @@ impl FilterType {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum MangaStatus {
-    Unknown = 0,
+    #[default] Unknown = 0,
     Ongoing = 1,
     Completed = 2,
     Cancelled = 3,
@@ -119,17 +119,17 @@ pub enum MangaStatus {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum MangaContentRating {
-    Safe = 0,
+    #[default] Safe = 0,
     Suggestive = 1,
     Nsfw = 2,
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum MangaViewer {
-    Default = 0,
+    #[default] Default = 0,
     Rtl = 1,
     Ltr = 2,
     Vertical = 3,
@@ -144,7 +144,7 @@ pub struct Filter {
     pub object: ObjectRef,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Manga {
     pub id: String,
     pub cover: String,
@@ -157,25 +157,6 @@ pub struct Manga {
     pub status: MangaStatus,
     pub nsfw: MangaContentRating,
     pub viewer: MangaViewer,
-}
-
-impl Default for Manga {
-    /// Creates an empty `Manga` object.
-    fn default() -> Self {
-        Manga { 
-            id: String::new(), 
-            cover: String::new(), 
-            title: String::new(), 
-            author: String::new(), 
-            artist: String::new(), 
-            description: String::new(), 
-            url: String::new(), 
-            categories: Vec::new(), 
-            status: MangaStatus::Unknown, 
-            nsfw: MangaContentRating::Safe, 
-            viewer: MangaViewer::Default, 
-        }
-    }
 }
 
 #[derive(Clone, Debug, Default)]
