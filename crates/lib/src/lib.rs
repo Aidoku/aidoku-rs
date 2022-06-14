@@ -16,13 +16,13 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 // Set panic handlers
 
-pub fn abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
+pub fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
     extern "C" {
         #[link_name = "abort"]
         fn _abort(message: *const u8, file: *const u8, line: i32, column: i32);
     }
     extern crate alloc;
-    use alloc::alloc::alloc_zeroed;
+    use alloc::alloc::{alloc_zeroed, dealloc};
     use core::{alloc::Layout, ptr::copy};
 
     let message = message.as_ref();
@@ -52,7 +52,12 @@ pub fn abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
             file_ptr,
             i32::try_from(line).unwrap_or(-1),
             i32::try_from(column).unwrap_or(-1),
-        )
+        );
+
+        dealloc(message_len_ptr as *mut u8, layout);
+        dealloc(message_ptr, layout);
+        dealloc(file_len_ptr as *mut u8, layout);
+        dealloc(file_ptr, layout);
     }
     core::intrinsics::abort()
 }
@@ -74,7 +79,7 @@ pub fn panic_handle(info: &core::panic::PanicInfo) -> ! {
         crate::std::String::new()
     };
 
-    abort(message, crate::std::String::from(file), line, col)
+    as_abort(message, crate::std::String::from(file), line, col)
 }
 
 #[cfg_attr(not(test), alloc_error_handler)]
