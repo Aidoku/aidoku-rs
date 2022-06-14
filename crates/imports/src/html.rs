@@ -1,5 +1,7 @@
 type Rid = i32;
 
+use core::fmt::Display;
+
 use super::{StringRef, ArrayRef, ValueRef, destroy};
 
 #[link(wasm_import_module = "html")]
@@ -47,16 +49,20 @@ extern "C" {
 pub struct Node(Rid);
 
 impl Node {
+    /// Parse HTML. As there is no base URI specified, absolute URL resolution requires
+    /// the HTML to have a `<base href>` tag.
     pub fn new(buf: &[u8]) -> Self {
         let rid = unsafe { scraper_parse(buf.as_ptr(), buf.len()) };
         Self(rid)
     }
 
+    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
     pub fn new_fragment(buf: &[u8]) -> Self {
         let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
         Self(rid)
     }
 
+    /// Get an instance from a [Rid](aidoku_imports::std::Rid).
     pub fn from(rid: Rid) -> Self {
         Self(rid)
     }
@@ -66,31 +72,45 @@ impl Node {
         drop(self)
     }
 
+    /// Find elements that matches the CSS selector.
     pub fn select(&self, selector: &str) -> Self {
         let rid = unsafe { scraper_select(self.0, selector.as_ptr(), selector.len()) };
         Self(rid)
     }
 
+    /// Get an attribute value by its key.
+    /// To get an absolute URL from an attribute that may be a relative URL, 
+    /// prefix the key with `abs:`.
+    /// 
+    /// # Example
+    /// ```ignore
+    /// // Assumes that `el` is a Node
+    /// let url = el.attr("abs:src");
+    /// ``` 
     pub fn attr(&self, selector: &str) -> StringRef {
         let rid = unsafe { scraper_attr(self.0, selector.as_ptr(), selector.len()) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the first sibling of this element, which can be this element
     pub fn first(&self) -> Self {
         let rid = unsafe { scraper_first(self.0) };
         Self(rid)
     }
 
+    /// Get the last sibling of this element, which can be this element
     pub fn last(&self) -> Self {
         let rid = unsafe { scraper_last(self.0) };
         Self(rid)
     }
 
+    /// Get an array of Node
     pub fn array(&self) -> ArrayRef {
         let rid = unsafe { scraper_array(self.0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
 
+    /// Get the base URI of this Node
     pub fn base_uri(&self) -> StringRef {
         let rid = unsafe { scraper_base_uri(self.0) };
         StringRef(ValueRef::new(rid))
@@ -101,42 +121,71 @@ impl Node {
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the **normalized, combined text** of this element and its children.
+    /// Whitespace is normalized and trimmed.
+    /// 
+    /// For example, given HTML `<p>Hello <b>there</b> now! </p>`, 
+    /// p.text() returns "Hello there now!"
+    /// 
+    /// Note that this method returns text that would be presented to a reader.
+    /// The contents of data nodes (e.g. `<script>` tags) are not considered text.
+    /// Use [html()](aidoku_imports::html::Node::html) to retrieve that content.
     pub fn text(&self) -> StringRef {
         let rid = unsafe { scraper_text(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the node's inner HTML. 
+    /// For example, on `<div><p></p></div>`, `div.html()` would return `<p></p>`.
     pub fn html(&self) -> StringRef {
         let rid = unsafe { scraper_html(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the node's outer HTML.
+    /// For example, on `<div><p></p></div>`, `div.outer_html()` would return
+    /// `<div><p></p></div>`.
     pub fn outer_html(&self) -> StringRef {
         let rid = unsafe { scraper_outer_html(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the `id` attribute of this element.
     pub fn id(&self) -> StringRef {
         let rid = unsafe { scraper_id(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the name of the tag for this element. This will always be the 
+    /// lowercased version. For example, `<DIV>` and `<div>` would both return
+    /// `div`.
     pub fn tag_name(&self) -> StringRef {
         let rid = unsafe { scraper_tag_name(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the literal value of this node's `class` attribute. For example, 
+    /// on `<div class="header gray">` this would return `header gray`.
     pub fn class_name(&self) -> StringRef {
         let rid = unsafe { scraper_class_name(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
+    /// Test if this element has a class. Case insensitive.
     pub fn has_class(&self, class_name: &str) -> bool {
         unsafe { scraper_has_class(self.0, class_name.as_ptr(), class_name.len()) }
     }
 
+    /// Test if this element has an attribute. Case insensitive.
     pub fn has_attr(&self, attr_name: &str) -> bool {
         unsafe { scraper_has_attr(self.0, attr_name.as_ptr(), attr_name.len()) }
+    }
+}
+
+impl Display for Node {
+    /// Get the outer HTML of this node.
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.outer_html().read())
     }
 }
 

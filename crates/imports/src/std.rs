@@ -63,6 +63,7 @@ pub fn print(string: &str) {
     unsafe { print(string.as_ptr(), string.len()); }
 }
 
+/// Gets the current time as a Unix timestamp.
 pub fn current_date() -> f64 {
     unsafe { read_date(create_date(-1.0)) }
 }
@@ -147,6 +148,17 @@ impl ValueRef {
         }
     }
 
+    /// Converts a textual representaion of a date to a Unix timestamp.
+    /// 
+    /// # Arguments
+    /// * `format`: The date format, as compatible with Apple's 
+    /// [NSDateFormatter](https://nsdateformatter.com/).
+    /// * `locale`: The Apple locale identifier for this date string. 
+    /// Also available on [NSDateFormatter](https://nsdateformatter.com/).
+    /// * `timezone`: The time zone for this date, as compatible with 
+    /// Apple's [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
+    /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), 
+    /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
     pub fn as_date(&self, format: &str, locale: Option<&str>, timezone: Option<&str>) -> Result<f64> {
         if self.kind() == Kind::String {
             let locale_val = locale.unwrap_or("");

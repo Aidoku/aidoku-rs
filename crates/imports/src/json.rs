@@ -9,7 +9,7 @@ extern "C" {
 /// Parse JSON data
 ///
 /// Usage:
-/// ```rs
+/// ```
 /// let val = parse(b"{ \"foo\": 1 }");
 /// if let Ok(obj) = val.as_object() {
 ///     if let Ok(val) =  obj.get("foo") {

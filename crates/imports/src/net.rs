@@ -116,6 +116,7 @@ impl Request {
         buffer
     }
 
+    /// Gets the data as a string.
     pub fn string<'a>(self) -> String {
         String::from_utf8(self.data()).unwrap_or_default()
     }
@@ -128,11 +129,17 @@ impl Request {
         ValueRef::new(rid)
     }
 
-    /// Get the data as a HTML scraper
+    /// Get the data as a [Node](aidoku_imports::html::Node).
     pub fn html(self) -> Node {
         self.send();
         let rid = unsafe { request_html(self.0) };
         self.close();
         Node::from(rid)
+    }
+}
+
+impl Drop for Request {
+    fn drop(&mut self) {
+        self.close()
     }
 }
