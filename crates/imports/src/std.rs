@@ -152,12 +152,12 @@ impl ValueRef {
     /// Converts a textual representaion of a date to a Unix timestamp.
     /// 
     /// # Arguments
-    /// * `format`: The date format, as compatible with Apple's 
+    /// * `format`: The date format, as compatible with
     /// [NSDateFormatter](https://nsdateformatter.com/).
-    /// * `locale`: The Apple locale identifier for this date string. 
+    /// * `locale`: The locale identifier for this date string. 
     /// Also available on [NSDateFormatter](https://nsdateformatter.com/).
     /// * `timezone`: The time zone for this date, as compatible with 
-    /// Apple's [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
+    /// [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
     /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), 
     /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
     pub fn as_date<T: Default + AsRef<str>>(&self, format: T, locale: Option<T>, timezone: Option<T>) -> Result<f64> {
@@ -259,6 +259,15 @@ impl StringRef {
             buf.set_len(len);
         };
         String::from_utf8(buf).unwrap_or_default()
+    }
+
+    /// Convenience method that calls [ValueRef::as_date](aidoku_imports::std::ValueRef::as_date).
+    /// 
+    /// # Returns
+    /// If, for some reason, this StringRef is not a string, returns `-1`,
+    /// else returns the parsed Unix timestamp.
+    pub fn as_date<T: Default + AsRef<str>>(&self, format: T, locale: Option<T>, timezone: Option<T>) -> f64 {
+        self.0.as_date(format, locale, timezone).unwrap_or(-1.0)
     }
 }
 
