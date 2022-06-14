@@ -3,6 +3,22 @@ use quote::quote;
 use syn::{parse, ItemFn};
 
 #[proc_macro_attribute]
+pub fn initialize(_: TokenStream, input: TokenStream) -> TokenStream {
+    let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
+    let func_name = &func.sig.ident;
+
+    quote! {
+        #func
+
+        #[no_mangle]
+        #[export_name = "initialize"]
+        pub unsafe extern "C" fn __wasm_initialize() {
+            #func_name()
+        }
+    }.into()
+}
+
+#[proc_macro_attribute]
 pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
     let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
     let func_name = &func.sig.ident;

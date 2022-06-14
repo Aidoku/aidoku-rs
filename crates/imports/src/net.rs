@@ -41,6 +41,21 @@ extern "C" {
     fn request_json(rd: Rid) -> ValueRid;
     #[link_name = "html"]
     fn request_html(rd: Rid) -> ValueRid;
+
+    #[link_name = "set_rate_limit"]
+    fn request_set_rate_limit(rate_limit: i32);
+    #[link_name = "set_rate_limit_period"]
+    fn request_set_rate_limit_period(seconds: i32);
+}
+
+/// Sets the number of requests allowed within a time period.
+pub fn set_rate_limit(rate_limit: i32) {
+    unsafe { request_set_rate_limit(rate_limit) }
+}
+
+/// Sets the rate limiting duration.
+pub fn set_rate_limit_period(seconds: i32) {
+    unsafe { request_set_rate_limit_period(seconds) }
 }
 
 /// A type that makes a HTTP request.
