@@ -61,7 +61,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum FilterType {
     Base = 0,
     Group = 1,
@@ -109,7 +109,7 @@ impl FilterType {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum MangaStatus {
     Unknown = 0,
     Ongoing = 1,
@@ -119,7 +119,7 @@ pub enum MangaStatus {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum MangaContentRating {
     Safe = 0,
     Suggestive = 1,
@@ -127,7 +127,7 @@ pub enum MangaContentRating {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum MangaViewer {
     Default = 0,
     Rtl = 1,
@@ -144,7 +144,7 @@ pub struct Filter {
     pub object: ObjectRef,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Manga {
     pub id: String,
     pub cover: String,
@@ -178,7 +178,7 @@ impl Default for Manga {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MangaPageResult {
     pub manga: Vec<Manga>,
     pub has_more: bool,
@@ -193,12 +193,12 @@ impl Default for MangaPageResult {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Listing {
     pub name: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Chapter {
     pub id: String,
     pub title: String,
@@ -225,7 +225,7 @@ impl Default for Chapter {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Page {
     pub index: i32,
     pub url: String,
@@ -244,7 +244,7 @@ impl Default for Page {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DeepLink {
     pub manga: Option<Manga>,
     pub chapter: Option<Chapter>,
