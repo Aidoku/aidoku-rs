@@ -1,7 +1,5 @@
 type Rid = i32;
 
-use core::fmt::Display;
-
 use super::{StringRef, ArrayRef, ValueRef, destroy};
 
 #[link(wasm_import_module = "html")]
@@ -202,13 +200,6 @@ impl Node {
     pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
         let attr_name = attr_name.as_ref();
         unsafe { scraper_has_attr(self.0, attr_name.as_ptr(), attr_name.len()) }
-    }
-}
-
-impl Display for Node {
-    /// Get the outer HTML of this node.
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{}", self.outer_html().read())
     }
 }
 

@@ -136,7 +136,7 @@ pub enum MangaViewer {
     Scroll = 4,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Filter {
     pub kind: FilterType,
     pub name: String,
