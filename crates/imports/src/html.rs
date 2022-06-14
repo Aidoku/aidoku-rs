@@ -20,8 +20,10 @@ extern "C" {
     fn scraper_first(rid: i32) -> i32;
     #[link_name = "last"]
     fn scraper_last(rid: i32) -> i32;
-    #[link_name = "array"]
-    fn scraper_array(rid: i32) -> i32;
+    #[link_name = "next"]
+    fn scraper_next(rid: i32) -> i32;
+    #[link_name = "previous"]
+    fn scraper_previous(rid: i32) -> i32;
 
     #[link_name = "base_uri"]
     fn scraper_base_uri(rid: i32) -> i32;
@@ -29,6 +31,8 @@ extern "C" {
     fn scraper_body(rid: i32) -> i32;
     #[link_name = "text"]
     fn scraper_text(rid: i32) -> i32;
+    #[link_name = "array"]
+    fn scraper_array(rid: i32) -> i32;
     #[link_name = "html"]
     fn scraper_html(rid: i32) -> i32;
     #[link_name = "outer_html"]
@@ -104,10 +108,16 @@ impl Node {
         Self(rid)
     }
 
-    /// Get an array of Node
-    pub fn array(&self) -> ArrayRef {
-        let rid = unsafe { scraper_array(self.0) };
-        ArrayRef(ValueRef::new(rid), 0)
+    /// Get the next sibling of the element
+     pub fn next(&self) -> Self {
+        let rid = unsafe { scraper_next(self.0) };
+        Self(rid)
+    }
+
+    /// Get the previous sibling of the element
+    pub fn previous(&self) -> Self {
+        let rid = unsafe { scraper_previous(self.0) };
+        Self(rid)
     }
 
     /// Get the base URI of this Node
@@ -133,6 +143,12 @@ impl Node {
     pub fn text(&self) -> StringRef {
         let rid = unsafe { scraper_text(self.0) };
         StringRef(ValueRef::new(rid))
+    }
+
+    /// Get an array of Node
+    pub fn array(&self) -> ArrayRef {
+        let rid = unsafe { scraper_array(self.0) };
+        ArrayRef(ValueRef::new(rid), 0)
     }
 
     /// Get the node's inner HTML. 
