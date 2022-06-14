@@ -89,11 +89,13 @@ impl Node {
         Self(rid)
     }
     
+    /// Get the next sibling of the element
     pub fn next(&self) -> Self {
         let rid = unsafe { scraper_next(self.0) };
         Self(rid)
     }
     
+    /// Get the previous sibling of the element
     pub fn previous(&self) -> Self {
         let rid = unsafe { scraper_previous(self.0) };
         Self(rid)
