@@ -17,7 +17,8 @@ extern "C" {
 ///     }
 /// }
 /// ```
-pub fn parse(buf: &[u8]) -> ValueRef {
+pub fn parse<T: AsRef<[u8]>>(buf: T) -> ValueRef {
+    let buf = buf.as_ref();
     let rid = unsafe { json_parse(buf.as_ptr(), buf.len()) };
     ValueRef::new(rid)
 }

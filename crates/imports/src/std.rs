@@ -25,7 +25,7 @@ extern "C" {
     pub fn copy(rid: Rid) -> Rid;
     pub fn destroy(rid: Rid);
 
-    // fn create_null() -> Rid;
+    fn create_null() -> Rid;
     fn create_array() -> Rid;
     fn create_object() -> Rid;
     fn create_string(buf: *const u8, len: usize) -> Rid;
@@ -58,7 +58,8 @@ extern "C" {
     fn array_remove(arr: Rid, idx: usize);
 }
 
-pub fn print(string: &str) {
+pub fn print<T: AsRef<str>>(string: T) {
+    let string = string.as_ref();
     extern "C" { fn print(string: *const u8, size: usize); }
     unsafe { print(string.as_ptr(), string.len()); }
 }
@@ -159,11 +160,25 @@ impl ValueRef {
     /// Apple's [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
     /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), 
     /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
-    pub fn as_date(&self, format: &str, locale: Option<&str>, timezone: Option<&str>) -> Result<f64> {
+    pub fn as_date<T: Default + AsRef<str>>(&self, format: T, locale: Option<T>, timezone: Option<T>) -> Result<f64> {
         if self.kind() == Kind::String {
-            let locale_val = locale.unwrap_or("");
-            let timezone_val = timezone.unwrap_or("");
-            let val = unsafe { read_date_string(self.0, format.as_ptr(), format.len(), locale_val.as_ptr(), locale_val.len(), timezone_val.as_ptr(), timezone_val.len()) };
+            let locale = locale.unwrap_or_default();
+            let timezone = timezone.unwrap_or_default();
+
+            let format = format.as_ref();
+            let locale_val = locale.as_ref();
+            let timezone_val = timezone.as_ref();
+            let val = unsafe { 
+                read_date_string(
+                    self.0, 
+                    format.as_ptr(), 
+                    format.len(), 
+                    locale_val.as_ptr(),
+                    locale_val.len(), 
+                    timezone_val.as_ptr(), 
+                    timezone_val.len()
+                ) 
+            };
             Ok(val)
         } else {
             Err(AidokuError::from(ValueCastError::NotBool))
@@ -225,11 +240,18 @@ impl From<bool> for ValueRef {
     }
 }
 
+impl Default for ValueRef {
+    /// Creates a null ValueRef.
+    fn default() -> Self {
+        ValueRef::new(unsafe { create_null() })
+    }
+}
+
 // =========================
 //        String Ref
 // =========================
 impl StringRef {
-    pub fn read<'a>(self) -> String {
+    pub fn read(self) -> String {
         let len = unsafe { string_len(self.0.0) };
         let mut buf = Vec::with_capacity(len);
         unsafe {
@@ -255,6 +277,13 @@ impl Clone for StringRef {
     fn clone(&self) -> Self {
         let rid = unsafe { copy(self.0.0) };
         Self(ValueRef::new(rid))
+    }
+}
+
+impl Default for StringRef {
+    /// Creates an empty StringRef.
+    fn default() -> Self {
+        StringRef::from("")
     }
 }
 
@@ -327,6 +356,7 @@ impl Clone for ArrayRef {
 }
 
 impl Default for ArrayRef {
+    /// Creates an empty ArrayRef.
     fn default() -> Self {
         Self::new()
     }
@@ -381,6 +411,7 @@ impl Clone for ObjectRef {
 }
 
 impl Default for ObjectRef {
+    /// Creates an empty ObjectRef.
     fn default() -> Self {
         Self::new()
     }

@@ -55,13 +55,15 @@ pub struct Node(Rid);
 impl Node {
     /// Parse HTML. As there is no base URI specified, absolute URL resolution requires
     /// the HTML to have a `<base href>` tag.
-    pub fn new(buf: &[u8]) -> Self {
+    pub fn new<T: AsRef<[u8]>>(buf: T) -> Self {
+        let buf = buf.as_ref();
         let rid = unsafe { scraper_parse(buf.as_ptr(), buf.len()) };
         Self(rid)
     }
 
     /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
-    pub fn new_fragment(buf: &[u8]) -> Self {
+    pub fn new_fragment<T: AsRef<[u8]>>(buf: T) -> Self {
+        let buf = buf.as_ref();
         let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
         Self(rid)
     }
@@ -78,7 +80,8 @@ impl Node {
 
     /// Find elements that matches the given CSS selector.
     /// Supported selectors can be found [here](https://github.com/scinfu/SwiftSoup#selector-overview).
-    pub fn select(&self, selector: &str) -> Self {
+    pub fn select<T: AsRef<str>>(&self, selector: T) -> Self {
+        let selector = selector.as_ref();
         let rid = unsafe { scraper_select(self.0, selector.as_ptr(), selector.len()) };
         Self(rid)
     }
@@ -92,8 +95,9 @@ impl Node {
     /// // Assumes that `el` is a Node
     /// let url = el.attr("abs:src");
     /// ``` 
-    pub fn attr(&self, selector: &str) -> StringRef {
-        let rid = unsafe { scraper_attr(self.0, selector.as_ptr(), selector.len()) };
+    pub fn attr<T: AsRef<str>>(&self, attr: T) -> StringRef {
+        let attr = attr.as_ref();
+        let rid = unsafe { scraper_attr(self.0, attr.as_ptr(), attr.len()) };
         StringRef(ValueRef::new(rid))
     }
 
@@ -189,12 +193,14 @@ impl Node {
     }
 
     /// Test if this element has a class. Case insensitive.
-    pub fn has_class(&self, class_name: &str) -> bool {
+    pub fn has_class<T: AsRef<str>>(&self, class_name: T) -> bool {
+        let class_name = class_name.as_ref();
         unsafe { scraper_has_class(self.0, class_name.as_ptr(), class_name.len()) }
     }
 
     /// Test if this element has an attribute. Case insensitive.
-    pub fn has_attr(&self, attr_name: &str) -> bool {
+    pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
+        let attr_name = attr_name.as_ref();
         unsafe { scraper_has_attr(self.0, attr_name.as_ptr(), attr_name.len()) }
     }
 }

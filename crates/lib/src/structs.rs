@@ -178,19 +178,10 @@ impl Default for Manga {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct MangaPageResult {
     pub manga: Vec<Manga>,
     pub has_more: bool,
-}
-
-impl Default for MangaPageResult {
-    fn default() -> Self {
-        MangaPageResult { 
-            manga: Vec::new(), 
-            has_more: false 
-        }
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -225,7 +216,7 @@ impl Default for Chapter {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Page {
     pub index: i32,
     pub url: String,
@@ -233,27 +224,10 @@ pub struct Page {
     pub text: String,
 }
 
-impl Default for Page {
-    fn default() -> Self {
-        Page {
-            index: 0,
-            url: String::new(),
-            base64: String::new(),
-            text: String::new(),
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct DeepLink {
     pub manga: Option<Manga>,
     pub chapter: Option<Chapter>,
-}
-
-impl Default for DeepLink {
-    fn default() -> Self {
-        DeepLink { manga: None, chapter: None }
-    }
 }
 
 impl Manga {

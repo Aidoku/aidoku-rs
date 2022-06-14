@@ -67,7 +67,8 @@ impl Request {
     /// ```rs
     /// Request::new("https://example.com", HttpMethod::Get)
     /// ```
-    pub fn new(url: &str, method: HttpMethod) -> Self {
+    pub fn new<T: AsRef<str>>(url: T, method: HttpMethod) -> Self {
+        let url = url.as_ref();
         unsafe {
             let rd = request_init(method);
             request_set_url(rd, url.as_ptr(), url.len());
@@ -76,7 +77,9 @@ impl Request {
     }
 
     /// Set a header
-    pub fn header(self, key: &str, val: &str) -> Self {
+    pub fn header<T: AsRef<str>>(self, key: T, val: T) -> Self {
+        let key = key.as_ref();
+        let val = val.as_ref();
         unsafe {
             request_set_header(self.0, key.as_ptr(), key.len(), val.as_ptr(), val.len());
         };
@@ -84,7 +87,8 @@ impl Request {
     }
 
     /// Set the body's data
-    pub fn body(self, data: &[u8]) -> Self {
+    pub fn body<T: AsRef<[u8]>>(self, data: T) -> Self {
+        let data = data.as_ref();
         unsafe { request_set_body(self.0, data.as_ptr(), data.len()) };
         self
     }
@@ -104,7 +108,7 @@ impl Request {
     }
 
     /// Get the raw data from the response
-    pub fn data<'a>(self) -> Vec<u8> {
+    pub fn data(self) -> Vec<u8> {
         self.send();
         let size = unsafe { request_get_data_size(self.0) };
         let mut buffer: Vec<u8> = Vec::with_capacity(size);
@@ -117,7 +121,7 @@ impl Request {
     }
 
     /// Gets the data as a string.
-    pub fn string<'a>(self) -> String {
+    pub fn string(self) -> String {
         String::from_utf8(self.data()).unwrap_or_default()
     }
 
