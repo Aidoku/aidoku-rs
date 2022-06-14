@@ -224,7 +224,7 @@ impl StringRef {
             read_string(self.0.0, buf.as_mut_ptr(), len);
             buf.set_len(len);
         };
-        String::from_utf8(buf).unwrap_or(String::new())
+        String::from_utf8(buf).unwrap_or_default()
     }
 }
 
@@ -257,6 +257,10 @@ impl ArrayRef {
 
     pub fn len(&self) -> usize {
         unsafe { array_len(self.0.0) }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn get(&self, index: usize) -> ValueRef {
@@ -310,6 +314,12 @@ impl Clone for ArrayRef {
     }
 }
 
+impl Default for ArrayRef {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // =========================
 //        Object Ref
 // =========================
@@ -321,6 +331,10 @@ impl ObjectRef {
 
     pub fn len(&self) -> usize {
         unsafe { object_len(self.0.0) }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn get(&self, key: &str) -> ValueRef {
@@ -351,5 +365,11 @@ impl Clone for ObjectRef {
     fn clone(&self) -> Self {
         let rid = unsafe { copy(self.0.0) };
         Self(ValueRef::new(rid))
+    }
+}
+
+impl Default for ObjectRef {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -62,6 +62,7 @@ impl Node {
     }
 
     pub fn close(&mut self) {
+        #[allow(clippy::drop_ref)]
         drop(self)
     }
 

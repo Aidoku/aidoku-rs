@@ -102,7 +102,7 @@ impl Request {
     }
 
     pub fn string<'a>(self) -> String {
-        String::from_utf8(self.data()).unwrap_or(String::new())
+        String::from_utf8(self.data()).unwrap_or_default()
     }
 
     /// Get the data as JSON
