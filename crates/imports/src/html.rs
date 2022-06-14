@@ -76,7 +76,8 @@ impl Node {
         drop(self)
     }
 
-    /// Find elements that matches the CSS selector.
+    /// Find elements that matches the given CSS selector.
+    /// Supported selectors can be found [here](https://github.com/scinfu/SwiftSoup#selector-overview).
     pub fn select(&self, selector: &str) -> Self {
         let rid = unsafe { scraper_select(self.0, selector.as_ptr(), selector.len()) };
         Self(rid)
