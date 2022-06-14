@@ -1,6 +1,6 @@
 type Rid = i32;
 
-use super::{StringRef, ArrayRef, ValueRef, destroy};
+use super::{StringRef, ArrayRef, ValueRef, destroy, copy};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
@@ -210,9 +210,8 @@ impl Drop for Node {
 }
 
 impl Clone for Node {
-    fn clone(&self) -> Node {
-        let valref = ValueRef::new(self.0);
-        #[allow(clippy::redundant_clone)]
-        valref.clone().as_node()
+    fn clone(&self) -> Self {
+        let rid: i32 = unsafe { copy(self.0) };
+        Self(rid)
     }
 }
