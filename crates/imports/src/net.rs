@@ -142,9 +142,3 @@ impl Request {
         Node::from(rid)
     }
 }
-
-impl Drop for Request {
-    fn drop(&mut self) {
-        self.close()
-    }
-}
