@@ -1,3 +1,4 @@
+//! Converts JSON to a [ValueRef](crate::std::ValueRef).
 use super::std::{Rid, ValueRef};
 
 #[link(wasm_import_module = "json")]
@@ -9,7 +10,7 @@ extern "C" {
 /// Parse JSON data
 ///
 /// Usage:
-/// ```
+/// ```ignore
 /// let val = parse(b"{ \"foo\": 1 }");
 /// if let Ok(obj) = val.as_object() {
 ///     if let Ok(val) =  obj.get("foo") {

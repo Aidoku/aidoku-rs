@@ -1,3 +1,7 @@
+//! A module for working with HTML. It provides a somewhat convenient API
+//! for extracting data, using HTML5 DOM methods and CSS selectors.
+//! 
+//! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 use super::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef};
 
 #[link(wasm_import_module = "html")]
@@ -86,18 +90,18 @@ impl Node {
         Self(rid)
     }
 
-    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. Similar to
-    /// [Node::new](crate::html::Node::new), relative URLs will not be
-    /// resolved unless there is a `<base href>` tag.
+    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
+    /// Similar to [Node::new](crate::html::Node::new), relative URLs will not
+    /// be resolved unless there is a `<base href>` tag.
     pub fn new_fragment<T: AsRef<[u8]>>(buf: T) -> Self {
         let buf = buf.as_ref();
         let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
         Self(rid)
     }
 
-    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. Similar to
-    /// [Node::new_with_uri](crate::html::Node::new_with_uri), URL resolution
-    /// occurs for any that appears before a `<base href>` tag.
+    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. 
+    /// Similar to [Node::new_with_uri](crate::html::Node::new_with_uri), URL 
+    /// resolution occurs for any that appears before a `<base href>` tag.
     pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Self {
         let buf = buf.as_ref();
         let base_uri = base_uri.as_ref();
@@ -121,7 +125,7 @@ impl Node {
         drop(self)
     }
 
-    /// Find elements that matches the given CSS selector.
+    /// Find elements that matches the given CSS (or JQuery) selector.
     /// Supported selectors can be found [here](https://github.com/scinfu/SwiftSoup#selector-overview).
     pub fn select<T: AsRef<str>>(&self, selector: T) -> Self {
         let selector = selector.as_ref();
@@ -156,10 +160,8 @@ impl Node {
         Self(rid)
     }
 
-    /// Get the next sibling of the element.
-    ///
-    /// # Returns
-    /// Returns None if there is no next sibling, else Some(Node).
+    /// Get the next sibling of the element, returning `None` if there isn't
+    /// one.
     pub fn next(&self) -> Option<Node> {
         let rid = unsafe { scraper_next(self.0) };
         match unsafe { value_kind(rid) } {
@@ -168,10 +170,8 @@ impl Node {
         }
     }
 
-    /// Get the previous sibling of the element.
-    ///
-    /// # Returns
-    /// Returns None if there is no next sibling, else Some(Node).
+    /// Get the previous sibling of the element, returning `None` if there isn't
+    /// one.
     pub fn previous(&self) -> Option<Node> {
         let rid = unsafe { scraper_previous(self.0) };
         match unsafe { value_kind(rid) } {
@@ -186,6 +186,7 @@ impl Node {
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the document's `body` element.
     pub fn body(&self) -> StringRef {
         let rid = unsafe { scraper_body(self.0) };
         StringRef(ValueRef::new(rid))
@@ -223,13 +224,16 @@ impl Node {
         StringRef(ValueRef::new(rid))
     }
 
-    /// Get an array of Node
+    /// Get an array of Node. This is most commonly used with
+    /// [Node::select](crate::html::Node::select) to iterate through elements
+    /// that match a selector.
     pub fn array(&self) -> ArrayRef {
         let rid = unsafe { scraper_array(self.0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
 
     /// Get the node's inner HTML.
+    /// 
     /// For example, on `<div><p></p></div>`, `div.html()` would return `<p></p>`.
     pub fn html(&self) -> StringRef {
         let rid = unsafe { scraper_html(self.0) };
@@ -237,6 +241,7 @@ impl Node {
     }
 
     /// Get the node's outer HTML.
+    /// 
     /// For example, on `<div><p></p></div>`, `div.outer_html()` would return
     /// `<div><p></p></div>`.
     pub fn outer_html(&self) -> StringRef {

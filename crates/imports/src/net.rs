@@ -1,3 +1,4 @@
+//! Create and send HTTP requests.
 type Rid = i32;
 
 use super::html::Node;

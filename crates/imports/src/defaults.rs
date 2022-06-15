@@ -1,3 +1,4 @@
+//! Interface for interacting with user preferences.
 use super::std::{Rid, ValueRef};
 
 #[link(wasm_import_module = "defaults")]
@@ -8,12 +9,14 @@ extern "C" {
     fn _defaults_set(key: *const u8, len: usize, value: Rid);
 }
 
+/// Returns the ValueRef associated with the specified key.
 pub fn defaults_get<T: AsRef<str>>(key: T) -> ValueRef {
     let key = key.as_ref();
     let rid = unsafe { _defaults_get(key.as_ptr(), key.len()) };
     ValueRef::new(rid)
 }
 
+/// Sets the value of the specified key.
 pub fn defaults_set<T: AsRef<str>>(key: T, value: ValueRef) {
     let key = key.as_ref();
     unsafe { _defaults_set(key.as_ptr(), key.len(), value.0) };
