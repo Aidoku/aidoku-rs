@@ -19,7 +19,7 @@ pub enum Kind {
     Object,
     Date,
     Node,
-    Unknown
+    Unknown,
 }
 
 #[link(wasm_import_module = "std")]
@@ -280,7 +280,7 @@ impl StringRef {
         String::from_utf8(buf).unwrap_or_default()
     }
 
-    /// Convenience method that calls [ValueRef::as_date](aidoku_imports::std::ValueRef::as_date).
+    /// Convenience method that calls [ValueRef::as_date](crate::std::ValueRef::as_date).
     ///
     /// # Returns
     /// If, for some reason, this StringRef is not a string, returns `-1`,

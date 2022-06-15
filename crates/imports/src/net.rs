@@ -1,4 +1,5 @@
 type Rid = i32;
+
 use super::html::Node;
 use super::std::{Rid as ValueRid, StringRef, ValueRef};
 
@@ -133,7 +134,7 @@ impl Request {
         ValueRef::new(rid)
     }
 
-    /// Get the data as a [Node](aidoku_imports::html::Node).
+    /// Get the data as a [Node](crate::html::Node).
     pub fn html(self) -> Node {
         self.send();
         let rid = unsafe { request_html(self.0) };

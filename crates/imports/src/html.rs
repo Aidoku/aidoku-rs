@@ -1,17 +1,25 @@
-type Rid = i32;
-
-use super::{copy, destroy, ArrayRef, StringRef, ValueRef, value_kind};
+use super::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
     #[link_name = "parse"]
     fn scraper_parse(string: *const u8, len: usize) -> i32;
     #[link_name = "parse_with_uri"]
-    fn scraper_parse_with_uri(string: *const u8, len: usize, base_uri: *const u8, base_uri_len: usize) -> i32;
+    fn scraper_parse_with_uri(
+        string: *const u8,
+        len: usize,
+        base_uri: *const u8,
+        base_uri_len: usize,
+    ) -> i32;
     #[link_name = "parse_fragment"]
     fn scraper_parse_fragment(string: *const u8, len: usize) -> i32;
     #[link_name = "parse_fragment_with_uri"]
-    fn scraper_parse_fragment_with_uri(string: *const u8, len: usize, base_uri: *const u8, base_uri_len: usize) -> i32;
+    fn scraper_parse_fragment_with_uri(
+        string: *const u8,
+        len: usize,
+        base_uri: *const u8,
+        base_uri_len: usize,
+    ) -> i32;
 
     #[link_name = "select"]
     fn scraper_select(rid: i32, selector: *const u8, selector_len: usize) -> i32;
@@ -33,6 +41,10 @@ extern "C" {
     fn scraper_body(rid: i32) -> i32;
     #[link_name = "text"]
     fn scraper_text(rid: i32) -> i32;
+    #[link_name = "own_text"]
+    fn scraper_own_text(rid: i32) -> i32;
+    #[link_name = "data"]
+    fn scraper_data(rid: i32) -> i32;
     #[link_name = "array"]
     fn scraper_array(rid: i32) -> i32;
     #[link_name = "html"]
@@ -55,7 +67,7 @@ extern "C" {
 pub struct Node(Rid);
 
 impl Node {
-    /// Parse HTML into a Node. As there is no base URI specified, absolute URL 
+    /// Parse HTML into a Node. As there is no base URI specified, absolute URL
     /// resolution requires the HTML to have a `<base href>` tag.
     pub fn new<T: AsRef<[u8]>>(buf: T) -> Self {
         let buf = buf.as_ref();
@@ -63,24 +75,19 @@ impl Node {
         Self(rid)
     }
 
-    /// Parse HTML into a Node. The given `base_uri` will be used for any URLs that 
+    /// Parse HTML into a Node. The given `base_uri` will be used for any URLs that
     /// occurs before a `<base href>` tag is defined.
     pub fn new_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Self {
         let buf = buf.as_ref();
         let base_uri = base_uri.as_ref();
-        let rid = unsafe { 
-            scraper_parse_with_uri(
-                buf.as_ptr(),
-                buf.len(),
-                base_uri.as_ptr(),
-                base_uri.len(),
-            ) 
+        let rid = unsafe {
+            scraper_parse_with_uri(buf.as_ptr(), buf.len(), base_uri.as_ptr(), base_uri.len())
         };
         Self(rid)
     }
 
-    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. Similar to 
-    /// [Node::new](aidoku_imports::std::html::Node::new), relative URLs will not be
+    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. Similar to
+    /// [Node::new](crate::html::Node::new), relative URLs will not be
     /// resolved unless there is a `<base href>` tag.
     pub fn new_fragment<T: AsRef<[u8]>>(buf: T) -> Self {
         let buf = buf.as_ref();
@@ -89,23 +96,23 @@ impl Node {
     }
 
     /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. Similar to
-    /// [Node::new_with_uri](aidoku_imports::std::html::Node::new_with_uri), URL resolution
+    /// [Node::new_with_uri](crate::html::Node::new_with_uri), URL resolution
     /// occurs for any that appears before a `<base href>` tag.
     pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Self {
         let buf = buf.as_ref();
         let base_uri = base_uri.as_ref();
-        let rid = unsafe { 
+        let rid = unsafe {
             scraper_parse_fragment_with_uri(
                 buf.as_ptr(),
                 buf.len(),
                 base_uri.as_ptr(),
                 base_uri.len(),
-            ) 
+            )
         };
         Self(rid)
     }
 
-    /// Get an instance from a [Rid](aidoku_imports::std::Rid).
+    /// Get an instance from a [Rid](crate::Rid).
     pub fn from(rid: Rid) -> Self {
         Self(rid)
     }
@@ -150,26 +157,26 @@ impl Node {
     }
 
     /// Get the next sibling of the element.
-    /// 
+    ///
     /// # Returns
     /// Returns None if there is no next sibling, else Some(Node).
     pub fn next(&self) -> Option<Node> {
         let rid = unsafe { scraper_next(self.0) };
         match unsafe { value_kind(rid) } {
             crate::Kind::Node => Some(Node(rid)),
-            _ => None
+            _ => None,
         }
     }
 
     /// Get the previous sibling of the element.
-    /// 
+    ///
     /// # Returns
     /// Returns None if there is no next sibling, else Some(Node).
     pub fn previous(&self) -> Option<Node> {
         let rid = unsafe { scraper_previous(self.0) };
         match unsafe { value_kind(rid) } {
             crate::Kind::Node => Some(Node(rid)),
-            _ => None
+            _ => None,
         }
     }
 
@@ -192,9 +199,27 @@ impl Node {
     ///
     /// Note that this method returns text that would be presented to a reader.
     /// The contents of data nodes (e.g. `<script>` tags) are not considered text.
-    /// Use [html()](aidoku_imports::html::Node::html) to retrieve that content.
+    /// Use [Node::html](crate::html::Node::html) or [Node::data](crate::html::Node::data) 
+    /// to retrieve that content.
     pub fn text(&self) -> StringRef {
         let rid = unsafe { scraper_text(self.0) };
+        StringRef(ValueRef::new(rid))
+    }
+
+    /// Gets the (normalized) text owned by this element only; does not get the
+    /// combined text of all children.
+    pub fn own_text(&self) -> StringRef {
+        let rid = unsafe { scraper_own_text(self.0) };
+        StringRef(ValueRef::new(rid))
+    }
+
+    /// Get the combined data of this element. Data is e.g. the inside of a `<script>` tag.
+    ///
+    /// Note that data is NOT the text of the element. Use [Node::text](crate::html::Node::text)
+    /// to get the text that would be visible to a user, and [Node::data](crate::html::Node::data)
+    /// for the contents of scripts, comments, CSS styles, etc.
+    pub fn data(&self) -> StringRef {
+        let rid = unsafe { scraper_data(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
