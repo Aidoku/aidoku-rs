@@ -18,6 +18,8 @@ pub enum Kind {
     Array,
     Object,
     Date,
+    Node,
+    Unknown
 }
 
 #[link(wasm_import_module = "std")]
@@ -35,7 +37,7 @@ extern "C" {
     fn create_date(value: f64) -> Rid;
 
     #[link_name = "typeof"]
-    fn value_kind(ctx: Rid) -> Kind;
+    pub fn value_kind(ctx: Rid) -> Kind;
     fn string_len(ctx: Rid) -> usize;
     fn read_string(ctx: Rid, buf: *mut u8, len: usize);
     fn read_int(ctx: Rid) -> i64;
