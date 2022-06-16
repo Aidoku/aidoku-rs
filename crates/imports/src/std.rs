@@ -346,12 +346,6 @@ impl Default for StringRef {
     }
 }
 
-impl Into<String> for StringRef {
-    fn into(self) -> String {
-        self.read()
-    }
-}
-
 // =========================
 //        Array Ref
 // =========================
