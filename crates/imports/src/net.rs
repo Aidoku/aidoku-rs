@@ -89,11 +89,11 @@ impl Request {
         }
     }
 
-    convenience_http_methods!{ get, HttpMethod::Get, "Start a new GET request with the given URL." }
-    convenience_http_methods!{ post, HttpMethod::Post, "Start a new POST request with the given URL." }
-    convenience_http_methods!{ put, HttpMethod::Put, "Start a new PUT request with the given URL." }
-    convenience_http_methods!{ head, HttpMethod::Head, "Start a new HEAD request with the given URL." }
-    convenience_http_methods!{ delete, HttpMethod::Delete, "Start a new DELETE request with the given URL." }
+    convenience_http_methods! { get, HttpMethod::Get, "Start a new GET request with the given URL." }
+    convenience_http_methods! { post, HttpMethod::Post, "Start a new POST request with the given URL." }
+    convenience_http_methods! { put, HttpMethod::Put, "Start a new PUT request with the given URL." }
+    convenience_http_methods! { head, HttpMethod::Head, "Start a new HEAD request with the given URL." }
+    convenience_http_methods! { delete, HttpMethod::Delete, "Start a new DELETE request with the given URL." }
 
     /// Set a header.
     pub fn header<T: AsRef<str>>(self, key: T, val: T) -> Self {

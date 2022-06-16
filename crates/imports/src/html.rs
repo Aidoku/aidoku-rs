@@ -1,6 +1,6 @@
 //! A module for working with HTML. It provides a somewhat convenient API
 //! for extracting data, using HTML5 DOM methods and CSS selectors.
-//! 
+//!
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 use super::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef};
 
@@ -99,8 +99,8 @@ impl Node {
         Self(rid)
     }
 
-    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML. 
-    /// Similar to [Node::new_with_uri](crate::html::Node::new_with_uri), URL 
+    /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
+    /// Similar to [Node::new_with_uri](crate::html::Node::new_with_uri), URL
     /// resolution occurs for any that appears before a `<base href>` tag.
     pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Self {
         let buf = buf.as_ref();
@@ -200,7 +200,7 @@ impl Node {
     ///
     /// Note that this method returns text that would be presented to a reader.
     /// The contents of data nodes (e.g. `<script>` tags) are not considered text.
-    /// Use [Node::html](crate::html::Node::html) or [Node::data](crate::html::Node::data) 
+    /// Use [Node::html](crate::html::Node::html) or [Node::data](crate::html::Node::data)
     /// to retrieve that content.
     pub fn text(&self) -> StringRef {
         let rid = unsafe { scraper_text(self.0) };
@@ -209,6 +209,12 @@ impl Node {
 
     /// Gets the (normalized) text owned by this element only; does not get the
     /// combined text of all children.
+    ///
+    /// Node::own_text only operates on a singular element, so calling it after
+    /// [Node::select](crate::html::Node::select) will not work. You need to get
+    /// a specific element first, through [Node::array](crate::html::Node::array)
+    /// and [ArrayRef::get](crate::std::ArrayRef::get), [Node::first](crate::html::Node::first),
+    /// or [Node::last](crate::html::Node::last).
     pub fn own_text(&self) -> StringRef {
         let rid = unsafe { scraper_own_text(self.0) };
         StringRef(ValueRef::new(rid))
@@ -233,7 +239,7 @@ impl Node {
     }
 
     /// Get the node's inner HTML.
-    /// 
+    ///
     /// For example, on `<div><p></p></div>`, `div.html()` would return `<p></p>`.
     pub fn html(&self) -> StringRef {
         let rid = unsafe { scraper_html(self.0) };
@@ -241,7 +247,7 @@ impl Node {
     }
 
     /// Get the node's outer HTML.
-    /// 
+    ///
     /// For example, on `<div><p></p></div>`, `div.outer_html()` would return
     /// `<div><p></p></div>`.
     pub fn outer_html(&self) -> StringRef {
