@@ -8,6 +8,7 @@ use super::alloc::string::String;
 use super::alloc::vec::Vec;
 
 #[repr(C)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum HttpMethod {
     Get,
     Post,
@@ -60,6 +61,16 @@ pub fn set_rate_limit_period(seconds: i32) {
     unsafe { request_set_rate_limit_period(seconds) }
 }
 
+macro_rules! convenience_http_methods {
+    ($name:ident, $t:expr, $doc:tt) => {
+        #[inline]
+        #[doc = $doc]
+        pub fn $name<T: AsRef<str>>(url: T) -> Self {
+            Self::new(url, $t)
+        }
+    };
+}
+
 /// A type that makes a HTTP request.
 pub struct Request(pub Rid);
 impl Request {
@@ -78,7 +89,13 @@ impl Request {
         }
     }
 
-    /// Set a header
+    convenience_http_methods!{ get, HttpMethod::Get, "Start a new GET request with the given URL." }
+    convenience_http_methods!{ post, HttpMethod::Post, "Start a new POST request with the given URL." }
+    convenience_http_methods!{ put, HttpMethod::Put, "Start a new PUT request with the given URL." }
+    convenience_http_methods!{ head, HttpMethod::Head, "Start a new HEAD request with the given URL." }
+    convenience_http_methods!{ delete, HttpMethod::Delete, "Start a new DELETE request with the given URL." }
+
+    /// Set a header.
     pub fn header<T: AsRef<str>>(self, key: T, val: T) -> Self {
         let key = key.as_ref();
         let val = val.as_ref();
@@ -88,7 +105,7 @@ impl Request {
         self
     }
 
-    /// Set the body's data
+    /// Set the body's data.
     pub fn body<T: AsRef<[u8]>>(self, data: T) -> Self {
         let data = data.as_ref();
         unsafe { request_set_body(self.0, data.as_ptr(), data.len()) };
