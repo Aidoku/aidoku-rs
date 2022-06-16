@@ -1,3 +1,4 @@
+#![doc = include_str!("../../../README.md")]
 #![no_std]
 #![feature(
     core_intrinsics,
@@ -16,7 +17,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 // Set panic handlers
 
-pub fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
+fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
     extern "C" {
         #[link_name = "abort"]
         fn _abort(message: *const u8, file: *const u8, line: i32, column: i32);
@@ -93,8 +94,11 @@ mod structs;
 
 pub use structs::*;
 
+/// Error module for Aidoku operations.
 pub use aidoku_imports::error;
 
+/// The Aidoku standard module, which includes all functions exported from
+/// Aidoku as well as a few common types.
 pub mod std {
     extern crate alloc;
     pub use aidoku_imports::*;
@@ -107,6 +111,9 @@ pub mod std {
     }
 }
 
+/// The Aidoku prelude, which includes [format!](aidoku_macros::format), 
+/// [println!](aidoku_macros::println), as well as procedural macros which
+/// are required for interop with the app.
 pub mod prelude {
     pub use aidoku_macros::*;
     pub use aidoku_proc_macros::*;
