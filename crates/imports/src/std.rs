@@ -8,7 +8,7 @@ use super::html::Node;
 use super::error::{AidokuError, Result, ValueCastError};
 
 #[repr(C)]
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Kind {
     Null,
     Int,
@@ -83,32 +83,39 @@ pub fn current_date() -> f64 {
     unsafe { read_date(create_date(-1.0)) }
 }
 
-pub struct ValueRef(pub Rid, pub bool);
-
-pub struct ArrayRef(pub ValueRef, pub usize);
-pub struct ObjectRef(pub ValueRef);
-pub struct StringRef(pub ValueRef);
-
 // ==========================
 //         Value Ref
 // ==========================
+/// A type which can represent value of any kind. It is used when exchanging
+/// information with the Aidoku app.
+pub struct ValueRef(pub Rid, pub bool);
+
 impl ValueRef {
+    /// Create a new ValueRef which points to a descriptor.
+    #[inline]
     pub fn new(rid: Rid) -> Self {
         ValueRef(rid, true)
     }
 
+    /// Get the type of the ValueRef.
+    #[inline]
     pub fn kind(&self) -> Kind {
         unsafe { value_kind(self.0) }
     }
 
+    /// Check if the ValueRef is null.
+    #[inline]
     pub fn is_none(&self) -> bool {
         self.kind() == Kind::Null
     }
 
+    /// Check if the ValueRef is not null.
+    #[inline]
     pub fn is_some(&self) -> bool {
         !self.is_none()
     }
 
+    /// Cast the ValueRef to a StringRef.
     pub fn as_string(self) -> Result<StringRef> {
         if self.kind() == Kind::String {
             Ok(StringRef(self))
@@ -117,6 +124,7 @@ impl ValueRef {
         }
     }
 
+    /// Cast the ValueRef to an ObjectRef.
     pub fn as_object(self) -> Result<ObjectRef> {
         if self.kind() == Kind::Object {
             Ok(ObjectRef(self))
@@ -125,6 +133,7 @@ impl ValueRef {
         }
     }
 
+    /// Cast the ValueRef to an ArrayRef.
     pub fn as_array(self) -> Result<ArrayRef> {
         if self.kind() == Kind::Array {
             Ok(ArrayRef(self, 0))
@@ -133,6 +142,7 @@ impl ValueRef {
         }
     }
 
+    /// Cast the ValueRef to an i64.
     pub fn as_int(&self) -> Result<i64> {
         let kind = self.kind();
         if kind == Kind::Int || kind == Kind::Float || kind == Kind::Bool || kind == Kind::String {
@@ -143,6 +153,7 @@ impl ValueRef {
         }
     }
 
+    /// Cast the ValueRef to an f64.
     pub fn as_float(&self) -> Result<f64> {
         let kind = self.kind();
         if kind == Kind::Float || kind == Kind::Int || kind == Kind::String {
@@ -153,6 +164,7 @@ impl ValueRef {
         }
     }
 
+    /// Cast the ValueRef to a boolean.
     pub fn as_bool(&self) -> Result<bool> {
         let kind = self.kind();
         if kind == Kind::Bool || kind == Kind::Int {
@@ -174,12 +186,16 @@ impl ValueRef {
     /// [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
     /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones),
     /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
-    pub fn as_date<T: Default + AsRef<str>>(
+    pub fn as_date<A, B>(
         &self,
-        format: T,
-        locale: Option<T>,
-        timezone: Option<T>,
-    ) -> Result<f64> {
+        format: A,
+        locale: Option<B>,
+        timezone: Option<B>,
+    ) -> Result<f64> 
+    where
+        A: AsRef<str>,
+        B: Default + AsRef<str>,
+    {
         if self.kind() == Kind::String {
             let locale = locale.unwrap_or_default();
             let timezone = timezone.unwrap_or_default();
@@ -204,6 +220,7 @@ impl ValueRef {
         }
     }
 
+    /// Cast the ValueRef to a [Node](crate::html::Node).
     pub fn as_node(&self) -> Node {
         Node::from(self.0)
     }
@@ -269,7 +286,11 @@ impl Default for ValueRef {
 // =========================
 //        String Ref
 // =========================
+/// A type which represents a string.
+pub struct StringRef(pub ValueRef);
+
 impl StringRef {
+    /// Convert the StringRef into a String, consuming it in the process.
     pub fn read(self) -> String {
         let len = unsafe { string_len(self.0 .0) };
         let mut buf = Vec::with_capacity(len);
@@ -285,12 +306,17 @@ impl StringRef {
     /// # Returns
     /// If, for some reason, this StringRef is not a string, returns `-1`,
     /// else returns the parsed Unix timestamp.
-    pub fn as_date<T: Default + AsRef<str>>(
+    #[inline]
+    pub fn as_date<A, B>(
         &self,
-        format: T,
-        locale: Option<T>,
-        timezone: Option<T>,
-    ) -> f64 {
+        format: A,
+        locale: Option<B>,
+        timezone: Option<B>,
+    ) -> f64 
+    where
+        A: AsRef<str>,
+        B: Default + AsRef<str>,
+    {
         self.0.as_date(format, locale, timezone).unwrap_or(-1.0)
     }
 }
@@ -320,36 +346,57 @@ impl Default for StringRef {
     }
 }
 
+impl Into<String> for StringRef {
+    fn into(self) -> String {
+        self.read()
+    }
+}
+
 // =========================
 //        Array Ref
 // =========================
+/// A type which represents an array.
+pub struct ArrayRef(pub ValueRef, pub usize);
+
 impl ArrayRef {
+    /// Create a new, empty ArrayRef.
     pub fn new() -> Self {
         let rid = unsafe { create_array() };
         Self(ValueRef::new(rid), 0)
     }
 
+    /// Get the length of the array.
+    #[inline]
     pub fn len(&self) -> usize {
         unsafe { array_len(self.0 .0) }
     }
 
+    /// Check if the array is empty.
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Get a ValueRef at the specified index.
     pub fn get(&self, index: usize) -> ValueRef {
         let rid = unsafe { array_get(self.0 .0, index) };
         ValueRef::new(rid)
     }
 
+    /// Sets a ValueRef at the specified index.
+    #[inline]
     pub fn set(&mut self, index: usize, value: ValueRef) {
         unsafe { array_set(self.0 .0, index, value.0) };
     }
 
+    /// Insert a value at the end of the array.
+    #[inline]
     pub fn insert(&mut self, value: ValueRef) {
         unsafe { array_append(self.0 .0, value.0) };
     }
 
+    /// Removes the value at the specified index.
+    #[inline]
     pub fn remove(&mut self, index: usize) {
         unsafe { array_remove(self.0 .0, index) };
     }
@@ -398,38 +445,53 @@ impl Default for ArrayRef {
 // =========================
 //        Object Ref
 // =========================
+/// A type that represents a string-keyed and value object.
+pub struct ObjectRef(pub ValueRef);
+
 impl ObjectRef {
+    /// Create a new, empty object.
     pub fn new() -> Self {
         let rid = unsafe { create_object() };
         Self(ValueRef::new(rid))
     }
 
+    /// Get the number of key-value pairs in the object.
+    #[inline]
     pub fn len(&self) -> usize {
         unsafe { object_len(self.0 .0) }
     }
 
+    /// Checks if the object is empty.
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Gets the value with the specified key.
     pub fn get(&self, key: &str) -> ValueRef {
         let rid = unsafe { object_get(self.0 .0, key.as_ptr(), key.len()) };
         ValueRef::new(rid)
     }
 
+    /// Sets a value with the specified key.
+    #[inline]
     pub fn set(&mut self, key: &str, value: ValueRef) {
         unsafe { object_set(self.0 .0, key.as_ptr(), key.len(), value.0) };
     }
 
+    /// Remove the value associated with the specified key.
+    #[inline]
     pub fn remove(&mut self, key: &str) {
         unsafe { object_remove(self.0 .0, key.as_ptr(), key.len()) };
     }
 
+    /// Get all keys of the object as an array.
     pub fn keys(&self) -> ArrayRef {
         let rid = unsafe { object_keys(self.0 .0) };
         ArrayRef(ValueRef::new(rid), 0)
     }
 
+    /// Get all values of the object as an array.
     pub fn values(&self) -> ArrayRef {
         let rid = unsafe { object_values(self.0 .0) };
         ArrayRef(ValueRef::new(rid), 0)

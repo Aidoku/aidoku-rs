@@ -112,10 +112,12 @@ impl Request {
         self
     }
 
+    #[inline]
     fn send(&self) {
         unsafe { request_send(self.0) }
     }
 
+    #[inline]
     fn close(&self) {
         unsafe { request_close(self.0) }
     }
@@ -140,6 +142,7 @@ impl Request {
     }
 
     /// Gets the data as a string.
+    #[inline]
     pub fn string(self) -> String {
         String::from_utf8(self.data()).unwrap_or_default()
     }

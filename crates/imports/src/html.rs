@@ -2,6 +2,8 @@
 //! for extracting data, using HTML5 DOM methods and CSS selectors.
 //!
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
+use core::fmt::Display;
+
 use super::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef};
 
 #[link(wasm_import_module = "html")]
@@ -68,6 +70,8 @@ extern "C" {
     fn scraper_has_attr(rid: i32, attr_name: *const u8, attr_length: usize) -> bool;
 }
 
+/// Type which represents a HTML node, which can be a group of elements,
+/// an element, or the entire HTML document.
 pub struct Node(Rid);
 
 impl Node {
@@ -117,10 +121,12 @@ impl Node {
     }
 
     /// Get an instance from a [Rid](crate::Rid).
+    #[inline]
     pub fn from(rid: Rid) -> Self {
         Self(rid)
     }
 
+    #[inline]
     pub fn close(self) {
         drop(self)
     }
@@ -286,6 +292,13 @@ impl Node {
     pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
         let attr_name = attr_name.as_ref();
         unsafe { scraper_has_attr(self.0, attr_name.as_ptr(), attr_name.len()) }
+    }
+}
+
+impl Display for Node {
+    /// Returns the outer HTML of the node.
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.outer_html().read())
     }
 }
 

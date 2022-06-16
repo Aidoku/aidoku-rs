@@ -263,6 +263,7 @@ impl MangaPageResult {
 }
 
 impl Chapter {
+    #[inline]
     pub fn create(self) -> i32 {
         unsafe {
             create_chapter(
@@ -285,6 +286,7 @@ impl Chapter {
 }
 
 impl Page {
+    #[inline]
     pub fn create(self) -> i32 {
         unsafe {
             create_page(
