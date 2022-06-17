@@ -156,11 +156,16 @@ pub fn get_page_list(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_page_list"]
         pub unsafe extern "C" fn __wasm_get_page_list(chapter_rid: i32) -> i32 {
-            let id = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid)).get("id").as_string() {
+            let obj = aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid));
+            let id = match obj.get("id").as_string() {
                 Ok(id) => id.read(),
                 Err(_) => return -1,
             };
-            let resp: Result<Vec<Page>> = #func_name(id);
+            let manga_id = match obj.get("mangaId").as_string() {
+                Ok(id) => id.read(),
+                Err(_) => return -1,
+            };
+            let resp: Result<Vec<Page>> = #func_name(manga_id, id);
             match resp {
                 Ok(resp) => {
                     let mut arr = aidoku::std::ArrayRef::new();
