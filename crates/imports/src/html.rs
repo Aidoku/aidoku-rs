@@ -225,7 +225,7 @@ impl Node {
     }
 
     /// Set the element's inner HTML, clearning the existing HTML.
-    pub fn set_html<T: AsRef<str>>(&self, html: T) -> Result<(), AidokuError> {
+    pub fn set_html<T: AsRef<str>>(&mut self, html: T) -> Result<(), AidokuError> {
         let html = html.as_ref();
         match unsafe { scraper_set_html(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
@@ -234,7 +234,7 @@ impl Node {
     }
 
     /// Set the element's text content, clearing any existing content.
-    pub fn set_text<T: AsRef<str>>(&self, text: T) -> Result<(), AidokuError> {
+    pub fn set_text<T: AsRef<str>>(&mut self, text: T) -> Result<(), AidokuError> {
         let text = text.as_ref();
         match unsafe { scraper_set_text(self.0, text.as_ptr(), text.len()) } {
             0 => Ok(()),
@@ -244,7 +244,7 @@ impl Node {
 
     /// Add inner HTML into this element. The given HTML will be parsed, and
     /// each node prepended to the start of the element's children.
-    pub fn prepend<T: AsRef<str>>(&self, html: T) -> Result<(), AidokuError> {
+    pub fn prepend<T: AsRef<str>>(&mut self, html: T) -> Result<(), AidokuError> {
         let html = html.as_ref();
         match unsafe { scraper_prepend(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
@@ -254,7 +254,7 @@ impl Node {
 
     /// Add inner HTML into this element. The given HTML will be parsed, and
     /// each node appended to the end of the element's children.
-    pub fn append<T: AsRef<str>>(&self, html: T) -> Result<(), AidokuError> {
+    pub fn append<T: AsRef<str>>(&mut self, html: T) -> Result<(), AidokuError> {
         let html = html.as_ref();
         match unsafe { scraper_append(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
