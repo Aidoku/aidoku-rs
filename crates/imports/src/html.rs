@@ -4,6 +4,8 @@
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 use core::fmt::Display;
 
+use crate::error::{AidokuError, AidokuErrorKind};
+
 use super::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef};
 
 #[link(wasm_import_module = "html")]
@@ -31,6 +33,15 @@ extern "C" {
     fn scraper_select(rid: i32, selector: *const u8, selector_len: usize) -> i32;
     #[link_name = "attr"]
     fn scraper_attr(rid: i32, selector: *const u8, selector_len: usize) -> i32;
+
+    #[link_name = "set_text"]
+    fn scraper_set_text(rid: i32, text: *const u8, text_len: usize) -> i32;
+    #[link_name = "set_html"]
+    fn scraper_set_html(rid: i32, html: *const u8, html_len: usize) -> i32;
+    #[link_name = "prepend"]
+    fn scraper_prepend(rid: i32, html: *const u8, html_len: usize) -> i32;
+    #[link_name = "append"]
+    fn scraper_append(rid: i32, html: *const u8, html_len: usize) -> i32;
 
     #[link_name = "first"]
     fn scraper_first(rid: i32) -> i32;
@@ -211,6 +222,44 @@ impl Node {
         let attr = attr.as_ref();
         let rid = unsafe { scraper_attr(self.0, attr.as_ptr(), attr.len()) };
         StringRef(ValueRef::new(rid))
+    }
+
+    /// Set the element's inner HTML, clearning the existing HTML.
+    pub fn set_html<T: AsRef<str>>(&self, html: T) -> Result<(), AidokuError> {
+        let html = html.as_ref();
+        match unsafe { scraper_set_html(self.0, html.as_ptr(), html.len()) } {
+            0 => Ok(()),
+            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+        }
+    }
+
+    /// Set the element's text content, clearing any existing content.
+    pub fn set_text<T: AsRef<str>>(&self, text: T) -> Result<(), AidokuError> {
+        let text = text.as_ref();
+        match unsafe { scraper_set_text(self.0, text.as_ptr(), text.len()) } {
+            0 => Ok(()),
+            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+        }
+    }
+
+    /// Add inner HTML into this element. The given HTML will be parsed, and
+    /// each node prepended to the start of the element's children.
+    pub fn prepend<T: AsRef<str>>(&self, html: T) -> Result<(), AidokuError> {
+        let html = html.as_ref();
+        match unsafe { scraper_prepend(self.0, html.as_ptr(), html.len()) } {
+            0 => Ok(()),
+            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+        }
+    }
+
+    /// Add inner HTML into this element. The given HTML will be parsed, and
+    /// each node appended to the end of the element's children.
+    pub fn append<T: AsRef<str>>(&self, html: T) -> Result<(), AidokuError> {
+        let html = html.as_ref();
+        match unsafe { scraper_append(self.0, html.as_ptr(), html.len()) } {
+            0 => Ok(()),
+            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+        }
     }
 
     /// Get the first sibling of this element, which can be this element

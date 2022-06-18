@@ -12,6 +12,7 @@ pub enum AidokuErrorKind {
     ValueCast(ValueCastError),
     Utf8Error(Utf8Error),
     Unimplemented,
+    NodeError,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -22,6 +23,7 @@ pub enum ValueCastError {
     NotInt,
     NotFloat,
     NotBool,
+    NotNode,
 }
 
 impl From<ValueCastError> for AidokuError {
