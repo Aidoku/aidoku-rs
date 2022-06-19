@@ -83,6 +83,7 @@ extern "C" {
 
 /// Type which represents a HTML node, which can be a group of elements,
 /// an element, or the entire HTML document.
+#[derive(Debug)]
 pub struct Node(Rid);
 
 impl Node {

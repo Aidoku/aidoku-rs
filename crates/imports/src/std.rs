@@ -40,7 +40,7 @@ extern "C" {
 
     #[link_name = "typeof"]
     pub fn value_kind(ctx: Rid) -> Kind;
-    fn string_len(ctx: Rid) -> usize;
+    fn string_len(ctx: Rid) -> i32;
     fn read_string(ctx: Rid, buf: *mut u8, len: usize);
     fn read_int(ctx: Rid) -> i64;
     fn read_float(ctx: Rid) -> f64;
@@ -290,9 +290,21 @@ impl Default for ValueRef {
 pub struct StringRef(pub ValueRef);
 
 impl StringRef {
+    /// Returns the length of the string.
+    #[inline]
+    pub fn len(&self) -> usize {
+        usize::try_from(unsafe { string_len(self.0 .0) }).unwrap_or(0)
+    }
+
+    /// Check if the string is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Convert the StringRef into a String.
     pub fn read(&self) -> String {
-        let len = unsafe { string_len(self.0 .0) };
+        let len = self.len();
         let mut buf = Vec::with_capacity(len);
         unsafe {
             read_string(self.0 .0, buf.as_mut_ptr(), len);
