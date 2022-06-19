@@ -1,5 +1,7 @@
 pub type Rid = i32;
 
+use core::fmt::Display;
+
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -88,6 +90,7 @@ pub fn current_date() -> f64 {
 // ==========================
 /// A type which can represent value of any kind. It is used when exchanging
 /// information with the Aidoku app.
+#[derive(Debug)]
 pub struct ValueRef(pub Rid, pub bool);
 
 impl ValueRef {
@@ -186,16 +189,12 @@ impl ValueRef {
     /// [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
     /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones),
     /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
-    pub fn as_date<A, B>(
+    pub fn as_date<T: Default + AsRef<str>>(
         &self,
-        format: A,
-        locale: Option<B>,
-        timezone: Option<B>,
-    ) -> Result<f64> 
-    where
-        A: AsRef<str>,
-        B: Default + AsRef<str>,
-    {
+        format: T,
+        locale: Option<T>,
+        timezone: Option<T>,
+    ) -> Result<f64> {
         if self.kind() == Kind::String {
             let locale = locale.unwrap_or_default();
             let timezone = timezone.unwrap_or_default();
@@ -287,11 +286,12 @@ impl Default for ValueRef {
 //        String Ref
 // =========================
 /// A type which represents a string.
+#[derive(Debug)]
 pub struct StringRef(pub ValueRef);
 
 impl StringRef {
-    /// Convert the StringRef into a String, consuming it in the process.
-    pub fn read(self) -> String {
+    /// Convert the StringRef into a String.
+    pub fn read(&self) -> String {
         let len = unsafe { string_len(self.0 .0) };
         let mut buf = Vec::with_capacity(len);
         unsafe {
@@ -307,16 +307,12 @@ impl StringRef {
     /// If, for some reason, this StringRef is not a string, returns `-1`,
     /// else returns the parsed Unix timestamp.
     #[inline]
-    pub fn as_date<A, B>(
+    pub fn as_date<T: Default + AsRef<str>>(
         &self,
-        format: A,
-        locale: Option<B>,
-        timezone: Option<B>,
-    ) -> f64 
-    where
-        A: AsRef<str>,
-        B: Default + AsRef<str>,
-    {
+        format: T,
+        locale: Option<T>,
+        timezone: Option<T>,
+    ) -> f64 {
         self.0.as_date(format, locale, timezone).unwrap_or(-1.0)
     }
 }
@@ -346,10 +342,17 @@ impl Default for StringRef {
     }
 }
 
+impl Display for StringRef {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.read())
+    }
+}
+
 // =========================
 //        Array Ref
 // =========================
 /// A type which represents an array.
+#[derive(Debug)]
 pub struct ArrayRef(pub ValueRef, pub usize);
 
 impl ArrayRef {
@@ -440,6 +443,7 @@ impl Default for ArrayRef {
 //        Object Ref
 // =========================
 /// A type that represents a string-keyed and value object.
+#[derive(Debug)]
 pub struct ObjectRef(pub ValueRef);
 
 impl ObjectRef {
