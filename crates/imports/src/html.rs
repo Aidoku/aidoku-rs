@@ -350,7 +350,7 @@ impl Node {
     /// that match a selector.
     pub fn array(&self) -> ArrayRef {
         let rid = unsafe { scraper_array(self.0) };
-        ArrayRef(ValueRef::new(rid), 0)
+        ArrayRef::from(ValueRef::new(rid))
     }
 
     /// Get the node's inner HTML.

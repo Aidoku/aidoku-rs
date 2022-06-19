@@ -40,7 +40,7 @@ extern "C" {
 
     #[link_name = "typeof"]
     pub fn value_kind(ctx: Rid) -> Kind;
-    fn string_len(ctx: Rid) -> i32;
+    fn string_len(ctx: Rid) -> usize;
     fn read_string(ctx: Rid, buf: *mut u8, len: usize);
     fn read_int(ctx: Rid) -> i64;
     fn read_float(ctx: Rid) -> f64;
@@ -139,7 +139,7 @@ impl ValueRef {
     /// Cast the ValueRef to an ArrayRef.
     pub fn as_array(self) -> Result<ArrayRef> {
         if self.kind() == Kind::Array {
-            Ok(ArrayRef(self, 0))
+            Ok(ArrayRef::from(self))
         } else {
             Err(AidokuError::from(ValueCastError::NotArray))
         }
@@ -293,7 +293,7 @@ impl StringRef {
     /// Returns the length of the string.
     #[inline]
     pub fn len(&self) -> usize {
-        usize::try_from(unsafe { string_len(self.0 .0) }).unwrap_or(0)
+        unsafe { string_len(self.0 .0) }
     }
 
     /// Check if the string is empty.
@@ -365,19 +365,19 @@ impl Display for StringRef {
 // =========================
 /// A type which represents an array.
 #[derive(Debug)]
-pub struct ArrayRef(pub ValueRef, pub usize);
+pub struct ArrayRef(
+    pub ValueRef, 
+    /// Lower-bound index
+    pub usize, 
+    /// Upper-bound index
+    pub usize
+);
 
 impl ArrayRef {
     /// Create a new, empty ArrayRef.
     pub fn new() -> Self {
         let rid = unsafe { create_array() };
-        Self(ValueRef::new(rid), 0)
-    }
-
-    /// Get the length of the array.
-    #[inline]
-    pub fn len(&self) -> usize {
-        unsafe { array_len(self.0 .0) }
+        Self(ValueRef::new(rid), 0, 0)
     }
 
     /// Check if the array is empty.
@@ -402,12 +402,14 @@ impl ArrayRef {
     #[inline]
     pub fn insert(&mut self, value: ValueRef) {
         unsafe { array_append(self.0 .0, value.0) };
+        self.2 += 1;
     }
 
     /// Removes the value at the specified index.
     #[inline]
     pub fn remove(&mut self, index: usize) {
         unsafe { array_remove(self.0 .0, index) };
+        self.2 -= 1;
     }
 }
 
@@ -415,11 +417,33 @@ impl Iterator for ArrayRef {
     type Item = ValueRef;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.1 >= self.len() {
+        if self.1 > self.2 || self.2 == usize::MAX {
             return None;
         }
         let value_ref = self.get(self.1);
         self.1 += 1;
+        Some(value_ref)
+    }
+}
+
+impl ExactSizeIterator for ArrayRef {
+    #[inline]
+    fn len(&self) -> usize {
+        unsafe { array_len(self.0 .0) }
+    }
+}
+
+impl DoubleEndedIterator for ArrayRef {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        // We can't stop at self.2 == 0 because then we would miss an element,
+        // so we just let the index overflow. ArrayRefs are internally indexed
+        // by an [i32](https://github.com/Aidoku/Aidoku/blob/main/Shared/Wasm/Imports/WasmStd.swift#L369-L379), 
+        // so there would be no array as long as usize::MAX, hopefully. 
+        if self.1 > self.2 || self.2 == usize::MAX {
+            return None;
+        }
+        let value_ref = self.get(self.2);
+        self.2 = self.2.wrapping_sub(1);
         Some(value_ref)
     }
 }
@@ -437,10 +461,17 @@ impl FromIterator<ValueRef> for ArrayRef {
     }
 }
 
+impl From<ValueRef> for ArrayRef {
+    fn from(valref: ValueRef) -> Self {
+        let length = unsafe { array_len(valref.0) };
+        Self(valref, 0, length.saturating_sub(1))
+    }
+}
+
 impl Clone for ArrayRef {
     fn clone(&self) -> Self {
         let rid = unsafe { copy(self.0 .0) };
-        Self(ValueRef::new(rid), self.1)
+        Self(ValueRef::new(rid), self.1, self.2)
     }
 }
 
@@ -498,13 +529,13 @@ impl ObjectRef {
     /// Get all keys of the object as an array.
     pub fn keys(&self) -> ArrayRef {
         let rid = unsafe { object_keys(self.0 .0) };
-        ArrayRef(ValueRef::new(rid), 0)
+        ArrayRef::from(ValueRef::new(rid))
     }
 
     /// Get all values of the object as an array.
     pub fn values(&self) -> ArrayRef {
         let rid = unsafe { object_values(self.0 .0) };
-        ArrayRef(ValueRef::new(rid), 0)
+        ArrayRef::from(ValueRef::new(rid))
     }
 }
 
