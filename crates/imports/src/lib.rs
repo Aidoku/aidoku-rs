@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(iter_advance_by)]
+#![doc = include_str!("../README.md")]
 extern crate alloc;
 
 pub mod defaults;

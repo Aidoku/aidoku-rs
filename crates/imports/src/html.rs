@@ -147,7 +147,7 @@ impl Node {
     ///
     /// <details>
     ///     <summary>Supported selectors</summary>
-    /// 
+    ///
     /// | Pattern                 | Matches                                                                                              | Example                                                           |
     /// |-------------------------|------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
     /// | `*`                     | any element                                                                                          | `*`                                                               |
@@ -230,7 +230,9 @@ impl Node {
         let html = html.as_ref();
         match unsafe { scraper_set_html(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+            _ => Err(AidokuError {
+                reason: AidokuErrorKind::NodeError,
+            }),
         }
     }
 
@@ -239,7 +241,9 @@ impl Node {
         let text = text.as_ref();
         match unsafe { scraper_set_text(self.0, text.as_ptr(), text.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+            _ => Err(AidokuError {
+                reason: AidokuErrorKind::NodeError,
+            }),
         }
     }
 
@@ -249,7 +253,9 @@ impl Node {
         let html = html.as_ref();
         match unsafe { scraper_prepend(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+            _ => Err(AidokuError {
+                reason: AidokuErrorKind::NodeError,
+            }),
         }
     }
 
@@ -259,7 +265,9 @@ impl Node {
         let html = html.as_ref();
         match unsafe { scraper_append(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError { reason: AidokuErrorKind::NodeError })
+            _ => Err(AidokuError {
+                reason: AidokuErrorKind::NodeError,
+            }),
         }
     }
 

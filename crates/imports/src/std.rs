@@ -366,11 +366,11 @@ impl Display for StringRef {
 /// A type which represents an array.
 #[derive(Debug)]
 pub struct ArrayRef(
-    pub ValueRef, 
+    pub ValueRef,
     /// Lower-bound index
-    pub usize, 
+    pub usize,
     /// Upper-bound index
-    pub usize
+    pub usize,
 );
 
 impl ArrayRef {
@@ -461,8 +461,8 @@ impl DoubleEndedIterator for ArrayRef {
     fn next_back(&mut self) -> Option<Self::Item> {
         // We can't stop at self.2 == 0 because then we would miss an element,
         // so we just let the index overflow. ArrayRefs are internally indexed
-        // by an [i32](https://github.com/Aidoku/Aidoku/blob/main/Shared/Wasm/Imports/WasmStd.swift#L369-L379), 
-        // so there would be no array as long as usize::MAX, hopefully. 
+        // by an [i32](https://github.com/Aidoku/Aidoku/blob/main/Shared/Wasm/Imports/WasmStd.swift#L369-L379),
+        // so there would be no array as long as usize::MAX, hopefully.
         if self.1 > self.2 || self.2 == usize::MAX {
             return None;
         }

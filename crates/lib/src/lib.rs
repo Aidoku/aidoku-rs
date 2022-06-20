@@ -111,7 +111,7 @@ pub mod std {
     }
 }
 
-/// The Aidoku prelude, which includes [format!](aidoku_macros::format), 
+/// The Aidoku prelude, which includes [format!](aidoku_macros::format),
 /// [println!](aidoku_macros::println), as well as procedural macros which
 /// are required for interop with the app.
 pub mod prelude {
