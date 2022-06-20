@@ -416,7 +416,7 @@ impl ArrayRef {
 impl ExactSizeIterator for ArrayRef {
     #[inline]
     fn len(&self) -> usize {
-        unsafe { array_len(self.0 .0) }
+        self.2 - self.1 + 1
     }
 }
 
@@ -433,7 +433,7 @@ impl Iterator for ArrayRef {
     }
 
     fn nth(&mut self, n: usize) -> Option<Self::Item> {
-        if self.1 > self.2 || self.2 == usize::MAX || self.2 - self.1 < n {
+        if self.1 > self.2 || self.2 == usize::MAX || self.len() - 1 < n {
             self.1 = self.2 + 1;
             return None;
         }
@@ -446,8 +446,8 @@ impl Iterator for ArrayRef {
     fn advance_by(&mut self, n: usize) -> core::result::Result<(), usize> {
         if self.1 > self.2 || self.2 == usize::MAX {
             Err(0)
-        } else if self.2 - self.1 < n {
-            let len = self.2 - self.1;
+        } else if self.len() - 1 < n {
+            let len = self.len() - 1;
             self.1 = self.2;
             Err(len)
         } else {
@@ -472,7 +472,7 @@ impl DoubleEndedIterator for ArrayRef {
     }
 
     fn nth_back(&mut self, n: usize) -> Option<Self::Item> {
-        if self.1 > self.2 || self.2 == usize::MAX || self.2 - self.1 < n {
+        if self.1 > self.2 || self.2 == usize::MAX || self.len() - 1 < n {
             self.2 = usize::MAX;
             return None;
         }
@@ -485,8 +485,8 @@ impl DoubleEndedIterator for ArrayRef {
     fn advance_back_by(&mut self, n: usize) -> core::result::Result<(), usize> {
         if self.1 > self.2 || self.2 == usize::MAX {
             Err(0)
-        } else if self.2 - self.1 < n {
-            let len = self.2 - self.1;
+        } else if self.len() - 1 < n {
+            let len = self.len() - 1;
             self.2 = usize::MAX;
             Err(len)
         } else {
