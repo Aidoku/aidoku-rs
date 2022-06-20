@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(iter_advance_by)]
 extern crate alloc;
 
 pub mod defaults;
