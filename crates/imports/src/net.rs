@@ -160,6 +160,6 @@ impl Request {
         self.send();
         let rid = unsafe { request_html(self.0) };
         self.close();
-        Node::from(rid)
+        unsafe { Node::from(rid) }
     }
 }

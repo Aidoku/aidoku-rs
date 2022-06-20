@@ -4,9 +4,10 @@
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 use core::fmt::Display;
 
-use crate::error::{AidokuError, AidokuErrorKind};
-
-use super::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef};
+use crate::{
+    error::{AidokuError, AidokuErrorKind, Result},
+    std::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef}
+};
 
 #[link(wasm_import_module = "html")]
 extern "C" {
@@ -89,36 +90,45 @@ pub struct Node(Rid);
 impl Node {
     /// Parse HTML into a Node. As there is no base URI specified, absolute URL
     /// resolution requires the HTML to have a `<base href>` tag.
-    pub fn new<T: AsRef<[u8]>>(buf: T) -> Self {
+    pub fn new<T: AsRef<[u8]>>(buf: T) -> Result<Self> {
         let buf = buf.as_ref();
         let rid = unsafe { scraper_parse(buf.as_ptr(), buf.len()) };
-        Self(rid)
+        match rid {
+            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            _ => Ok(Self(rid))
+        }
     }
 
     /// Parse HTML into a Node. The given `base_uri` will be used for any URLs that
     /// occurs before a `<base href>` tag is defined.
-    pub fn new_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Self {
+    pub fn new_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Result<Self> {
         let buf = buf.as_ref();
         let base_uri = base_uri.as_ref();
         let rid = unsafe {
             scraper_parse_with_uri(buf.as_ptr(), buf.len(), base_uri.as_ptr(), base_uri.len())
         };
-        Self(rid)
+        match rid {
+            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            _ => Ok(Self(rid))
+        }
     }
 
     /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
     /// Similar to [Node::new](crate::html::Node::new), relative URLs will not
     /// be resolved unless there is a `<base href>` tag.
-    pub fn new_fragment<T: AsRef<[u8]>>(buf: T) -> Self {
+    pub fn new_fragment<T: AsRef<[u8]>>(buf: T) -> Result<Self> {
         let buf = buf.as_ref();
         let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
-        Self(rid)
+        match rid {
+            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            _ => Ok(Self(rid))
+        }
     }
 
     /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
     /// Similar to [Node::new_with_uri](crate::html::Node::new_with_uri), URL
     /// resolution occurs for any that appears before a `<base href>` tag.
-    pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Self {
+    pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Result<Self> {
         let buf = buf.as_ref();
         let base_uri = base_uri.as_ref();
         let rid = unsafe {
@@ -129,12 +139,19 @@ impl Node {
                 base_uri.len(),
             )
         };
-        Self(rid)
+        match rid {
+            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            _ => Ok(Self(rid))
+        }
     }
 
-    /// Get an instance from a [Rid](crate::Rid).
+    /// Get an instance from a [Rid](crate::Rid)
+    /// 
+    /// # Safety
+    /// Ensure that this Rid is of [Kind::Node](crate::Kind) before
+    /// converting.
     #[inline]
-    pub fn from(rid: Rid) -> Self {
+    pub unsafe fn from(rid: Rid) -> Self {
         Self(rid)
     }
 
@@ -226,7 +243,15 @@ impl Node {
     }
 
     /// Set the element's inner HTML, clearning the existing HTML.
-    pub fn set_html<T: AsRef<str>>(&mut self, html: T) -> Result<(), AidokuError> {
+    /// 
+    /// # Notice
+    /// Internally, this operates on SwiftSoup.Element, but 
+    /// not on SwiftSoup.Elements, which is the type you usually get when using
+    /// methods like [Node::select](crate::html::Node::select). Either use
+    /// [Node::array](crate::html::Node::array) to iterate through each element,
+    /// or use [Node::first](crate::html::Node::first)/[Node::last](crate::html::Node::last)
+    /// to select an element before calling this function.
+    pub fn set_html<T: AsRef<str>>(&mut self, html: T) -> Result<()> {
         let html = html.as_ref();
         match unsafe { scraper_set_html(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
@@ -237,7 +262,15 @@ impl Node {
     }
 
     /// Set the element's text content, clearing any existing content.
-    pub fn set_text<T: AsRef<str>>(&mut self, text: T) -> Result<(), AidokuError> {
+    /// 
+    /// # Notice
+    /// Internally, this operates on SwiftSoup.Element, but 
+    /// not on SwiftSoup.Elements, which is the type you usually get when using
+    /// methods like [Node::select](crate::html::Node::select). Either use
+    /// [Node::array](crate::html::Node::array) to iterate through each element,
+    /// or use [Node::first](crate::html::Node::first)/[Node::last](crate::html::Node::last)
+    /// to select an element before calling this function.
+    pub fn set_text<T: AsRef<str>>(&mut self, text: T) -> Result<()> {
         let text = text.as_ref();
         match unsafe { scraper_set_text(self.0, text.as_ptr(), text.len()) } {
             0 => Ok(()),
@@ -249,7 +282,15 @@ impl Node {
 
     /// Add inner HTML into this element. The given HTML will be parsed, and
     /// each node prepended to the start of the element's children.
-    pub fn prepend<T: AsRef<str>>(&mut self, html: T) -> Result<(), AidokuError> {
+    /// 
+    /// # Notice
+    /// Internally, this operates on SwiftSoup.Element, but 
+    /// not on SwiftSoup.Elements, which is the type you usually get when using
+    /// methods like [Node::select](crate::html::Node::select). Either use
+    /// [Node::array](crate::html::Node::array) to iterate through each element,
+    /// or use [Node::first](crate::html::Node::first)/[Node::last](crate::html::Node::last)
+    /// to select an element before calling this function.
+    pub fn prepend<T: AsRef<str>>(&mut self, html: T) -> Result<()> {
         let html = html.as_ref();
         match unsafe { scraper_prepend(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
@@ -261,7 +302,15 @@ impl Node {
 
     /// Add inner HTML into this element. The given HTML will be parsed, and
     /// each node appended to the end of the element's children.
-    pub fn append<T: AsRef<str>>(&mut self, html: T) -> Result<(), AidokuError> {
+    /// 
+    /// # Notice
+    /// Internally, this operates on SwiftSoup.Element, but 
+    /// not on SwiftSoup.Elements, which is the type you usually get when using
+    /// methods like [Node::select](crate::html::Node::select). Either use
+    /// [Node::array](crate::html::Node::array) to iterate through each element,
+    /// or use [Node::first](crate::html::Node::first)/[Node::last](crate::html::Node::last)
+    /// to select an element before calling this function. 
+    pub fn append<T: AsRef<str>>(&mut self, html: T) -> Result<()> {
         let html = html.as_ref();
         match unsafe { scraper_append(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),

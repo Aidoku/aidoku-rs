@@ -215,13 +215,17 @@ impl ValueRef {
             };
             Ok(val)
         } else {
-            Err(AidokuError::from(ValueCastError::NotBool))
+            Err(AidokuError::from(ValueCastError::NotString))
         }
     }
 
     /// Cast the ValueRef to a [Node](crate::html::Node).
-    pub fn as_node(&self) -> Node {
-        Node::from(self.0)
+    pub fn as_node(&self) -> Result<Node> {
+        if self.kind() == Kind::Node {
+            Ok(unsafe { Node::from(self.0) })
+        } else {
+            Err(AidokuError::from(ValueCastError::NotNode))
+        }
     }
 }
 
