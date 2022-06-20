@@ -380,6 +380,11 @@ impl ArrayRef {
         Self(ValueRef::new(rid), 0, 0)
     }
 
+    #[inline]
+    pub fn len(&self) -> usize {
+        unsafe { array_len(self.0 .0) }
+    }
+
     /// Check if the array is empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
@@ -413,13 +418,6 @@ impl ArrayRef {
     }
 }
 
-impl ExactSizeIterator for ArrayRef {
-    #[inline]
-    fn len(&self) -> usize {
-        self.2 - self.1 + 1
-    }
-}
-
 impl Iterator for ArrayRef {
     type Item = ValueRef;
 
@@ -432,23 +430,12 @@ impl Iterator for ArrayRef {
         Some(value_ref)
     }
 
-    fn nth(&mut self, n: usize) -> Option<Self::Item> {
-        if self.1 > self.2 || self.2 == usize::MAX || self.len() - 1 < n {
-            self.1 = self.2 + 1;
-            return None;
-        }
-        self.1 += n;
-        let value_ref = self.get(self.1);
-        self.1 += 1;
-        Some(value_ref)
-    }
-
     fn advance_by(&mut self, n: usize) -> core::result::Result<(), usize> {
         if self.1 > self.2 || self.2 == usize::MAX {
             Err(0)
-        } else if self.len() - 1 < n {
-            let len = self.len() - 1;
-            self.1 = self.2;
+        } else if self.2 - self.1 < n {
+            let len = self.2 - self.1;
+            self.1 = self.2 + 1;
             Err(len)
         } else {
             self.1 += n;
@@ -471,22 +458,11 @@ impl DoubleEndedIterator for ArrayRef {
         Some(value_ref)
     }
 
-    fn nth_back(&mut self, n: usize) -> Option<Self::Item> {
-        if self.1 > self.2 || self.2 == usize::MAX || self.len() - 1 < n {
-            self.2 = usize::MAX;
-            return None;
-        }
-        self.2 = self.2.wrapping_sub(n);
-        let value_ref = self.get(self.2);
-        self.2 = self.2.wrapping_sub(1);
-        Some(value_ref)
-    }
-
     fn advance_back_by(&mut self, n: usize) -> core::result::Result<(), usize> {
         if self.1 > self.2 || self.2 == usize::MAX {
             Err(0)
-        } else if self.len() - 1 < n {
-            let len = self.len() - 1;
+        } else if self.2 - self.1 < n {
+            let len = self.2 - self.1;
             self.2 = usize::MAX;
             Err(len)
         } else {
