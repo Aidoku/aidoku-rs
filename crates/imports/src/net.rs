@@ -1,11 +1,12 @@
 //! Create and send HTTP requests.
 type Rid = i32;
 
-use super::html::Node;
-use super::std::{Rid as ValueRid, StringRef, ValueRef};
-
-use super::alloc::string::String;
-use super::alloc::vec::Vec;
+use crate::{
+    error::{AidokuError, AidokuErrorKind, NodeError, Result},
+    html::Node,
+    std::{Rid as ValueRid, StringRef, ValueRef},
+    alloc::{string::String, vec::Vec},
+};
 
 #[repr(C)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -143,23 +144,33 @@ impl Request {
 
     /// Gets the data as a string.
     #[inline]
-    pub fn string(self) -> String {
-        String::from_utf8(self.data()).unwrap_or_default()
+    pub fn string(self) -> Result<String> {
+        let res = String::from_utf8(self.data());
+        match res {
+            Ok(res) => Ok(res),
+            Err(err) => Err(AidokuError::from(err.utf8_error())),
+        }
     }
 
     /// Get the data as JSON
-    pub fn json(self) -> ValueRef {
+    pub fn json(self) -> Result<ValueRef> {
         self.send();
         let rid = unsafe { request_json(self.0) };
         self.close();
-        ValueRef::new(rid)
+        match rid {
+            -1 => Err(AidokuError { reason: AidokuErrorKind::JsonParseError }),
+            _ => Ok(ValueRef::new(rid)),
+        }
     }
 
     /// Get the data as a [Node](crate::html::Node).
-    pub fn html(self) -> Node {
+    pub fn html(self) -> Result<Node> {
         self.send();
         let rid = unsafe { request_html(self.0) };
         self.close();
-        unsafe { Node::from(rid) }
+        match rid {
+            -1 => Err(AidokuError::from(NodeError::ParseError)),
+            _ => Ok(unsafe{ Node::from(rid) }),
+        }
     }
 }

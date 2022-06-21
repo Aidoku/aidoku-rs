@@ -1,5 +1,8 @@
 //! Converts JSON to a [ValueRef](crate::std::ValueRef).
-use super::std::{Rid, ValueRef};
+use crate::{
+    error::{Result, AidokuError, AidokuErrorKind},
+    std::{Rid, ValueRef}
+};
 
 #[link(wasm_import_module = "json")]
 extern "C" {
@@ -18,8 +21,11 @@ extern "C" {
 ///     }
 /// }
 /// ```
-pub fn parse<T: AsRef<[u8]>>(buf: T) -> ValueRef {
+pub fn parse<T: AsRef<[u8]>>(buf: T) -> Result<ValueRef> {
     let buf = buf.as_ref();
     let rid = unsafe { json_parse(buf.as_ptr(), buf.len()) };
-    ValueRef::new(rid)
+    match rid {
+        -1 => Err(AidokuError { reason: AidokuErrorKind::JsonParseError }),
+        _ => Ok(ValueRef::new(rid)),
+    }
 }

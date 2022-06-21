@@ -1,5 +1,8 @@
 //! Interface for interacting with user preferences.
-use super::std::{Rid, ValueRef};
+use crate::{
+    error::{AidokuError, AidokuErrorKind, Result},
+    std::{Rid, ValueRef}
+};
 
 #[link(wasm_import_module = "defaults")]
 extern "C" {
@@ -10,10 +13,13 @@ extern "C" {
 }
 
 /// Returns the ValueRef associated with the specified key.
-pub fn defaults_get<T: AsRef<str>>(key: T) -> ValueRef {
+pub fn defaults_get<T: AsRef<str>>(key: T) -> Result<ValueRef> {
     let key = key.as_ref();
     let rid = unsafe { _defaults_get(key.as_ptr(), key.len()) };
-    ValueRef::new(rid)
+    match rid {
+        -1 => Err(AidokuError { reason: AidokuErrorKind::DefaultNotFound }),
+        _ => Ok(ValueRef::new(rid))
+    }
 }
 
 /// Sets the value of the specified key.

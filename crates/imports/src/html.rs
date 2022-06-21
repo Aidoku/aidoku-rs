@@ -5,7 +5,7 @@
 use core::fmt::Display;
 
 use crate::{
-    error::{AidokuError, AidokuErrorKind, Result},
+    error::{AidokuError, Result, NodeError},
     std::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef}
 };
 
@@ -94,7 +94,7 @@ impl Node {
         let buf = buf.as_ref();
         let rid = unsafe { scraper_parse(buf.as_ptr(), buf.len()) };
         match rid {
-            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            -1 => Err(AidokuError::from(NodeError::ParseError)),
             _ => Ok(Self(rid))
         }
     }
@@ -108,7 +108,7 @@ impl Node {
             scraper_parse_with_uri(buf.as_ptr(), buf.len(), base_uri.as_ptr(), base_uri.len())
         };
         match rid {
-            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            -1 => Err(AidokuError::from(NodeError::ParseError)),
             _ => Ok(Self(rid))
         }
     }
@@ -120,7 +120,7 @@ impl Node {
         let buf = buf.as_ref();
         let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
         match rid {
-            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            -1 => Err(AidokuError::from(NodeError::ParseError)),
             _ => Ok(Self(rid))
         }
     }
@@ -140,7 +140,7 @@ impl Node {
             )
         };
         match rid {
-            -1 => Err(AidokuError { reason: AidokuErrorKind::NodeError }),
+            -1 => Err(AidokuError::from(NodeError::ParseError)),
             _ => Ok(Self(rid))
         }
     }
@@ -255,9 +255,7 @@ impl Node {
         let html = html.as_ref();
         match unsafe { scraper_set_html(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError {
-                reason: AidokuErrorKind::NodeError,
-            }),
+            _ => Err(AidokuError::from(NodeError::ModifyError)),
         }
     }
 
@@ -274,9 +272,7 @@ impl Node {
         let text = text.as_ref();
         match unsafe { scraper_set_text(self.0, text.as_ptr(), text.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError {
-                reason: AidokuErrorKind::NodeError,
-            }),
+            _ => Err(AidokuError::from(NodeError::ModifyError)),
         }
     }
 
@@ -294,9 +290,7 @@ impl Node {
         let html = html.as_ref();
         match unsafe { scraper_prepend(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError {
-                reason: AidokuErrorKind::NodeError,
-            }),
+            _ => Err(AidokuError::from(NodeError::ModifyError)),
         }
     }
 
@@ -314,9 +308,7 @@ impl Node {
         let html = html.as_ref();
         match unsafe { scraper_append(self.0, html.as_ptr(), html.len()) } {
             0 => Ok(()),
-            _ => Err(AidokuError {
-                reason: AidokuErrorKind::NodeError,
-            }),
+            _ => Err(AidokuError::from(NodeError::ModifyError)),
         }
     }
 
