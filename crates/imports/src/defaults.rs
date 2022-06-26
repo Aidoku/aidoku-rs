@@ -1,7 +1,7 @@
 //! Interface for interacting with user preferences.
 use crate::{
     error::{AidokuError, AidokuErrorKind, Result},
-    std::{Rid, ValueRef}
+    std::{Rid, ValueRef},
 };
 
 #[link(wasm_import_module = "defaults")]
@@ -17,8 +17,10 @@ pub fn defaults_get<T: AsRef<str>>(key: T) -> Result<ValueRef> {
     let key = key.as_ref();
     let rid = unsafe { _defaults_get(key.as_ptr(), key.len()) };
     match rid {
-        -1 => Err(AidokuError { reason: AidokuErrorKind::DefaultNotFound }),
-        _ => Ok(ValueRef::new(rid))
+        -1 => Err(AidokuError {
+            reason: AidokuErrorKind::DefaultNotFound,
+        }),
+        _ => Ok(ValueRef::new(rid)),
     }
 }
 

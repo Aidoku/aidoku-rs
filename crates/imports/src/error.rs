@@ -34,7 +34,7 @@ pub enum NodeError {
     ParseError,
 
     /// There was an error modifying HTML.
-    ModifyError,   
+    ModifyError,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -66,6 +66,8 @@ impl From<Utf8Error> for AidokuError {
 
 impl From<NodeError> for AidokuError {
     fn from(why: NodeError) -> Self {
-        Self { reason: AidokuErrorKind::NodeError(why) }
+        Self {
+            reason: AidokuErrorKind::NodeError(why),
+        }
     }
 }

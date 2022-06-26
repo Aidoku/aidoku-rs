@@ -5,8 +5,8 @@
 use core::fmt::Display;
 
 use crate::{
-    error::{AidokuError, Result, NodeError},
-    std::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef}
+    error::{AidokuError, NodeError, Result},
+    std::{copy, destroy, value_kind, ArrayRef, Rid, StringRef, ValueRef},
 };
 
 #[link(wasm_import_module = "html")]
@@ -95,7 +95,7 @@ impl Node {
         let rid = unsafe { scraper_parse(buf.as_ptr(), buf.len()) };
         match rid {
             -1 => Err(AidokuError::from(NodeError::ParseError)),
-            _ => Ok(Self(rid))
+            _ => Ok(Self(rid)),
         }
     }
 
@@ -109,7 +109,7 @@ impl Node {
         };
         match rid {
             -1 => Err(AidokuError::from(NodeError::ParseError)),
-            _ => Ok(Self(rid))
+            _ => Ok(Self(rid)),
         }
     }
 
@@ -121,14 +121,17 @@ impl Node {
         let rid = unsafe { scraper_parse_fragment(buf.as_ptr(), buf.len()) };
         match rid {
             -1 => Err(AidokuError::from(NodeError::ParseError)),
-            _ => Ok(Self(rid))
+            _ => Ok(Self(rid)),
         }
     }
 
     /// Parse a HTML fragment, assuming that it forms the `body` of the HTML.
     /// Similar to [Node::new_with_uri](crate::html::Node::new_with_uri), URL
     /// resolution occurs for any that appears before a `<base href>` tag.
-    pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(buf: A, base_uri: B) -> Result<Self> {
+    pub fn new_fragment_with_uri<A: AsRef<[u8]>, B: AsRef<str>>(
+        buf: A,
+        base_uri: B,
+    ) -> Result<Self> {
         let buf = buf.as_ref();
         let base_uri = base_uri.as_ref();
         let rid = unsafe {
@@ -141,12 +144,12 @@ impl Node {
         };
         match rid {
             -1 => Err(AidokuError::from(NodeError::ParseError)),
-            _ => Ok(Self(rid))
+            _ => Ok(Self(rid)),
         }
     }
 
     /// Get an instance from a [Rid](crate::Rid)
-    /// 
+    ///
     /// # Safety
     /// Ensure that this Rid is of [Kind::Node](crate::Kind) before
     /// converting.
@@ -243,9 +246,9 @@ impl Node {
     }
 
     /// Set the element's inner HTML, clearning the existing HTML.
-    /// 
+    ///
     /// # Notice
-    /// Internally, this operates on SwiftSoup.Element, but 
+    /// Internally, this operates on SwiftSoup.Element, but
     /// not on SwiftSoup.Elements, which is the type you usually get when using
     /// methods like [Node::select](crate::html::Node::select). Either use
     /// [Node::array](crate::html::Node::array) to iterate through each element,
@@ -260,9 +263,9 @@ impl Node {
     }
 
     /// Set the element's text content, clearing any existing content.
-    /// 
+    ///
     /// # Notice
-    /// Internally, this operates on SwiftSoup.Element, but 
+    /// Internally, this operates on SwiftSoup.Element, but
     /// not on SwiftSoup.Elements, which is the type you usually get when using
     /// methods like [Node::select](crate::html::Node::select). Either use
     /// [Node::array](crate::html::Node::array) to iterate through each element,
@@ -278,9 +281,9 @@ impl Node {
 
     /// Add inner HTML into this element. The given HTML will be parsed, and
     /// each node prepended to the start of the element's children.
-    /// 
+    ///
     /// # Notice
-    /// Internally, this operates on SwiftSoup.Element, but 
+    /// Internally, this operates on SwiftSoup.Element, but
     /// not on SwiftSoup.Elements, which is the type you usually get when using
     /// methods like [Node::select](crate::html::Node::select). Either use
     /// [Node::array](crate::html::Node::array) to iterate through each element,
@@ -296,14 +299,14 @@ impl Node {
 
     /// Add inner HTML into this element. The given HTML will be parsed, and
     /// each node appended to the end of the element's children.
-    /// 
+    ///
     /// # Notice
-    /// Internally, this operates on SwiftSoup.Element, but 
+    /// Internally, this operates on SwiftSoup.Element, but
     /// not on SwiftSoup.Elements, which is the type you usually get when using
     /// methods like [Node::select](crate::html::Node::select). Either use
     /// [Node::array](crate::html::Node::array) to iterate through each element,
     /// or use [Node::first](crate::html::Node::first)/[Node::last](crate::html::Node::last)
-    /// to select an element before calling this function. 
+    /// to select an element before calling this function.
     pub fn append<T: AsRef<str>>(&mut self, html: T) -> Result<()> {
         let html = html.as_ref();
         match unsafe { scraper_append(self.0, html.as_ptr(), html.len()) } {
