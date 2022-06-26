@@ -1,5 +1,6 @@
-use super::std::{String, Vec};
-use aidoku_imports::{ObjectRef, Rid, ValueRef};
+use crate::std::{
+    String, Vec, ObjectRef, Rid, ValueRef
+};
 
 #[link(wasm_import_module = "aidoku")]
 extern "C" {
@@ -73,8 +74,14 @@ pub enum FilterType {
     Genre = 9,
 }
 
-impl FilterType {
-    pub fn from(value: i32) -> FilterType {
+impl From<i32> for FilterType {
+    fn from(value: i32) -> Self {
+        Self::from(value as i64)
+    }
+}
+
+impl From<i64> for FilterType {
+    fn from(value: i64) -> Self {
         match value {
             0 => FilterType::Base,
             1 => FilterType::Group,
@@ -89,7 +96,9 @@ impl FilterType {
             _ => FilterType::Base,
         }
     }
+}
 
+impl FilterType {
     pub fn to_int(&self) -> i32 {
         match self {
             FilterType::Base => 0,
@@ -129,8 +138,9 @@ pub enum MangaContentRating {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub enum MangaViewer {
-    #[default]
+    #[deprecated(since = "0.2.0", note = "MangaViewer::Default is ignored in the app, and defaults to the RTL viewer.")]
     Default = 0,
+    #[default]
     Rtl = 1,
     Ltr = 2,
     Vertical = 3,
