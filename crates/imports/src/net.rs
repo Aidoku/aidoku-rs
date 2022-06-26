@@ -2,10 +2,10 @@
 type Rid = i32;
 
 use crate::{
+    alloc::{string::String, vec::Vec},
     error::{AidokuError, AidokuErrorKind, NodeError, Result},
     html::Node,
     std::{Rid as ValueRid, StringRef, ValueRef},
-    alloc::{string::String, vec::Vec},
 };
 
 #[repr(C)]
@@ -113,6 +113,15 @@ impl Request {
         self
     }
 
+    /// Set the URL for the request
+    pub fn set_url<T: AsRef<str>>(self, url: T) -> Self {
+        let url = url.as_ref();
+        unsafe {
+            request_set_url(self.0, url.as_ptr(), url.len())
+        }
+        self
+    }
+
     #[inline]
     fn send(&self) {
         unsafe { request_send(self.0) }
@@ -158,7 +167,9 @@ impl Request {
         let rid = unsafe { request_json(self.0) };
         self.close();
         match rid {
-            -1 => Err(AidokuError { reason: AidokuErrorKind::JsonParseError }),
+            -1 => Err(AidokuError {
+                reason: AidokuErrorKind::JsonParseError,
+            }),
             _ => Ok(ValueRef::new(rid)),
         }
     }
@@ -170,7 +181,7 @@ impl Request {
         self.close();
         match rid {
             -1 => Err(AidokuError::from(NodeError::ParseError)),
-            _ => Ok(unsafe{ Node::from(rid) }),
+            _ => Ok(unsafe { Node::from(rid) }),
         }
     }
 }
