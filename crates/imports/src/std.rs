@@ -307,14 +307,22 @@ impl StringRef {
     }
 
     /// Convert the StringRef into a String.
+    ///
+    /// # Returns
+    /// Return an empty string if the underlying ValueRef
+    /// is not a string.
     pub fn read(&self) -> String {
-        let len = self.len();
-        let mut buf = Vec::with_capacity(len);
-        unsafe {
-            read_string(self.0 .0, buf.as_mut_ptr(), len);
-            buf.set_len(len);
-        };
-        String::from_utf8(buf).unwrap_or_default()
+        if self.0.kind() == Kind::String {
+            let len = self.len();
+            let mut buf = Vec::with_capacity(len);
+            unsafe {
+                read_string(self.0 .0, buf.as_mut_ptr(), len);
+                buf.set_len(len);
+            };
+            String::from_utf8(buf).unwrap_or_default()
+        } else {
+            String::new()
+        }
     }
 
     /// Convenience method that calls [ValueRef::as_date](crate::std::ValueRef::as_date).
