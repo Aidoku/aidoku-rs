@@ -1,5 +1,5 @@
 #![doc = include_str!("../../../README.md")]
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 #![feature(
     core_intrinsics,
     alloc_error_handler,
@@ -117,4 +117,9 @@ pub mod std {
 pub mod prelude {
     pub use aidoku_macros::*;
     pub use aidoku_proc_macros::*;
+}
+
+#[cfg(feature = "helpers")]
+pub mod helpers {
+    pub use aidoku_helpers::*;
 }

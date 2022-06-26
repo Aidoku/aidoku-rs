@@ -1,6 +1,4 @@
-use crate::std::{
-    String, Vec, ObjectRef, Rid, ValueRef
-};
+use crate::std::{ObjectRef, Rid, String, ValueRef, Vec};
 
 #[link(wasm_import_module = "aidoku")]
 extern "C" {
@@ -138,7 +136,10 @@ pub enum MangaContentRating {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub enum MangaViewer {
-    #[deprecated(since = "0.2.0", note = "MangaViewer::Default is ignored in the app, and defaults to the RTL viewer.")]
+    #[deprecated(
+        since = "0.2.0",
+        note = "MangaViewer::Default is ignored in the app, and defaults to the RTL viewer."
+    )]
     Default = 0,
     #[default]
     Rtl = 1,

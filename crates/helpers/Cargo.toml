@@ -1,0 +1,8 @@
+[package]
+name = "aidoku_helpers"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aidoku_imports = { path = "../imports" }
+aidoku_macros = { path = "../macros" } 
