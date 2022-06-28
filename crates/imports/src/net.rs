@@ -62,6 +62,9 @@ pub fn set_rate_limit_period(seconds: i32) {
     unsafe { request_set_rate_limit_period(seconds) }
 }
 
+/// Macro for generating convenience HTTP methods, e.g.
+/// Request::get, Request::post.
+#[doc(hidden)]
 macro_rules! convenience_http_methods {
     ($name:ident, $t:expr, $doc:tt) => {
         #[inline]
