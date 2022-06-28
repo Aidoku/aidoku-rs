@@ -6,11 +6,16 @@ version = 3
 name = "aidoku"
 version = "0.2.0"
 dependencies = [
+ "aidoku_helpers",
  "aidoku_imports",
  "aidoku_macros",
  "aidoku_proc_macros",
  "wee_alloc",
 ]
+
+[[package]]
+name = "aidoku_helpers"
+version = "0.1.0"
 
 [[package]]
 name = "aidoku_imports"

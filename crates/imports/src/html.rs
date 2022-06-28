@@ -3,6 +3,7 @@
 //!
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 use core::fmt::Display;
+use alloc::string::String;
 
 use crate::{
     error::{AidokuError, NodeError, Result},
@@ -59,6 +60,8 @@ extern "C" {
     fn scraper_body(rid: i32) -> i32;
     #[link_name = "text"]
     fn scraper_text(rid: i32) -> i32;
+    #[link_name = "untrimmed_text"]
+    fn scraper_untrimmed_text(rid: i32) -> i32;
     #[link_name = "own_text"]
     fn scraper_own_text(rid: i32) -> i32;
     #[link_name = "data"]
@@ -70,6 +73,11 @@ extern "C" {
     #[link_name = "outer_html"]
     fn scraper_outer_html(rid: i32) -> i32;
 
+    #[link_name = "escape"]
+    fn scraper_escape(rid: i32) -> i32;
+    #[link_name = "unescape"]
+    fn scraper_unescape(rid: i32) -> i32;
+
     #[link_name = "id"]
     fn scraper_id(rid: i32) -> i32;
     #[link_name = "tag_name"]
@@ -80,6 +88,30 @@ extern "C" {
     fn scraper_has_class(rid: i32, class_name: *const u8, class_length: usize) -> bool;
     #[link_name = "has_attr"]
     fn scraper_has_attr(rid: i32, attr_name: *const u8, attr_length: usize) -> bool;
+}
+
+/// HTML escape an input string.
+/// 
+/// # Examples
+/// ```ignore
+/// assert_eq!(escape_html_entities("<"), "&lt;");
+/// ```
+pub fn escape_html_entities<T: AsRef<str>>(text: T) -> String {
+    let str_ref = StringRef::from(text);
+    let rid = unsafe { scraper_escape(str_ref.0 .0) };
+    StringRef(ValueRef::new(rid)).read()
+}
+
+/// Un-escape an HTML escaped string.
+/// 
+/// # Examples
+/// ```ignore
+/// assert_eq!(unescape_html_entities("&lt;"), "<");
+/// ```
+pub fn unescape_html_entities<T: AsRef<str>>(text: T) -> String {
+    let str_ref = StringRef::from(text);
+    let rid = unsafe { scraper_unescape(str_ref.0 .0) };
+    StringRef(ValueRef::new(rid)).read()
 }
 
 /// Type which represents a HTML node, which can be a group of elements,
@@ -374,6 +406,15 @@ impl Node {
         StringRef(ValueRef::new(rid))
     }
 
+    /// Get the text of this element and its children. Whitespace is **not** normalized
+    /// and trimmed.
+    ///
+    /// Notices from [Node::text](crate::html::Node::text) applies.
+    pub fn untrimmed_text(&self) -> StringRef {
+        let rid = unsafe { scraper_untrimmed_text(self.0) };
+        StringRef(ValueRef::new(rid))
+    }
+
     /// Gets the (normalized) text owned by this element only; does not get the
     /// combined text of all children.
     ///
@@ -419,6 +460,24 @@ impl Node {
     /// `<div><p></p></div>`.
     pub fn outer_html(&self) -> StringRef {
         let rid = unsafe { scraper_outer_html(self.0) };
+        StringRef(ValueRef::new(rid))
+    }
+
+    /// Get the node's text and escape any HTML-reserved characters to HTML entities.
+    /// 
+    /// For example, for a node with text `Hello &<> Å å π 新 there ¾ © »`, 
+    /// this would return `Hello &amp;&lt;&gt; Å å π 新 there ¾ © »`
+    pub fn escape(&self) -> StringRef {
+        let rid: i32 = unsafe { scraper_escape(self.0) };
+        StringRef(ValueRef::new(rid))
+    }
+
+    /// Get the node's text and unescape any HTML entities to their original characters.
+    /// 
+    /// For example, for a node with text `Hello &amp;&lt;&gt; Å å π 新 there ¾ © »`,
+    /// this would return `Hello &<> Å å π 新 there ¾ © »`.
+    pub fn unescape(&self) -> StringRef {
+        let rid: i32 = unsafe { scraper_unescape(self.0) };
         StringRef(ValueRef::new(rid))
     }
 
