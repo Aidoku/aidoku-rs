@@ -1,3 +1,4 @@
+/// A standard descriptor, used for data exchange between the app and the source.
 pub type Rid = i32;
 
 use core::fmt::Display;
@@ -9,6 +10,7 @@ use super::html::Node;
 
 use super::error::{AidokuError, Result, ValueCastError};
 
+/// An enumeration of different ValueRef types.
 #[repr(C)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Kind {
@@ -26,7 +28,10 @@ pub enum Kind {
 
 #[link(wasm_import_module = "std")]
 extern "C" {
+    /// Copies a ValueRef and returns a descriptor pointing to the new ValueRef.
     pub fn copy(rid: Rid) -> Rid;
+
+    /// Destroys a ValueRef.
     pub fn destroy(rid: Rid);
 
     fn create_null() -> Rid;
@@ -38,6 +43,7 @@ extern "C" {
     fn create_int(value: i64) -> Rid;
     fn create_date(value: f64) -> Rid;
 
+    /// Returns the kind of the ValueRef.
     #[link_name = "typeof"]
     pub fn value_kind(ctx: Rid) -> Kind;
     fn string_len(ctx: Rid) -> usize;
@@ -70,6 +76,7 @@ extern "C" {
     fn array_remove(arr: Rid, idx: usize);
 }
 
+/// Prints a message to the Aidoku logs.
 pub fn print<T: AsRef<str>>(string: T) {
     let string = string.as_ref();
     extern "C" {

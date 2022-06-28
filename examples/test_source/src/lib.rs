@@ -1,8 +1,15 @@
 #![no_std]
 use aidoku::{
-    error::Result, prelude::*, std::net::Request, std::String, std::Vec, Chapter, DeepLink, Filter,
-    Listing, Manga, MangaPageResult, Page,
+    error::Result,
+    prelude::*,
+    std::{String, Vec, net::Request}, 
+    Chapter, DeepLink, Filter, Listing, Manga, MangaPageResult, Page,
 };
+
+#[initialize]
+fn initialize() {
+    todo!()
+}
 
 #[get_manga_list]
 fn get_manga_list(_filters: Vec<Filter>, _page: i32) -> Result<MangaPageResult> {
