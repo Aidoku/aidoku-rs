@@ -177,8 +177,7 @@ pub struct Filter {
     /// The filter's value. This is dependent on what the filter type is.
     pub value: ValueRef,
 
-    /// The raw filter object. You can add extra metadata to the JSON object, and then
-    /// use this attribute to obtain it.
+    /// The raw filter object.
     pub object: ObjectRef,
 }
 
