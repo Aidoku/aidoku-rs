@@ -4,3 +4,6 @@
 extern crate alloc;
 pub mod substring;
 pub mod uri;
+
+#[cfg_attr(not(test), cfg(feature = "cloudflare"))]
+pub mod cfemail;

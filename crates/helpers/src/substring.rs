@@ -1,8 +1,8 @@
 //! Substring utility functions.
-//! 
+//!
 //! This module provides a convenient API for extracting substrings using a
 //! [pattern](core::str::pattern::Pattern).
-//! 
+//!
 //! # Examples
 //! ```
 //! use aidoku_helpers::substring::Substring;

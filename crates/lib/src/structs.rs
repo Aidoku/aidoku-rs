@@ -185,8 +185,8 @@ pub struct Filter {
 /// are differentiated by their ID, and so changing the ID will result in
 /// a different manga. Thus, developers should decide on the ID format
 /// before publishing their source.
-/// 
-/// The ID must be unique at the source-level. 
+///
+/// The ID must be unique at the source-level.
 #[derive(Clone, Debug, Default)]
 pub struct Manga {
     /// The given identifier of this manga, which can be anything, from a number
@@ -250,7 +250,7 @@ pub struct Listing {
 /// Struct containing metadata about a chapter. Different chapters are differentiated
 /// by their ID. Thus, changing the ID will result in a different chapter, even if the
 /// chapters have the same volume/chapter number.
-/// 
+///
 /// The ID must be unique at the manga level.
 #[derive(Clone, Debug)]
 pub struct Chapter {
@@ -275,7 +275,7 @@ pub struct Chapter {
 
     /// The chapter URL, which will be used for sharing in the future.
     pub url: String,
-    
+
     /// The chapter's language. It should be a valid language code.
     pub lang: String,
 }

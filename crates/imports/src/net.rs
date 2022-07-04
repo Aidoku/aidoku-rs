@@ -119,9 +119,7 @@ impl Request {
     /// Set the URL for the request
     pub fn set_url<T: AsRef<str>>(self, url: T) -> Self {
         let url = url.as_ref();
-        unsafe {
-            request_set_url(self.0, url.as_ptr(), url.len())
-        }
+        unsafe { request_set_url(self.0, url.as_ptr(), url.len()) }
         self
     }
 

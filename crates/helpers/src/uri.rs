@@ -1,13 +1,13 @@
 //! Module for encoding URIs.
-//! 
-//! This module encodes a UTF-8 URI string by replacing each instance of 
-//! certain characters with an escape sequence representing the UTF-8 
+//!
+//! This module encodes a UTF-8 URI string by replacing each instance of
+//! certain characters with an escape sequence representing the UTF-8
 //! encoding of the character.
 use alloc::{string::String, vec::Vec};
 
 /// Percent-encode an entire URI string that is valid UTF-8.
 ///
-/// `internal_encode_uri` escapes all non-alphanumeric characters and 
+/// `internal_encode_uri` escapes all non-alphanumeric characters and
 /// characters in the `charset` parameter.
 ///
 /// This function is made public for use with a custom unencoded charset.

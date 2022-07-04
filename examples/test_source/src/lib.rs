@@ -2,12 +2,14 @@
 use aidoku::{
     error::Result,
     prelude::*,
-    std::{String, Vec, net::Request}, 
+    std::{net::Request, String, Vec},
     Chapter, DeepLink, Filter, Listing, Manga, MangaPageResult, Page,
 };
 
 #[initialize]
 fn initialize() {
+    // Place any code that is supposed to run once when the source starts here.
+    // This include initializing any variables, setting the rate limit, etc.
     todo!()
 }
 

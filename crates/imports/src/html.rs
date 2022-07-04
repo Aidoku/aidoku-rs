@@ -2,8 +2,8 @@
 //! for extracting data, using HTML5 DOM methods and CSS selectors.
 //!
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
-use core::fmt::Display;
 use alloc::string::String;
+use core::fmt::Display;
 
 use crate::{
     error::{AidokuError, NodeError, Result},
@@ -91,7 +91,7 @@ extern "C" {
 }
 
 /// HTML escape an input string.
-/// 
+///
 /// # Examples
 /// ```ignore
 /// assert_eq!(escape_html_entities("<"), "&lt;");
@@ -103,7 +103,7 @@ pub fn escape_html_entities<T: AsRef<str>>(text: T) -> String {
 }
 
 /// Un-escape an HTML escaped string.
-/// 
+///
 /// # Examples
 /// ```ignore
 /// assert_eq!(unescape_html_entities("&lt;"), "<");
@@ -464,8 +464,8 @@ impl Node {
     }
 
     /// Get the node's text and escape any HTML-reserved characters to HTML entities.
-    /// 
-    /// For example, for a node with text `Hello &<> Å å π 新 there ¾ © »`, 
+    ///
+    /// For example, for a node with text `Hello &<> Å å π 新 there ¾ © »`,
     /// this would return `Hello &amp;&lt;&gt; Å å π 新 there ¾ © »`
     pub fn escape(&self) -> StringRef {
         let rid: i32 = unsafe { scraper_escape(self.0) };
@@ -473,7 +473,7 @@ impl Node {
     }
 
     /// Get the node's text and unescape any HTML entities to their original characters.
-    /// 
+    ///
     /// For example, for a node with text `Hello &amp;&lt;&gt; Å å π 新 there ¾ © »`,
     /// this would return `Hello &<> Å å π 新 there ¾ © »`.
     pub fn unescape(&self) -> StringRef {
