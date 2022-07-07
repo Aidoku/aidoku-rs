@@ -301,8 +301,8 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                     "objectref" => quote! {.as_object()?},
                     "arrayref" => quote! {.as_array()?},
                     "valueref" => quote! {},
-                    "i64" => quote! {.as_int()?},
-                    "f64" => quote! {.as_float()?},
+                    "i8" | "i16" | "i32" | "i64" => quote! {.as_int()?.try_into::<#typ>().unwrap_or(0)},
+                    "f32" | "f64" => quote! {.as_float()?.try_into::<#typ>().unwrap_or(0.0)},
                     "bool" => quote! {.as_bool()?},
                     &_ => panic!("unimplemented type {typcall}"),
                 }
@@ -332,3 +332,4 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
     }
     .into()
 }
+

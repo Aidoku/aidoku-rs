@@ -582,6 +582,7 @@ impl ObjectRef {
     }
 }
 
+/// Trait to deserialize a JSON object/ObjectRef into a struct.
 pub trait Deserializable: Default {
     fn from_objectref(object_ref: ObjectRef) -> Result<Self>
     where
