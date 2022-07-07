@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse, ItemFn};
+use syn::{parse, Data, DeriveInput, Ident, ItemFn, Type};
 
 #[proc_macro_attribute]
 pub fn initialize(_: TokenStream, input: TokenStream) -> TokenStream {
@@ -240,6 +240,94 @@ pub fn handle_notification(_: TokenStream, input: TokenStream) -> TokenStream {
                 Err(_) => return,
             };
             #func_name(notification);
+        }
+    }
+    .into()
+}
+
+#[proc_macro_derive(Deserializable, attributes(alias))]
+pub fn from_objectref(input: TokenStream) -> TokenStream {
+    let ast = syn::parse_macro_input!(input as DeriveInput);
+
+    let fields = match ast.data {
+        Data::Struct(st) => st.fields,
+        _ => panic!("impl must be a struct"),
+    };
+
+    // convert all the field names into strings
+    // if there is an attribute use that instead of the field name
+    let mut keys = Vec::with_capacity(fields.len());
+    for field in fields.clone() {
+        if field.attrs.is_empty() {
+            keys.push(field.ident.unwrap().to_string());
+        } else {
+            for attr in field.attrs {
+                if attr.path.is_ident("alias") {
+                    let meta: syn::Meta = attr.parse_meta().unwrap();
+                    if let syn::Meta::NameValue(name_value) = meta {
+                        if let syn::Lit::Str(lit) = name_value.lit {
+                            keys.push(lit.value());
+                        } else {
+                            panic!("alias must be a string");
+                        }
+                    } else {
+                        panic!("expected name-value pair: #[alias = \"...\"]");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    let idents: Vec<&Ident> = fields
+        .iter()
+        .filter_map(|field| field.ident.as_ref())
+        .collect::<Vec<&Ident>>();
+
+    let typecalls = fields
+        .iter()
+        .map(|field| match field.ty.clone() {
+            Type::Path(typepath) => {
+                // TODO: options and results
+                // TODO: vecs
+                // TODO: genericized numerics
+
+                // get the type of the specified field, lowercase
+                let typ = typepath.path.segments.last().unwrap();
+                let typcall = quote! {#typ}.to_string().to_lowercase();
+                match typcall.as_str() {
+                    "string" => quote! {.as_string()?.read()},
+                    "stringref" => quote! {.as_string()?},
+                    "objectref" => quote! {.as_object()?},
+                    "arrayref" => quote! {.as_array()?},
+                    "valueref" => quote! {},
+                    "i64" => quote! {.as_int()?},
+                    "f64" => quote! {.as_float()?},
+                    "bool" => quote! {.as_bool()?},
+                    &_ => panic!("unimplemented type {typcall}"),
+                }
+            }
+            _ => unimplemented!(),
+        })
+        .collect::<Vec<_>>();
+
+    let name: &Ident = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics Deserializable for #name #ty_generics #where_clause {
+            fn from_objectref(obj: aidoku::std::ObjectRef) -> aidoku::error::Result<#name> {
+                let mut ret = #name::default();
+                #(
+                    ret.#idents = obj.get(#keys)#typecalls;
+                )*
+                Ok(ret)
+            }
+
+            fn from_json<T: AsRef<[u8]>>(buf: T) -> aidoku::error::Result<#name> {
+                let obj = aidoku::std::json::parse(buf)?.as_object()?;
+                Self::from_objectref(obj)
+            }
         }
     }
     .into()
