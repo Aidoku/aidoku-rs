@@ -507,7 +507,7 @@ impl FromIterator<ValueRef> for ArrayRef {
 impl From<ValueRef> for ArrayRef {
     fn from(valref: ValueRef) -> Self {
         let length = unsafe { array_len(valref.0) };
-        Self(valref, 0, length.saturating_sub(1))
+        Self(valref, 0, length.wrapping_sub(1))
     }
 }
 
