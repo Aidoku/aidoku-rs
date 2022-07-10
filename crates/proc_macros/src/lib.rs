@@ -284,9 +284,25 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
         .filter_map(|field| field.ident.as_ref())
         .collect::<Vec<&Ident>>();
 
-    let typecalls = fields
+    fn get_base_typecall<T: AsRef<str>>(key: T, typcall: T) -> quote::__private::TokenStream {
+        let key = key.as_ref();
+        let typcall = typcall.as_ref();
+        match typcall {
+            "stringref" => quote! {obj.get(#key).as_string()},
+            "objectref" => quote! {obj.get(#key).as_object()},
+            "arrayref" => quote! {obj.get(#key).as_array()},
+            "valueref" => quote! {obj.get(#key)},
+            "i8" | "i16" | "i32" | "i64" => quote! {obj.get(#key).as_int()},
+            "f32" | "f64" => quote! {obj.get(#key).as_float()},
+            "bool" => quote! {obj.get(#key).as_bool()},
+            &_ => panic!("unimplemented type {typcall}"),
+        }
+    }
+
+    let typecalls = keys
         .iter()
-        .map(|field| match field.ty.clone() {
+        .zip(fields.iter())
+        .map(|(key, field)| match field.ty.clone() {
             Type::Path(typepath) => {
                 // TODO: options and results
                 // TODO: vecs
@@ -294,17 +310,63 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
 
                 // get the type of the specified field, lowercase
                 let typ = typepath.path.segments.last().unwrap();
-                let typcall = quote! {#typ}.to_string().to_lowercase();
-                match typcall.as_str() {
-                    "string" => quote! {.as_string()?.read()},
-                    "stringref" => quote! {.as_string()?},
-                    "objectref" => quote! {.as_object()?},
-                    "arrayref" => quote! {.as_array()?},
-                    "valueref" => quote! {},
-                    "i8" | "i16" | "i32" | "i64" => quote! {.as_int()?.try_into::<#typ>().unwrap_or(0)},
-                    "f32" | "f64" => quote! {.as_float()?.try_into::<#typ>().unwrap_or(0.0)},
-                    "bool" => quote! {.as_bool()?},
-                    &_ => panic!("unimplemented type {typcall}"),
+                let typiden = typ.ident.to_string().to_lowercase();
+                match typiden.as_str() {
+                    "string" => quote! {obj.get(#key).as_string()?.read()},
+                    "option" => {
+                        // extract the type of the option
+                        if let syn::PathArguments::AngleBracketed(typargs) = &typ.arguments {
+                            if let syn::GenericArgument::Type(last) = typargs.args.last().unwrap() {
+                                if let Type::Path(typepath) = last {
+                                    let typ = typepath.path.segments.last().unwrap();
+                                    let typiden = typ.ident.to_string().to_lowercase();
+                                    match typiden.as_str() {
+                                        "string" => quote! {
+                                            match obj.get(#key).as_string() {
+                                                Ok(s) => Some(s.read()),
+                                                Err(_) => None,
+                                            }
+                                        },
+                                        &_ => { 
+                                            let call = get_base_typecall(key, &typiden);
+                                            match typiden.as_str() {
+                                                "i8" | "i16" | "i32" | "f32" | "f64" => quote! {
+                                                    match #call {
+                                                        Ok(s) => match s.try_into() {
+                                                            Ok(s) => Some(s),
+                                                            Err(_) => None,
+                                                        }
+                                                        Err(_) => None,
+                                                    }
+                                                },
+                                                _ => quote! {
+                                                    match #call {
+                                                        Ok(s) => Some(s),
+                                                        Err(_) => None,
+                                                    }
+                                                },
+                                            }
+                                        },
+                                    }
+                                } else {
+                                    panic!("expected type path");
+                                }
+                            } else {
+                                panic!("expected type argument to option");
+                            }
+                        } else {
+                            panic!("expected angle brackets after option");
+                        }
+                    },
+                    &_ => { 
+                        let call = get_base_typecall(key, &typiden);
+                        let extra_typcall = match typiden.as_str() {
+                            "i8" | "i16" | "i32" => quote! {.try_into().unwrap_or(0)},
+                            "f32" | "f64" => quote! {.try_into().unwrap_or(0.0)},
+                            &_ => quote! {},
+                        };
+                        quote! {#call?#extra_typcall}
+                    },
                 }
             }
             _ => unimplemented!(),
@@ -319,7 +381,7 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
             fn from_objectref(obj: aidoku::std::ObjectRef) -> aidoku::error::Result<#name> {
                 let mut ret = #name::default();
                 #(
-                    ret.#idents = obj.get(#keys)#typecalls;
+                    ret.#idents = #typecalls;
                 )*
                 Ok(ret)
             }
