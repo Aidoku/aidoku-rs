@@ -582,17 +582,6 @@ impl ObjectRef {
     }
 }
 
-/// Trait to deserialize a JSON object/ObjectRef into a struct.
-pub trait Deserializable: Default {
-    fn from_objectref(object_ref: ObjectRef) -> Result<Self>
-    where
-        Self: Sized;
-
-    fn from_json<T: AsRef<[u8]>>(buf: T) -> Result<Self>
-    where
-        Self: Sized;
-}
-
 impl Clone for ObjectRef {
     fn clone(&self) -> Self {
         let rid = unsafe { copy(self.0 .0) };

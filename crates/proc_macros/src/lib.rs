@@ -377,18 +377,13 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     quote! {
-        impl #impl_generics Deserializable for #name #ty_generics #where_clause {
-            fn from_objectref(obj: aidoku::std::ObjectRef) -> aidoku::error::Result<#name> {
-                let mut ret = #name::default();
-                #(
-                    ret.#idents = #typecalls;
-                )*
-                Ok(ret)
-            }
+        impl #impl_generics core::convert::TryFrom<aidoku::std::ObjectRef> for #name #ty_generics #where_clause {
+            type Error = aidoku::error::AidokuError;
 
-            fn from_json<T: AsRef<[u8]>>(buf: T) -> aidoku::error::Result<#name> {
-                let obj = aidoku::std::json::parse(buf)?.as_object()?;
-                Self::from_objectref(obj)
+            fn try_from(obj: aidoku::std::ObjectRef) -> aidoku::error::Result<Self> {
+                Ok(Self {
+                    #(#idents: #typecalls,)*
+                })
             }
         }
     }
