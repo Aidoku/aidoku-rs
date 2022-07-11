@@ -247,6 +247,7 @@ impl Drop for ValueRef {
     fn drop(&mut self) {
         if self.1 {
             unsafe { destroy(self.0) };
+            self.1 = false;
         }
     }
 }
