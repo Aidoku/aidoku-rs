@@ -51,8 +51,8 @@ fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
         _abort(
             message_ptr,
             file_ptr,
-            i32::try_from(line).unwrap_or(-1),
-            i32::try_from(column).unwrap_or(-1),
+            line.try_into().unwrap_or(-1),
+            column.try_into().unwrap_or(-1),
         );
 
         dealloc(message_len_ptr as *mut u8, layout);

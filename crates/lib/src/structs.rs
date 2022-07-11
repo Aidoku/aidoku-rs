@@ -57,7 +57,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Default)]
 pub enum FilterType {
     #[default]
     Base = 0,
@@ -115,7 +115,7 @@ impl FilterType {
 
 /// An enum representing the various statuses a manga can have.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Default)]
 pub enum MangaStatus {
     /// The manga status cannot be determined.
     #[default]
@@ -140,7 +140,7 @@ pub enum MangaStatus {
 
 /// An enumeration representing the manga's content rating.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Default)]
 pub enum MangaContentRating {
     #[default]
     Safe = 0,
@@ -151,7 +151,7 @@ pub enum MangaContentRating {
 /// An enumeration representing different manga viewers, used to indicate
 /// the preferred reading method for this manga.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Default)]
 pub enum MangaViewer {
     #[deprecated(
         since = "0.2.0",
@@ -228,6 +228,12 @@ pub struct Manga {
     pub viewer: MangaViewer,
 }
 
+impl PartialEq for Manga {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
 /// A struct representing a "page" of mangas. There is no limit on how many mangas
 /// can a page have, that is up to the source to decide.
 #[derive(Clone, Debug, Default)]
@@ -245,6 +251,12 @@ pub struct MangaPageResult {
 pub struct Listing {
     /// The name of the listing.
     pub name: String,
+}
+
+impl PartialEq for Listing {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
 }
 
 /// Struct containing metadata about a chapter. Different chapters are differentiated
@@ -278,6 +290,12 @@ pub struct Chapter {
 
     /// The chapter's language. It should be a valid language code.
     pub lang: String,
+}
+
+impl PartialEq for Chapter {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Default for Chapter {
@@ -315,7 +333,7 @@ pub struct Page {
 
 /// Struct representing a deep link. This deep link is used to open a manga
 /// from a webpage URL using the `aidoku://` URL scheme.
-#[derive(Clone, Debug, Default)]
+#[derive(PartialEq, Clone, Debug, Default)]
 pub struct DeepLink {
     /// The manga to link to.
     pub manga: Option<Manga>,
