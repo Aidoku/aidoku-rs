@@ -5,7 +5,7 @@ use crate::{
     alloc::{string::String, vec::Vec},
     error::{AidokuError, AidokuErrorKind, NodeError, Result},
     html::Node,
-    std::{Rid as ValueRid, StringRef, ValueRef},
+    std::{Rid as ValueRid, StringRef, ValueRef}, Kind,
 };
 
 #[repr(C)]
@@ -40,6 +40,10 @@ extern "C" {
     fn request_get_data(rd: Rid, buffer: *mut u8, size: usize);
     #[link_name = "get_data_size"]
     fn request_get_data_size(rd: Rid) -> usize;
+    #[link_name = "get_header"]
+    fn request_get_header(rd: Rid, key: *const u8, key_len: usize) -> Rid;
+    #[link_name = "get_status_code"]
+    fn request_get_status_code(rd: Rid) -> i32;
 
     #[link_name = "json"]
     fn request_json(rd: Rid) -> ValueRid;
@@ -76,6 +80,7 @@ macro_rules! convenience_http_methods {
 }
 
 /// A type that makes a HTTP request.
+#[derive(Debug)]
 pub struct Request(pub Rid);
 impl Request {
     /// Start a new request with a URL and HTTP method
@@ -124,13 +129,32 @@ impl Request {
     }
 
     #[inline]
-    fn send(&self) {
+    pub fn send(&self) {
         unsafe { request_send(self.0) }
     }
 
     #[inline]
-    fn close(&self) {
+    pub fn close(&self) {
         unsafe { request_close(self.0) }
+    }
+
+    /// Get the response's status code
+    #[inline]
+    pub fn status_code(&self) -> i32 {
+        unsafe { request_get_status_code(self.0) }
+    }
+
+    /// Get response headers
+    pub fn get_header<T: AsRef<str>>(&self, header: T) -> Option<StringRef> {
+        let header = header.as_ref();
+        let value = ValueRef::new(unsafe {
+            request_get_header(self.0, header.as_ptr(), header.len())
+        });
+        if value.kind() != Kind::String {
+            None
+        } else {
+            Some(StringRef(value))
+        }
     }
 
     /// Get the URL of the request

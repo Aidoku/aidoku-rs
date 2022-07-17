@@ -3,7 +3,12 @@
 //! This module encodes a UTF-8 URI string by replacing each instance of
 //! certain characters with an escape sequence representing the UTF-8
 //! encoding of the character.
-use alloc::{string::String, vec::Vec};
+use core::fmt::Display;
+
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 /// Percent-encode an entire URI string that is valid UTF-8.
 ///
@@ -63,4 +68,100 @@ pub fn encode_uri<T: AsRef<[u8]>>(url: T) -> String {
 /// ```
 pub fn encode_uri_component<T: AsRef<[u8]>>(url: T) -> String {
     internal_encode_uri(url.as_ref(), b"-_.!~*'()")
+}
+
+/// Alternating, decoded query names and values.
+#[derive(Clone, Debug, Default)]
+pub struct QueryParameters {
+    params: Vec<Option<String>>,
+}
+
+impl QueryParameters {
+    #[inline]
+    pub fn new() -> Self {
+        QueryParameters { params: Vec::new() }
+    }
+
+    #[inline]
+    pub fn with_capacity(capacity: usize) -> Self {
+        QueryParameters {
+            params: Vec::with_capacity(capacity * 2),
+        }
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.params.len() / 2
+    }
+
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.params.is_empty()
+    }
+
+    /// Percent-encode the query paramter with [encode_uri_component] and
+    /// add it to the query string.
+    pub fn push<T: AsRef<str>>(&mut self, name: T, value: Option<T>) {
+        self.params.push(Some(encode_uri_component(name.as_ref())));
+        self.params
+            .push(value.map(|v| encode_uri_component(v.as_ref())));
+    }
+
+    /// Add a pre-encoded query parameter to the query string.
+    pub fn push_encoded<T: AsRef<str>>(&mut self, name: T, value: Option<T>) {
+        self.params.push(Some(name.as_ref().to_string()));
+        self.params.push(value.map(|v| v.as_ref().to_string()));
+    }
+
+    /// Percent-encode the query parameter with [encode_uri_component] and
+    /// replace any existing values.
+    pub fn set<T: AsRef<str>>(&mut self, name: T, value: Option<T>) {
+        self.remove_all(&name);
+        self.push(name, value);
+    }
+
+    /// Replace any existing values with the given pair.
+    pub fn set_encoded<T: AsRef<str>>(&mut self, name: T, value: Option<T>) {
+        self.remove_all(&name);
+        self.push_encoded(name, value);
+    }
+
+    /// Remove all query parameters matching given name.
+    pub fn remove_all<T: AsRef<str>>(&mut self, name: T) {
+        let name = name.as_ref();
+        self.remove_all_encoded(encode_uri_component(name));
+    }
+
+    /// Remove all query parameters matching given pre-encoded name.
+    pub fn remove_all_encoded<T: AsRef<str>>(&mut self, name: T) {
+        let name = name.as_ref();
+        for i in (0..self.params.len()).step_by(2) {
+            if let Some(ref param_name) = &self.params.get(i) 
+                && let Some(ref param_name) = param_name 
+                && name == param_name {
+                self.params.remove(i);
+                self.params.remove(i);
+            }
+        }
+    }
+}
+
+impl Display for QueryParameters {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut first_pair = true;
+        for i in (0..self.params.len()).step_by(2) {
+            if let Some(ref param_name) = &self.params[i] {
+                if first_pair {
+                    first_pair = false
+                } else {
+                    write!(f, "&")?;
+                }
+                write!(f, "{param_name}")?;
+                if let Some(ref param_value) = &self.params[i + 1] {
+                    write!(f, "={param_value}")?;
+                }
+            }
+        }
+        Ok(())
+    }
 }
