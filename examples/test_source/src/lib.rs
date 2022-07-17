@@ -2,17 +2,9 @@
 use aidoku::{
     error::Result,
     prelude::*,
-    std::{net::Request, Deserializable, String, Vec},
+    std::{net::Request, String, Vec},
     Chapter, DeepLink, Filter, Listing, Manga, MangaPageResult, Page,
 };
-
-#[derive(Default, Deserializable)]
-struct MangaDexChapter {
-    id: String,
-    timestamp: i64,
-    #[alias = "externalUrl"]
-    external_url: aidoku::std::ValueRef,
-}
 
 #[initialize]
 fn initialize() {

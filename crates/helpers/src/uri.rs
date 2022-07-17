@@ -73,7 +73,7 @@ pub fn encode_uri_component<T: AsRef<[u8]>>(url: T) -> String {
 /// Alternating, decoded query names and values.
 #[derive(Clone, Debug, Default)]
 pub struct QueryParameters {
-    params: Vec<Option<String>>,
+    params: Vec<(String, Option<String>)>,
 }
 
 impl QueryParameters {
@@ -102,15 +102,18 @@ impl QueryParameters {
     /// Percent-encode the query paramter with [encode_uri_component] and
     /// add it to the query string.
     pub fn push<T: AsRef<str>>(&mut self, name: T, value: Option<T>) {
-        self.params.push(Some(encode_uri_component(name.as_ref())));
-        self.params
-            .push(value.map(|v| encode_uri_component(v.as_ref())));
+        self.params.push((
+            encode_uri_component(name.as_ref()),
+            value.map(|v| encode_uri_component(v.as_ref())),
+        ));
     }
 
     /// Add a pre-encoded query parameter to the query string.
     pub fn push_encoded<T: AsRef<str>>(&mut self, name: T, value: Option<T>) {
-        self.params.push(Some(name.as_ref().to_string()));
-        self.params.push(value.map(|v| v.as_ref().to_string()));
+        self.params.push((
+            name.as_ref().to_string(),
+            value.map(|v| v.as_ref().to_string()),
+        ));
     }
 
     /// Percent-encode the query parameter with [encode_uri_component] and
@@ -135,33 +138,27 @@ impl QueryParameters {
     /// Remove all query parameters matching given pre-encoded name.
     pub fn remove_all_encoded<T: AsRef<str>>(&mut self, name: T) {
         let name = name.as_ref();
-        for i in (0..self.params.len()).step_by(2) {
-            if let Some(ref param_name) = &self.params.get(i) 
-                && let Some(ref param_name) = param_name 
-                && name == param_name {
-                self.params.remove(i);
-                self.params.remove(i);
-            }
-        }
+        self.params.retain(|&(ref n, _)| n != name);
     }
 }
 
 impl Display for QueryParameters {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut first_pair = true;
-        for i in (0..self.params.len()).step_by(2) {
-            if let Some(ref param_name) = &self.params[i] {
-                if first_pair {
-                    first_pair = false
-                } else {
-                    write!(f, "&")?;
-                }
-                write!(f, "{param_name}")?;
-                if let Some(ref param_value) = &self.params[i + 1] {
-                    write!(f, "={param_value}")?;
-                }
-            }
-        }
-        Ok(())
+        write!(
+            f,
+            "{}",
+            self.params
+                .iter()
+                .map(|(n, v)| {
+                    let mut s = n.clone();
+                    if let Some(v) = v {
+                        s.push('=');
+                        s.push_str(v);
+                    }
+                    s
+                })
+                .collect::<Vec<_>>()
+                .join("&"),
+        )
     }
 }
