@@ -13,23 +13,29 @@ use aidoku_imports::html::Node;
 /// ```
 pub fn parse_cfemail<T: AsRef<str>>(data: T) -> String {
     let data = data.as_ref();
-    let key = u32::from_str_radix(&data[0..2], 16).unwrap();
-    let mut email = String::with_capacity(data.len() / 2 - 1);
-    let mut n = 2;
+    if let Ok(key) = u32::from_str_radix(&data[0..2], 16) {
+        let mut email = String::with_capacity(data.len() / 2 - 1);
+        let mut n = 2;
 
-    while n < data.len() {
-        let chrcode = u32::from_str_radix(&data[n..n + 2], 16).unwrap() ^ key;
-        email.push(char::from_u32(chrcode).unwrap_or_default());
-        n += 2;
+        while n < data.len() {
+            if let Ok(chrcode) = u32::from_str_radix(&data[n..n + 2], 16) {
+                let chrcode = chrcode ^ key;
+                email.push(char::from_u32(chrcode).unwrap_or_default());
+            }
+            n += 2;
+        }
+        email
+    } else {
+        "[email protected]".into()
     }
-    email
 }
 
 /// Replaces all `[email protected]` elements with their contents in-place.
 pub fn decode_cfemail(html: &Node) {
-    html.select(".__cf_email__").array().for_each(|elem| {
-        let mut node = elem.as_node().unwrap();
-        let email = parse_cfemail(node.attr("data-cfemail").read());
-        node.set_text(email).ok();
-    })
+    for elem in html.select(".__cf_email__").array() {
+        if let Ok(mut node) = elem.as_node() {
+            let email = parse_cfemail(node.attr("data-cfemail").read());
+            node.set_text(email).ok();
+        }
+    }
 }

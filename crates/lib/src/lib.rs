@@ -31,35 +31,34 @@ fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
 
     // Basically, AssemblyScript places 4 bytes before the string slice to denote
     // its length. This is why we need the extra 8 bytes.
-    let layout =
-        Layout::from_size_align(8 + message.len() + file.len(), core::mem::align_of::<u8>())
-            .unwrap();
-
-    unsafe {
-        let message_len_ptr = alloc_zeroed(layout) as *mut i32;
-        *message_len_ptr = i32::try_from(message.len()).unwrap_or(-1);
-
-        let message_ptr = message_len_ptr.add(1) as *mut u8;
-        copy::<u8>(message.as_ptr(), message_ptr, message.len());
-
-        let file_len_ptr = message_len_ptr.add(message.len()) as *mut i32;
-        *file_len_ptr = i32::try_from(file.len()).unwrap_or(-1);
-
-        let file_ptr = file_len_ptr.add(1) as *mut u8;
-        copy::<u8>(file.as_ptr(), file_ptr, file.len());
-
-        _abort(
-            message_ptr,
-            file_ptr,
-            line.try_into().unwrap_or(-1),
-            column.try_into().unwrap_or(-1),
-        );
-
-        dealloc(message_len_ptr as *mut u8, layout);
-        dealloc(message_ptr, layout);
-        dealloc(file_len_ptr as *mut u8, layout);
-        dealloc(file_ptr, layout);
+    if let Ok(layout) = Layout::from_size_align(8 + message.len() + file.len(), core::mem::align_of::<u8>()) {
+        unsafe {
+            let message_len_ptr = alloc_zeroed(layout) as *mut i32;
+            *message_len_ptr = i32::try_from(message.len()).unwrap_or(-1);
+    
+            let message_ptr = message_len_ptr.add(1) as *mut u8;
+            copy::<u8>(message.as_ptr(), message_ptr, message.len());
+    
+            let file_len_ptr = message_len_ptr.add(message.len()) as *mut i32;
+            *file_len_ptr = i32::try_from(file.len()).unwrap_or(-1);
+    
+            let file_ptr = file_len_ptr.add(1) as *mut u8;
+            copy::<u8>(file.as_ptr(), file_ptr, file.len());
+    
+            _abort(
+                message_ptr,
+                file_ptr,
+                line.try_into().unwrap_or(-1),
+                column.try_into().unwrap_or(-1),
+            );
+    
+            dealloc(message_len_ptr as *mut u8, layout);
+            dealloc(message_ptr, layout);
+            dealloc(file_len_ptr as *mut u8, layout);
+            dealloc(file_ptr, layout);
+        }
     }
+
     core::intrinsics::abort()
 }
 
