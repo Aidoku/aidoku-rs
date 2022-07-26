@@ -89,7 +89,12 @@ pub fn print<T: AsRef<str>>(string: T) {
 
 /// Gets the current time as a Unix timestamp.
 pub fn current_date() -> f64 {
-    unsafe { read_date(create_date(-1.0)) }
+    unsafe {
+        let date = create_date(-1.0);
+        let result = read_date(date);
+        destroy(date);
+        result
+    }
 }
 
 // ==========================
