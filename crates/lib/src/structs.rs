@@ -338,8 +338,7 @@ pub struct DeepLink {
     /// The manga to link to.
     pub manga: Option<Manga>,
 
-    /// The chapter to link to. Currently, this is not implemented, but should
-    /// still be provided for futureproofing.
+    /// The chapter to link to. You only need to provide the chapter's ID.
     pub chapter: Option<Chapter>,
 }
 
