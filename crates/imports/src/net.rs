@@ -81,7 +81,7 @@ macro_rules! convenience_http_methods {
 
 /// A type that makes a HTTP request.
 #[derive(Debug)]
-pub struct Request(pub Rid);
+pub struct Request(pub Rid, pub bool);
 impl Request {
     /// Start a new request with a URL and HTTP method
     ///
@@ -94,7 +94,7 @@ impl Request {
         unsafe {
             let rd = request_init(method);
             request_set_url(rd, url.as_ptr(), url.len());
-            Self(rd)
+            Self(rd, true)
         }
     }
 
@@ -207,6 +207,15 @@ impl Request {
         match rid {
             -1 => Err(AidokuError::from(NodeError::ParseError)),
             _ => Ok(unsafe { Node::from(rid) }),
+        }
+    }
+}
+
+impl Drop for Request {
+    fn drop(&mut self) {
+        if self.1 {
+            unsafe { request_close(self.0) };
+            self.1 = false;
         }
     }
 }

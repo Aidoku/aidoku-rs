@@ -194,8 +194,9 @@ pub fn modify_image_request(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "modify_image_request"]
         pub unsafe extern "C" fn __wasm_modify_image_request(request_rid: i32) {
-            let request = aidoku::std::net::Request(request_rid);
+            let request = aidoku::std::net::Request(request_rid, false);
             #func_name(request);
+            
         }
     }
     .into()
