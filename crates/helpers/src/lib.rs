@@ -3,6 +3,7 @@
 #![deny(missing_debug_implementations)]
 #![feature(pattern, let_chains)]
 extern crate alloc;
+pub mod node;
 pub mod substring;
 pub mod uri;
 

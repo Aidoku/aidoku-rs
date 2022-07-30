@@ -196,7 +196,7 @@ pub fn modify_image_request(_: TokenStream, input: TokenStream) -> TokenStream {
         pub unsafe extern "C" fn __wasm_modify_image_request(request_rid: i32) {
             let request = aidoku::std::net::Request(request_rid, false);
             #func_name(request);
-            
+
         }
     }
     .into()
@@ -328,7 +328,7 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                                                 Err(_) => None,
                                             }
                                         },
-                                        &_ => { 
+                                        &_ => {
                                             let call = get_base_typecall(key, &typiden);
                                             match typiden.as_str() {
                                                 "i8" | "i16" | "i32" | "f32" | "f64" => quote! {
@@ -340,7 +340,8 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                                                         Err(_) => None,
                                                     }
                                                 },
-                                                "stringref" | "arrayref" | "valueref" | "objectref" => quote! {
+                                                "stringref" | "arrayref" | "valueref"
+                                                | "objectref" => quote! {
                                                     match #call {
                                                         Ok(s) => Some(s.clone()),
                                                         Err(_) => None,
@@ -353,7 +354,7 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                                                     }
                                                 },
                                             }
-                                        },
+                                        }
                                     }
                                 } else {
                                     panic!("expected type path");
@@ -364,8 +365,8 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                         } else {
                             panic!("expected angle brackets after option");
                         }
-                    },
-                    &_ => { 
+                    }
+                    &_ => {
                         let call = get_base_typecall(key, &typiden);
                         let extra_typcall = match typiden.as_str() {
                             "i8" | "i16" | "i32" => quote! {.try_into().unwrap_or(0)},
@@ -375,7 +376,7 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                             &_ => quote! {},
                         };
                         quote! {#call #extra_typcall}
-                    },
+                    }
                 }
             }
             _ => unimplemented!(),
@@ -398,4 +399,3 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
     }
     .into()
 }
-

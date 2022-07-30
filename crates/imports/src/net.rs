@@ -5,7 +5,8 @@ use crate::{
     alloc::{string::String, vec::Vec},
     error::{AidokuError, AidokuErrorKind, NodeError, Result},
     html::Node,
-    std::{Rid as ValueRid, StringRef, ValueRef}, Kind,
+    std::{Rid as ValueRid, StringRef, ValueRef},
+    Kind,
 };
 
 #[repr(C)]
@@ -147,9 +148,8 @@ impl Request {
     /// Get response headers
     pub fn get_header<T: AsRef<str>>(&self, header: T) -> Option<StringRef> {
         let header = header.as_ref();
-        let value = ValueRef::new(unsafe {
-            request_get_header(self.0, header.as_ptr(), header.len())
-        });
+        let value =
+            ValueRef::new(unsafe { request_get_header(self.0, header.as_ptr(), header.len()) });
         if value.kind() != Kind::String {
             None
         } else {
