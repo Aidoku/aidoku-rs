@@ -32,8 +32,7 @@ impl NodeHelpers for Node {
                 .unwrap_or_default()
         } else {
             Node::new_fragment(self.html().read().replace("<br>", "\n<br>"))
-                .map(|v| v.untrimmed_text())
-                .map(|v| v.read())
+                .map(|v| v.select("body").untrimmed_text().read())
                 .unwrap_or_default()
         }
     }
