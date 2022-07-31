@@ -369,8 +369,8 @@ pub fn from_objectref(input: TokenStream) -> TokenStream {
                     &_ => {
                         let call = get_base_typecall(key, &typiden);
                         let extra_typcall = match typiden.as_str() {
-                            "i8" | "i16" | "i32" => quote! {.try_into().unwrap_or(0)},
-                            "f32" | "f64" => quote! {.try_into().unwrap_or(0.0)},
+                            "i8" | "i16" | "i32" | "f32" | "f64" => quote! {.try_into()?},
+                            "bool" => quote! {?},
                             "stringref" | "arrayref" | "objectref" => quote! {?.clone()},
                             "valueref" => quote! {.clone()},
                             &_ => quote! {},
