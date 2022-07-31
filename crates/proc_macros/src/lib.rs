@@ -1,6 +1,23 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse, ItemFn};
+use syn::{parse, Data, DeriveInput, Ident, ItemFn, Type};
+
+#[proc_macro_attribute]
+pub fn initialize(_: TokenStream, input: TokenStream) -> TokenStream {
+    let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
+    let func_name = &func.sig.ident;
+
+    quote! {
+        #func
+
+        #[no_mangle]
+        #[export_name = "initialize"]
+        pub unsafe extern "C" fn __wasm_initialize() {
+            #func_name()
+        }
+    }
+    .into()
+}
 
 #[proc_macro_attribute]
 pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
@@ -43,7 +60,8 @@ pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
                 Err(_) => -1,
             }
         }
-    }.into()
+    }
+    .into()
 }
 
 #[proc_macro_attribute]
@@ -138,11 +156,16 @@ pub fn get_page_list(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_page_list"]
         pub unsafe extern "C" fn __wasm_get_page_list(chapter_rid: i32) -> i32 {
-            let id = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid)).get("id").as_string() {
+            let obj = aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid));
+            let id = match obj.get("id").as_string() {
                 Ok(id) => id.read(),
                 Err(_) => return -1,
             };
-            let resp: Result<Vec<Page>> = #func_name(id);
+            let manga_id = match obj.get("mangaId").as_string() {
+                Ok(id) => id.read(),
+                Err(_) => return -1,
+            };
+            let resp: Result<Vec<Page>> = #func_name(manga_id, id);
             match resp {
                 Ok(resp) => {
                     let mut arr = aidoku::std::ArrayRef::new();
@@ -171,8 +194,9 @@ pub fn modify_image_request(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "modify_image_request"]
         pub unsafe extern "C" fn __wasm_modify_image_request(request_rid: i32) {
-            let request = aidoku::std::net::Request(request_rid);
+            let request = aidoku::std::net::Request(request_rid, false);
             #func_name(request);
+
         }
     }
     .into()
@@ -217,6 +241,160 @@ pub fn handle_notification(_: TokenStream, input: TokenStream) -> TokenStream {
                 Err(_) => return,
             };
             #func_name(notification);
+        }
+    }
+    .into()
+}
+
+#[proc_macro_derive(Deserializable, attributes(alias))]
+pub fn from_objectref(input: TokenStream) -> TokenStream {
+    let ast = syn::parse_macro_input!(input as DeriveInput);
+
+    let fields = match ast.data {
+        Data::Struct(st) => st.fields,
+        _ => panic!("impl must be a struct"),
+    };
+
+    // convert all the field names into strings
+    // if there is an attribute use that instead of the field name
+    let mut keys = Vec::with_capacity(fields.len());
+    for field in fields.clone() {
+        if field.attrs.is_empty() {
+            keys.push(field.ident.unwrap().to_string());
+        } else {
+            for attr in field.attrs {
+                if attr.path.is_ident("alias") {
+                    let meta: syn::Meta = attr.parse_meta().unwrap();
+                    if let syn::Meta::NameValue(name_value) = meta {
+                        if let syn::Lit::Str(lit) = name_value.lit {
+                            keys.push(lit.value());
+                        } else {
+                            panic!("alias must be a string");
+                        }
+                    } else {
+                        panic!("expected name-value pair: #[alias = \"...\"]");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    let idents: Vec<&Ident> = fields
+        .iter()
+        .filter_map(|field| field.ident.as_ref())
+        .collect::<Vec<&Ident>>();
+
+    fn get_base_typecall<T: AsRef<str>>(key: T, typcall: T) -> quote::__private::TokenStream {
+        let key = key.as_ref();
+        let typcall = typcall.as_ref();
+        match typcall {
+            "stringref" => quote! {obj.get(#key).as_string()},
+            "objectref" => quote! {obj.get(#key).as_object()},
+            "arrayref" => quote! {obj.get(#key).as_array()},
+            "valueref" => quote! {obj.get(#key)},
+            "i8" | "i16" | "i32" | "i64" => quote! {obj.get(#key).as_int()},
+            "f32" | "f64" => quote! {obj.get(#key).as_float()},
+            "bool" => quote! {obj.get(#key).as_bool()},
+            &_ => panic!("unimplemented type {typcall}"),
+        }
+    }
+
+    let typecalls = keys
+        .iter()
+        .zip(fields.iter())
+        .map(|(key, field)| match field.ty.clone() {
+            Type::Path(typepath) => {
+                // TODO: options and results
+                // TODO: vecs
+                // TODO: genericized numerics
+
+                // get the type of the specified field, lowercase
+                let typ = typepath.path.segments.last().unwrap();
+                let typiden = typ.ident.to_string().to_lowercase();
+                match typiden.as_str() {
+                    "string" => quote! {obj.get(#key).as_string()?.read()},
+                    "option" => {
+                        // extract the type of the option
+                        if let syn::PathArguments::AngleBracketed(typargs) = &typ.arguments {
+                            if let syn::GenericArgument::Type(last) = typargs.args.last().unwrap() {
+                                if let Type::Path(typepath) = last {
+                                    let typ = typepath.path.segments.last().unwrap();
+                                    let typiden = typ.ident.to_string().to_lowercase();
+                                    match typiden.as_str() {
+                                        "string" => quote! {
+                                            match obj.get(#key).as_string() {
+                                                Ok(s) => Some(s.read()),
+                                                Err(_) => None,
+                                            }
+                                        },
+                                        &_ => {
+                                            let call = get_base_typecall(key, &typiden);
+                                            match typiden.as_str() {
+                                                "i8" | "i16" | "i32" | "f32" | "f64" => quote! {
+                                                    match #call {
+                                                        Ok(s) => match s.try_into() {
+                                                            Ok(s) => Some(s),
+                                                            Err(_) => None,
+                                                        }
+                                                        Err(_) => None,
+                                                    }
+                                                },
+                                                "stringref" | "arrayref" | "valueref"
+                                                | "objectref" => quote! {
+                                                    match #call {
+                                                        Ok(s) => Some(s.clone()),
+                                                        Err(_) => None,
+                                                    }
+                                                },
+                                                _ => quote! {
+                                                    match #call {
+                                                        Ok(s) => Some(s),
+                                                        Err(_) => None,
+                                                    }
+                                                },
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    panic!("expected type path");
+                                }
+                            } else {
+                                panic!("expected type argument to option");
+                            }
+                        } else {
+                            panic!("expected angle brackets after option");
+                        }
+                    }
+                    &_ => {
+                        let call = get_base_typecall(key, &typiden);
+                        let extra_typcall = match typiden.as_str() {
+                            "i8" | "i16" | "i32" | "f32" | "f64" => quote! {.try_into()?},
+                            "bool" => quote! {?},
+                            "stringref" | "arrayref" | "objectref" => quote! {?.clone()},
+                            "valueref" => quote! {.clone()},
+                            &_ => quote! {},
+                        };
+                        quote! {#call #extra_typcall}
+                    }
+                }
+            }
+            _ => unimplemented!(),
+        })
+        .collect::<Vec<_>>();
+
+    let name: &Ident = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics core::convert::TryFrom<aidoku::std::ObjectRef> for #name #ty_generics #where_clause {
+            type Error = aidoku::error::AidokuError;
+
+            fn try_from(obj: aidoku::std::ObjectRef) -> aidoku::error::Result<Self> {
+                Ok(Self {
+                    #(#idents: #typecalls,)*
+                })
+            }
         }
     }
     .into()

@@ -4,8 +4,9 @@ version = 3
 
 [[package]]
 name = "aidoku"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
+ "aidoku_helpers",
  "aidoku_imports",
  "aidoku_macros",
  "aidoku_proc_macros",
@@ -13,8 +14,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aidoku_helpers"
+version = "0.1.0"
+dependencies = [
+ "aidoku_imports",
+]
+
+[[package]]
 name = "aidoku_imports"
-version = "0.1.2"
+version = "0.2.0"
 
 [[package]]
 name = "aidoku_macros"
@@ -22,7 +30,7 @@ version = "0.1.0"
 
 [[package]]
 name = "aidoku_proc_macros"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
