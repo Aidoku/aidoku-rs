@@ -3,6 +3,23 @@ use quote::quote;
 use syn::{parse, ItemFn};
 
 #[proc_macro_attribute]
+pub fn initialize(_: TokenStream, input: TokenStream) -> TokenStream {
+    let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
+    let func_name = &func.sig.ident;
+
+    quote! {
+        #func
+
+        #[no_mangle]
+        #[export_name = "initialize"]
+        pub unsafe extern "C" fn __wasm_initialize() {
+            #func_name()
+        }
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
 pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
     let func: ItemFn = parse(input).expect("expected the attribute to be used on a function");
     let func_name = &func.sig.ident;
@@ -43,7 +60,8 @@ pub fn get_manga_list(_: TokenStream, input: TokenStream) -> TokenStream {
                 Err(_) => -1,
             }
         }
-    }.into()
+    }
+    .into()
 }
 
 #[proc_macro_attribute]
@@ -138,11 +156,16 @@ pub fn get_page_list(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "get_page_list"]
         pub unsafe extern "C" fn __wasm_get_page_list(chapter_rid: i32) -> i32 {
-            let id = match aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid)).get("id").as_string() {
+            let obj = aidoku::std::ObjectRef(aidoku::std::ValueRef::new(chapter_rid));
+            let id = match obj.get("id").as_string() {
                 Ok(id) => id.read(),
                 Err(_) => return -1,
             };
-            let resp: Result<Vec<Page>> = #func_name(id);
+            let manga_id = match obj.get("mangaId").as_string() {
+                Ok(id) => id.read(),
+                Err(_) => return -1,
+            };
+            let resp: Result<Vec<Page>> = #func_name(manga_id, id);
             match resp {
                 Ok(resp) => {
                     let mut arr = aidoku::std::ArrayRef::new();
@@ -171,8 +194,9 @@ pub fn modify_image_request(_: TokenStream, input: TokenStream) -> TokenStream {
         #[no_mangle]
         #[export_name = "modify_image_request"]
         pub unsafe extern "C" fn __wasm_modify_image_request(request_rid: i32) {
-            let request = aidoku::std::net::Request(request_rid);
+            let request = aidoku::std::net::Request(request_rid, false);
             #func_name(request);
+
         }
     }
     .into()

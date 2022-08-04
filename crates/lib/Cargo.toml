@@ -1,6 +1,6 @@
 [package]
 name = "aidoku"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 publish = true
 
@@ -9,6 +9,8 @@ aidoku_imports = { path = "../imports" }
 aidoku_macros = { path = "../macros" }
 aidoku_proc_macros = { path = "../proc_macros" }
 wee_alloc = { version = "0.4.5", optional = true }
+aidoku_helpers = { path = "../helpers", optional = true }
 
 [features]
 default = ["wee_alloc"]
+helpers = ["aidoku_helpers"]
