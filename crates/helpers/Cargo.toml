@@ -5,6 +5,3 @@ edition = "2021"
 
 [dependencies]
 aidoku_imports = { path = "../imports" }
-
-[features]
-cloudflare = []
