@@ -2,6 +2,7 @@
 pub type Rid = i32;
 
 use core::fmt::Display;
+// use core::num::NonZeroUsize;
 
 use alloc::string::String;
 use alloc::vec::Vec;
@@ -455,18 +456,22 @@ impl Iterator for ArrayRef {
         Some(value_ref)
     }
 
-    fn advance_by(&mut self, n: usize) -> core::result::Result<(), usize> {
-        if self.1 > self.2 || self.2 == usize::MAX {
-            Err(0)
-        } else if self.2 - self.1 < n {
-            let len = self.2 - self.1;
-            self.1 = self.2 + 1;
-            Err(len)
-        } else {
-            self.1 += n;
-            Ok(())
-        }
-    }
+    // fn advance_by(&mut self, n: usize) -> core::result::Result<(), NonZeroUsize> {
+    //     if self.1 > self.2 || self.2 == usize::MAX {
+    //         Ok(())
+    //     } else if self.2 - self.1 < n {
+    //         let len = self.2 - self.1;
+    //         self.1 = self.2 + 1;
+    //         if len > 0 {
+    //             Err(unsafe { NonZeroUsize::new_unchecked(len) })
+    //         } else {
+    //             Ok(())
+    //         }
+    //     } else {
+    //         self.1 += n;
+    //         Ok(())
+    //     }
+    // }
 }
 
 impl DoubleEndedIterator for ArrayRef {
@@ -483,18 +488,22 @@ impl DoubleEndedIterator for ArrayRef {
         Some(value_ref)
     }
 
-    fn advance_back_by(&mut self, n: usize) -> core::result::Result<(), usize> {
-        if self.1 > self.2 || self.2 == usize::MAX {
-            Err(0)
-        } else if self.2 - self.1 < n {
-            let len = self.2 - self.1;
-            self.2 = usize::MAX;
-            Err(len)
-        } else {
-            self.2 = self.2.wrapping_sub(n);
-            Ok(())
-        }
-    }
+    // fn advance_back_by(&mut self, n: usize) -> core::result::Result<(), NonZeroUsize> {
+    //     if self.1 > self.2 || self.2 == usize::MAX {
+    //         Ok(())
+    //     } else if self.2 - self.1 < n {
+    //         let len = self.2 - self.1;
+    //         self.2 = usize::MAX;
+    //         if len > 0 {
+    //             Err(unsafe { NonZeroUsize::new_unchecked(len) })
+    //         } else {
+    //             Ok(())
+    //         }
+    //     } else {
+    //         self.2 = self.2.wrapping_sub(n);
+    //         Ok(())
+    //     }
+    // }
 }
 
 impl FromIterator<ValueRef> for ArrayRef {

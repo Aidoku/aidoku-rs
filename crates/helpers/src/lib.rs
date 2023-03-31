@@ -4,7 +4,7 @@
 #![feature(pattern, let_chains)]
 extern crate alloc;
 
+pub mod cfemail;
 pub mod node;
 pub mod substring;
 pub mod uri;
-pub mod cfemail;
