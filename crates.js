@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["aidoku","aidoku_helpers","aidoku_imports","aidoku_macros","example_source"];

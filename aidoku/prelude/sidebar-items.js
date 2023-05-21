@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"attr":["get_chapter_list","get_manga_details","get_manga_list","get_manga_listing","get_page_list","handle_notification","handle_url","initialize","modify_image_request"],"macro":["format","println"]};

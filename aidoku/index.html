@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Aidoku Rust Source API"><title>aidoku - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-f3501f0f5ae15dfb.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="aidoku" data-themes="" data-resource-suffix="" data-rustdoc-version="1.71.0-nightly (77f4f828a 2023-05-20)" data-search-js="search-4926e5fc22a5646a.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-6f6ffb5395b17c6e.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-f0540c1d82cde29b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../aidoku/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../aidoku/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Crate aidoku</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.2.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a class="mod" href="#">aidoku</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/aidoku/lib.rs.html#1-123">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="aidoku-rust-source-api"><a href="#aidoku-rust-source-api">Aidoku Rust Source API</a></h2>
+<p><strong>NOTE:</strong> This library currently requires Rust nightly, which can be installed with <code>rustup default nightly</code>.</p>
+<h3 id="setup"><a href="#setup">Setup</a></h3>
+<p>To make a new source:</p>
+<div class="example-wrap"><pre class="language-shell"><code>cargo new &lt;source_name&gt;
+</code></pre></div>
+<p>Then in the Cargo.toml add:</p>
+<div class="example-wrap"><pre class="language-toml"><code>[lib]
+crate-type = [&quot;cdylib&quot;]
+
+[profile.dev]
+panic = &quot;abort&quot;
+
+[profile.release]
+panic = &quot;abort&quot;
+opt-level = &quot;s&quot;
+strip = true
+lto = true
+
+[dependencies]
+aidoku = &quot;0.1.0&quot;
+</code></pre></div>
+<p>Next, make a folder called .cargo and a file called “config”. In it, put:</p>
+<div class="example-wrap"><pre class="language-toml"><code>[build]
+target = &quot;wasm32-unknown-unknown&quot;
+</code></pre></div>
+<p>Now, in your src/main.rs file, simply add:</p>
+<div class="example-wrap"><pre class="language-rs"><code>#![no_std]
+use aidoku::{
+    error::Result,
+    prelude::*,
+    std::{String, Vec},
+    Chapter, Filter, Listing, Manga, MangaPageResult, Page,
+};
+
+#[get_manga_list]
+fn get_manga_list(_: Vec&lt;Filter&gt;, _: i32) -&gt; Result&lt;MangaPageResult&gt; {
+    todo!()
+}
+
+#[get_manga_listing]
+fn get_manga_listing(_: Listing, _: i32) -&gt; Result&lt;MangaPageResult&gt; {
+    todo!()
+}
+
+#[get_manga_details]
+fn get_manga_details(_: String) -&gt; Result&lt;Manga&gt; {
+    todo!()
+}
+
+#[get_chapter_list]
+fn get_chapter_list(_: String) -&gt; Result&lt;Vec&lt;Chapter&gt;&gt; {
+    todo!()
+}
+
+#[get_page_list]
+fn get_page_list(_: String) -&gt; Result&lt;Vec&lt;Page&gt;&gt; {
+    todo!()
+}
+</code></pre></div>
+<p>And now you’re ready to start making your source!</p>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="error/index.html" title="mod aidoku::error">error</a></div><div class="desc docblock-short">Error module for Aidoku operations.</div></li><li><div class="item-name"><a class="mod" href="prelude/index.html" title="mod aidoku::prelude">prelude</a></div><div class="desc docblock-short">The Aidoku prelude, which includes <a href="prelude/macro.format.html" title="macro aidoku::prelude::format">format!</a>,
+<a href="prelude/macro.println.html" title="macro aidoku::prelude::println">println!</a>, as well as procedural macros which
+are required for interop with the app.</div></li><li><div class="item-name"><a class="mod" href="std/index.html" title="mod aidoku::std">std</a></div><div class="desc docblock-short">The Aidoku standard module, which includes all functions exported from
+Aidoku as well as a few common types.</div></li></ul><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.Chapter.html" title="struct aidoku::Chapter">Chapter</a></div><div class="desc docblock-short">Struct containing metadata about a chapter. Different chapters are differentiated
+by their ID. Thus, changing the ID will result in a different chapter, even if the
+chapters have the same volume/chapter number.</div></li><li><div class="item-name"><a class="struct" href="struct.DeepLink.html" title="struct aidoku::DeepLink">DeepLink</a></div><div class="desc docblock-short">Struct representing a deep link. This deep link is used to open a manga
+from a webpage URL using the <code>aidoku://</code> URL scheme.</div></li><li><div class="item-name"><a class="struct" href="struct.Filter.html" title="struct aidoku::Filter">Filter</a></div><div class="desc docblock-short">Struct representing a search filter.</div></li><li><div class="item-name"><a class="struct" href="struct.Listing.html" title="struct aidoku::Listing">Listing</a></div><div class="desc docblock-short">Struct containing information about a listing.</div></li><li><div class="item-name"><a class="struct" href="struct.Manga.html" title="struct aidoku::Manga">Manga</a></div><div class="desc docblock-short">The Manga struct contains information about a manga. Different mangas
+are differentiated by their ID, and so changing the ID will result in
+a different manga. Thus, developers should decide on the ID format
+before publishing their source.</div></li><li><div class="item-name"><a class="struct" href="struct.MangaPageResult.html" title="struct aidoku::MangaPageResult">MangaPageResult</a></div><div class="desc docblock-short">A struct representing a “page” of mangas. There is no limit on how many mangas
+can a page have, that is up to the source to decide.</div></li><li><div class="item-name"><a class="struct" href="struct.Page.html" title="struct aidoku::Page">Page</a></div><div class="desc docblock-short">Struct representing a manga page.</div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.FilterType.html" title="enum aidoku::FilterType">FilterType</a></div></li><li><div class="item-name"><a class="enum" href="enum.MangaContentRating.html" title="enum aidoku::MangaContentRating">MangaContentRating</a></div><div class="desc docblock-short">An enumeration representing the manga’s content rating.</div></li><li><div class="item-name"><a class="enum" href="enum.MangaStatus.html" title="enum aidoku::MangaStatus">MangaStatus</a></div><div class="desc docblock-short">An enum representing the various statuses a manga can have.</div></li><li><div class="item-name"><a class="enum" href="enum.MangaViewer.html" title="enum aidoku::MangaViewer">MangaViewer</a></div><div class="desc docblock-short">An enumeration representing different manga viewers, used to indicate
+the preferred reading method for this manga.</div></li></ul><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.alloc_error_handle.html" title="fn aidoku::alloc_error_handle">alloc_error_handle</a></div></li><li><div class="item-name"><a class="fn" href="fn.panic_handle.html" title="fn aidoku::panic_handle">panic_handle</a></div></li></ul></section></div></main></body></html>
