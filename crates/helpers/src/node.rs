@@ -3,7 +3,7 @@ use alloc::string::String;
 
 pub trait NodeHelpers {
     /// Get the text of the element and its children. It's different from
-    /// [aidoku_imports::Node::text] in that `<p>` and `<br>` are considered
+    /// [aidoku_imports::html::Node::text] in that `<p>` and `<br>` are considered
     /// and will insert linebreaks.
     fn text_with_newlines(&self) -> String;
 }
