@@ -9,11 +9,8 @@
 
 // Setup allocator
 
-#[cfg(feature = "wee_alloc")]
-extern crate wee_alloc;
-
-#[cfg_attr(feature = "wee_alloc", global_allocator)]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+#[cfg_attr(feature = "dlmalloc", global_allocator)]
+static ALLOCATOR: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
 
 // Set panic handlers
 

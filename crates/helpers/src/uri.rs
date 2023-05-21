@@ -138,7 +138,7 @@ impl QueryParameters {
     /// Remove all query parameters matching given pre-encoded name.
     pub fn remove_all_encoded<T: AsRef<str>>(&mut self, name: T) {
         let name = name.as_ref();
-        self.params.retain(|&(ref n, _)| n != name);
+        self.params.retain(|(n, _)| n != name);
     }
 }
 
