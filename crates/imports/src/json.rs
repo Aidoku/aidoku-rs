@@ -1,4 +1,4 @@
-//! Converts JSON to a [ValueRef](crate::std::ValueRef).
+//! Converts JSON to a [ValueRef].
 use crate::{
     error::{AidokuError, AidokuErrorKind, Result},
     std::{Rid, ValueRef},

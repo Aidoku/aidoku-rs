@@ -199,7 +199,7 @@ impl Request {
         }
     }
 
-    /// Get the data as a [Node](crate::html::Node).
+    /// Get the data as a [Node].
     pub fn html(self) -> Result<Node> {
         self.send();
         let rid = unsafe { request_html(self.0) };

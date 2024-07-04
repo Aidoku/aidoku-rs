@@ -195,13 +195,13 @@ impl ValueRef {
     ///
     /// # Arguments
     /// * `format`: The date format, as compatible with
-    /// [NSDateFormatter](https://nsdateformatter.com/).
+    ///   [NSDateFormatter](https://nsdateformatter.com/).
     /// * `locale`: The locale identifier for this date string.
-    /// Also available on [NSDateFormatter](https://nsdateformatter.com/).
+    ///   Also available on [NSDateFormatter](https://nsdateformatter.com/).
     /// * `timezone`: The time zone for this date, as compatible with
-    /// [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
-    /// They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones),
-    /// or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
+    ///   [TimeZone](https://developer.apple.com/documentation/foundation/timezone).
+    ///   They can be a [zoneinfo timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones),
+    ///   or an [abbreviation](https://gist.github.com/mteece/80fff3329074cf90d7991e55f4fc8de4).
     pub fn as_date<T: Default + AsRef<str>>(
         &self,
         format: T,

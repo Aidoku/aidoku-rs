@@ -25,7 +25,7 @@ lto = true
 aidoku = "0.1.0"
 ```
 
-Next, make a folder called .cargo and a file called "config". In it, put:
+Next, make a folder called .cargo and a file called "config.toml". In it, put:
 ```toml
 [build]
 target = "wasm32-unknown-unknown"
@@ -62,7 +62,7 @@ fn get_chapter_list(_: String) -> Result<Vec<Chapter>> {
 }
 
 #[get_page_list]
-fn get_page_list(_: String) -> Result<Vec<Page>> {
+fn get_page_list(_: String, _: String) -> Result<Vec<Page>> {
     todo!()
 }
 ```

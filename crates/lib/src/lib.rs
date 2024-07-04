@@ -1,11 +1,6 @@
 #![doc = include_str!("../../../README.md")]
 #![no_std]
-#![feature(
-    core_intrinsics,
-    alloc_error_handler,
-    fmt_internals,
-    panic_info_message
-)]
+#![feature(alloc_error_handler)]
 
 // Setup allocator
 
@@ -38,7 +33,7 @@ fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
             let message_ptr = message_len_ptr.add(1) as *mut u8;
             copy::<u8>(message.as_ptr(), message_ptr, message.len());
 
-            let file_len_ptr = message_len_ptr.add(message.len()) as *mut i32;
+            let file_len_ptr = message_len_ptr.add(message.len());
             *file_len_ptr = i32::try_from(file.len()).unwrap_or(-1);
 
             let file_ptr = file_len_ptr.add(1) as *mut u8;
@@ -58,12 +53,11 @@ fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
         }
     }
 
-    core::intrinsics::abort()
+    core::arch::wasm32::unreachable()
 }
 
 #[cfg_attr(not(test), panic_handler)]
 pub fn panic_handle(info: &core::panic::PanicInfo) -> ! {
-    use aidoku_imports::Write;
     let (file, line, col) = if let Some(location) = info.location() {
         (location.file(), location.line(), location.column())
     } else {
@@ -77,7 +71,7 @@ pub fn panic_handle(info: &core::panic::PanicInfo) -> ! {
 
 #[cfg_attr(not(test), alloc_error_handler)]
 pub fn alloc_error_handle(_: core::alloc::Layout) -> ! {
-    core::intrinsics::abort()
+    core::arch::wasm32::unreachable()
 }
 
 // Make things public
@@ -96,11 +90,8 @@ pub mod std {
     pub use aidoku_imports::*;
     pub use alloc::string::String;
     pub use alloc::vec::Vec;
-    pub fn format(args: core::fmt::Arguments) -> crate::std::String {
-        let mut string = crate::std::String::with_capacity(args.estimated_capacity());
-        string.write_fmt(args).expect("error formatting string");
-        string
-    }
+
+    pub use alloc::fmt::format;
 }
 
 /// The Aidoku prelude, which includes [format!](aidoku_macros::format),

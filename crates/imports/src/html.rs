@@ -180,7 +180,7 @@ impl Node {
         }
     }
 
-    /// Get an instance from a [Rid](crate::Rid)
+    /// Get an instance from a [Rid].
     ///
     /// # Safety
     /// Ensure that this Rid is of [Kind::Node](crate::Kind) before
