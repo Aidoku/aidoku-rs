@@ -70,13 +70,7 @@ pub fn panic_handle(info: &core::panic::PanicInfo) -> ! {
         ("", 0, 0)
     };
 
-    let message = if let Some(args) = info.message() {
-        let mut string = crate::std::String::with_capacity(args.estimated_capacity());
-        string.write_fmt(*args).unwrap_or_default();
-        string
-    } else {
-        crate::std::String::new()
-    };
+    let message = crate::std::String::from(info.message().as_str().unwrap_or_default());
 
     as_abort(message, crate::std::String::from(file), line, col)
 }
