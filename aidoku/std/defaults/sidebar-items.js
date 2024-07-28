@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["defaults_get","defaults_set"]};

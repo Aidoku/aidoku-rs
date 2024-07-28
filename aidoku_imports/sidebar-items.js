@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Kind"],"fn":["copy","current_date","destroy","print","value_kind"],"mod":["defaults","error","html","json","net"],"struct":["ArrayRef","ObjectRef","StringRef","ValueRef"],"trait":["Write"],"type":["Rid"]};

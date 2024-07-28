@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FilterType","MangaContentRating","MangaStatus","MangaViewer"],"fn":["alloc_error_handle","panic_handle"],"mod":["error","prelude","std"],"struct":["Chapter","DeepLink","Filter","Listing","Manga","MangaPageResult","Page"]};
