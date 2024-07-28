@@ -27,27 +27,26 @@ use core::str::pattern::{Pattern, ReverseSearcher, Searcher};
 
 pub trait Substring {
     /// Returns a substring before the first occurence of pattern.
-    fn substring_before<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<&'a str>;
+    fn substring_before<P: Pattern>(&self, pat: P) -> Option<&str>;
 
     /// Returns a substring before the last occurence of pattern.
-    fn substring_before_last<'a, P>(&'a self, pat: P) -> Option<&'a str>
+    fn substring_before_last<P: Pattern>(&self, pat: P) -> Option<&str>
     where
-        P: Pattern<'a>,
-        <P as Pattern<'a>>::Searcher: ReverseSearcher<'a>;
+        for<'a> P::Searcher<'a>: ReverseSearcher<'a>;
 
     /// Returns a substring after the first occurence of pattern.
-    fn substring_after<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<&'a str>;
+    fn substring_after<P: Pattern>(&self, pat: P) -> Option<&str>;
 
     /// Returns a substring after the last occurence of pattern.
     fn substring_after_last<'a, P>(&'a self, pat: P) -> Option<&'a str>
     where
-        P: Pattern<'a>,
-        <P as Pattern<'a>>::Searcher: ReverseSearcher<'a>;
+        P: Pattern,
+        <P as Pattern>::Searcher<'a>: ReverseSearcher<'a>;
 }
 
 impl Substring for str {
     #[inline]
-    fn substring_before<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<&'a str> {
+    fn substring_before<P: Pattern>(&self, pat: P) -> Option<&str> {
         match self.find(pat) {
             Some(i) => Some(&self[..i]),
             None => None,
@@ -55,19 +54,15 @@ impl Substring for str {
     }
 
     #[inline]
-    fn substring_before_last<'a, P>(&'a self, pat: P) -> Option<&'a str>
+    fn substring_before_last<P: Pattern>(&self, pat: P) -> Option<&str>
     where
-        P: Pattern<'a>,
-        <P as Pattern<'a>>::Searcher: ReverseSearcher<'a>,
+        for<'a> P::Searcher<'a>: ReverseSearcher<'a>,
     {
-        match self.rfind(pat) {
-            Some(i) => Some(&self[..i]),
-            None => None,
-        }
+        self.rfind(pat).map(|idx| &self[..idx])
     }
 
     #[inline]
-    fn substring_after<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<&'a str> {
+    fn substring_after<P: Pattern>(&self, pat: P) -> Option<&str> {
         match pat.into_searcher(self).next_match() {
             Some((_, end)) => Some(&self[end..]),
             None => None,
@@ -77,8 +72,8 @@ impl Substring for str {
     #[inline]
     fn substring_after_last<'a, P>(&'a self, pat: P) -> Option<&'a str>
     where
-        P: Pattern<'a>,
-        <P as Pattern<'a>>::Searcher: ReverseSearcher<'a>,
+        P: Pattern,
+        <P as Pattern>::Searcher<'a>: ReverseSearcher<'a>,
     {
         match pat.into_searcher(self).next_match_back() {
             Some((_, end)) => Some(&self[end..]),
