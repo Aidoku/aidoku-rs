@@ -1,6 +1,8 @@
 [workspace]
-members = ["crates/*", "examples/*"]
-resolver = "2"
+members = ["crates/*"]
+# example is built for wasm and we can't have multiple targets in the same workspace
+exclude = ["examples/example-source"]
+resolver = "3"
 
 [profile.dev]
 panic = "abort"

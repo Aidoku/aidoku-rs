@@ -1,0 +1,212 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"title": "Aidoku filters specification",
+	"definitions": {
+		"stringArray": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"filterBase": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"title": {
+					"type": "string"
+				},
+				"hideFromHeader": {
+					"type": "boolean"
+				}
+			}
+		},
+		"textFilter": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["text"]
+						},
+						"placeholder": {
+							"type": "string"
+						}
+					},
+					"required": ["type"]
+				}
+			]
+		},
+		"sortFilter": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["sort"]
+						},
+						"canAscend": {
+							"type": "boolean"
+						},
+						"options": {
+							"$ref": "#/definitions/stringArray"
+						},
+						"default": {
+							"type": "object",
+							"properties": {
+								"index": {
+									"type": "integer"
+								},
+								"ascending": {
+									"type": "boolean"
+								}
+							}
+						}
+					},
+					"required": ["type", "options"]
+				}
+			]
+		},
+		"checkFilter": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["check"]
+						},
+						"name": {
+							"type": "string"
+						},
+						"canExclude": {
+							"type": "boolean"
+						},
+						"default": {
+							"type": "boolean"
+						}
+					},
+					"required": ["type"]
+				}
+			]
+		},
+		"selectFilter": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["select"]
+						},
+						"isGenre": {
+							"type": "boolean"
+						},
+						"usesTagStyle": {
+							"type": "boolean"
+						},
+						"options": {
+							"$ref": "#/definitions/stringArray"
+						},
+						"default": {
+							"type": "integer"
+						}
+					},
+					"required": ["type", "options"]
+				}
+			]
+		},
+		"multiSelectFilter": {
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["multi-select"]
+						},
+						"isGenre": {
+							"type": "boolean"
+						},
+						"canExclude": {
+							"type": "boolean"
+						},
+						"usesTagStyle": {
+							"type": "boolean"
+						},
+						"options": {
+							"$ref": "#/definitions/stringArray"
+						},
+						"ids": {
+							"$ref": "#/definitions/stringArray"
+						},
+						"defaultIncluded": {
+							"$ref": "#/definitions/stringArray"
+						},
+						"defaultExcluded": {
+							"$ref": "#/definitions/stringArray"
+						}
+					},
+					"default": ["type", "options"]
+				}
+			]
+		},
+		"noteFilter": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"type": "string",
+					"enum": ["note"]
+				},
+				"text": {
+					"type": "string"
+				}
+			},
+			"required": ["type", "text"]
+		},
+		"filter": {
+			"anyOf": [
+				{
+					"$ref": "#/definitions/textFilter"
+				},
+				{
+					"$ref": "#/definitions/sortFilter"
+				},
+				{
+					"$ref": "#/definitions/checkFilter"
+				},
+				{
+					"$ref": "#/definitions/selectFilter"
+				},
+				{
+					"$ref": "#/definitions/multiSelectFilter"
+				},
+				{
+					"$ref": "#/definitions/noteFilter"
+				}
+			]
+		}
+	},
+	"type": "array",
+	"items": {
+		"$ref": "#/definitions/filter"
+	}
+}
