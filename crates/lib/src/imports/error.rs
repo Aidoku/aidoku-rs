@@ -1,7 +1,10 @@
 //! Error handling for Aidoku source library functions.
 use super::{html::HtmlError, js::JsError, net::RequestError};
-use crate::{alloc::String, imports::canvas::CanvasError};
-use core::str::Utf8Error;
+use crate::{
+	alloc::{string::ToString, String},
+	imports::canvas::CanvasError,
+};
+use core::{fmt::Display, str::Utf8Error};
 
 pub type Result<T> = core::result::Result<T, AidokuError>;
 
@@ -30,8 +33,8 @@ pub enum AidokuError {
 
 impl AidokuError {
 	/// Creates a new message error.
-	pub fn message<S: Into<String>>(message: S) -> Self {
-		Self::Message(message.into())
+	pub fn message<S: Display>(message: S) -> Self {
+		Self::Message(message.to_string())
 	}
 }
 
