@@ -163,19 +163,19 @@ impl Serialize for DeepLinkResult {
 		let mut state = serializer.serialize_struct("DeepLinkResult", 3)?;
 		match self {
 			DeepLinkResult::Manga { key } => {
-				state.serialize_field("manga_key", key)?;
+				state.serialize_field("manga_key", &Some(key))?;
 				state.serialize_field("chapter_key", &Option::<String>::None)?;
 				state.serialize_field("listing", &Option::<Listing>::None)?;
 			}
 			DeepLinkResult::Chapter { manga_key, key } => {
-				state.serialize_field("manga_key", manga_key)?;
-				state.serialize_field("chapter_key", key)?;
+				state.serialize_field("manga_key", &Some(manga_key))?;
+				state.serialize_field("chapter_key", &Some(key))?;
 				state.serialize_field("listing", &Option::<Listing>::None)?;
 			}
 			DeepLinkResult::Listing(listing) => {
 				state.serialize_field("manga_key", &Option::<String>::None)?;
 				state.serialize_field("chapter_key", &Option::<String>::None)?;
-				state.serialize_field("listing", listing)?;
+				state.serialize_field("listing", &Some(listing))?;
 			}
 		}
 		state.end()
