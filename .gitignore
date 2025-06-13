@@ -1,3 +1,4 @@
 target/
 *.wat
 .DS_Store
+examples/*/*.aix

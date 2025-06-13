@@ -24,7 +24,10 @@ impl Source for ExampleSource {
 	}
 
 	// this method will be called when a listing or a home section with an associated listing is opened
-	fn get_manga_list(&self, _listing: Listing, _page: i32) -> Result<MangaPageResult> {
+	fn get_manga_list(&self, listing: Listing, _page: i32) -> Result<MangaPageResult> {
+		if listing.id == "test" {
+			bail!("Not supported");
+		}
 		Ok(MangaPageResult {
 			entries: vec![Manga {
 				key: String::from("1"),

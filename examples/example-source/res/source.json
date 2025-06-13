@@ -6,5 +6,11 @@
 		"url": "https://aidoku.app",
 		"contentRating": 0,
 		"languages": ["en"]
-	}
+	},
+	"listings": [
+		{
+			"id": "test",
+			"name": "Test"
+		}
+	]
 }

@@ -60,5 +60,5 @@ pub mod alloc {
 pub mod prelude {
 	pub use super::alloc::format;
 	#[cfg(feature = "imports")]
-	pub use crate::{debug, println, register_source};
+	pub use crate::{bail, debug, println, register_source};
 }

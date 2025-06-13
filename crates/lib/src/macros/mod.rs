@@ -11,29 +11,43 @@
 /// ```
 #[macro_export]
 macro_rules! println {
-	() => {{
+	() => {
 		::aidoku::alloc::print("");
-	}};
-	($($arg:tt)*) => {{
+	};
+	($($arg:tt)*) => {
 		::aidoku::imports::std::print(&::aidoku::prelude::format!($($arg)*));
-	}};
+	};
 }
 
 /// Prints to Aidoku logs if debug assertions are enabled.
 #[macro_export]
 macro_rules! debug {
-	() => {{
+	() => {
 		#[cfg(debug_assertions)]
 		{
 			::aidoku::prelude::println!();
 		}
-	}};
-	($($arg:tt)*) => {{
+	};
+	($($arg:tt)*) => {
 		#[cfg(debug_assertions)]
 		{
 			::aidoku::prelude::println!($($arg)*);
 		}
-	}};
+	};
+}
+
+/// Returns early with an error.
+///
+/// This macro is equivalent to
+/// <code>return Err(AidokuError::message(format!($args\...)))</code>.
+///
+/// The surrounding function's or closure's return value is required to be
+/// <code>Result&lt;_, [aidoku::AidokuError][crate::AidokuError]&gt;</code>.
+#[macro_export]
+macro_rules! bail {
+	($($arg:tt)*) => {
+		return ::core::result::Result::Err(::aidoku::AidokuError::message(::aidoku::prelude::format!($($arg)*)));
+	};
 }
 
 /// Registers a source for use with Aidoku.
