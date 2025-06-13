@@ -296,7 +296,6 @@ fn create_empty_aidoku_lib(
 			.arg("https://github.com/Aidoku/aidoku-rs.git")
 			.arg("--branch")
 			.arg("next")
-			.arg("--no-default-features")
 			.arg("--features")
 			.arg("test")
 			.arg("--dev"),
@@ -385,9 +384,9 @@ fn create_source_files(
 	}
 	std::fs::write(&cargo_toml, cargo_toml_content).context("Failed to write Cargo.toml")?;
 
-	// create .config/cargo.toml
-	let config_path = PathBuf::from(".config");
-	std::fs::create_dir_all(&config_path).context("Failed to create .config directory")?;
+	// create .cargo/config.toml
+	let config_path = PathBuf::from(".cargo");
+	std::fs::create_dir_all(&config_path).context("Failed to create .cargo directory")?;
 	let config_toml = config_path.join("config.toml");
 	std::fs::write(&config_toml, CONFIG_TEMPLATE).context("Failed to create config.toml")?;
 
