@@ -397,7 +397,7 @@ impl AlternateCoverProvider for ExampleSource {
 impl DeepLinkHandler for ExampleSource {
 	fn handle_deep_link(&self, _url: String) -> Result<Option<DeepLinkResult>> {
 		Ok(Some(DeepLinkResult::Manga {
-			id: String::from("manga_id"),
+			key: String::from("manga_key"),
 		}))
 	}
 }

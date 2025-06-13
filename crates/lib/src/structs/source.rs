@@ -150,8 +150,8 @@ impl IdKind {
 /// A result of a deep link handling.
 #[derive(Debug)]
 pub enum DeepLinkResult {
-	Manga { id: String },
-	Chapter { manga_id: String, id: String },
+	Manga { key: String },
+	Chapter { manga_key: String, key: String },
 	Listing(Listing),
 }
 
@@ -162,19 +162,19 @@ impl Serialize for DeepLinkResult {
 	{
 		let mut state = serializer.serialize_struct("DeepLinkResult", 3)?;
 		match self {
-			DeepLinkResult::Manga { id } => {
-				state.serialize_field("manga_id", id)?;
-				state.serialize_field("chapter_id", &Option::<String>::None)?;
+			DeepLinkResult::Manga { key } => {
+				state.serialize_field("manga_key", key)?;
+				state.serialize_field("chapter_key", &Option::<String>::None)?;
 				state.serialize_field("listing", &Option::<Listing>::None)?;
 			}
-			DeepLinkResult::Chapter { manga_id, id } => {
-				state.serialize_field("manga_id", manga_id)?;
-				state.serialize_field("chapter_id", id)?;
+			DeepLinkResult::Chapter { manga_key, key } => {
+				state.serialize_field("manga_key", manga_key)?;
+				state.serialize_field("chapter_key", key)?;
 				state.serialize_field("listing", &Option::<Listing>::None)?;
 			}
 			DeepLinkResult::Listing(listing) => {
-				state.serialize_field("manga_id", &Option::<String>::None)?;
-				state.serialize_field("chapter_id", &Option::<String>::None)?;
+				state.serialize_field("manga_key", &Option::<String>::None)?;
+				state.serialize_field("chapter_key", &Option::<String>::None)?;
 				state.serialize_field("listing", listing)?;
 			}
 		}
