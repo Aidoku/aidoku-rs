@@ -40,6 +40,9 @@ extern "C" {
 	fn set_html(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
 	fn prepend(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
 	fn append(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
+	fn parent(rid: Rid) -> FFIResult;
+	fn children(rid: Rid) -> FFIResult;
+	fn siblings(rid: Rid) -> FFIResult;
 	fn next(rid: Rid) -> FFIResult;
 	fn previous(rid: Rid) -> FFIResult;
 	fn base_uri(rid: Rid) -> FFIResult;
@@ -400,6 +403,27 @@ impl Element {
 			return None;
 		}
 		read_string_and_destroy(rid)
+	}
+
+	/// Get the element's parent element, returning `None` if there isn't one.
+	pub fn parent(&self) -> Option<Element> {
+		let rid = unsafe { parent(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Element::from(rid) })
+	}
+
+	/// Get the element's children elements.
+	pub fn children(&self) -> ElementList {
+		let rid = unsafe { children(self.rid) };
+		unsafe { ElementList::from(rid) }
+	}
+
+	/// Get the sibling elements of the element.
+	pub fn siblings(&self) -> ElementList {
+		let rid = unsafe { siblings(self.rid) };
+		unsafe { ElementList::from(rid) }
 	}
 
 	/// Get the next sibling of the element, returning `None` if there isn't one.
