@@ -123,8 +123,11 @@
 						"options": {
 							"$ref": "#/definitions/stringArray"
 						},
+						"ids": {
+							"$ref": "#/definitions/stringArray"
+						},
 						"default": {
-							"type": "integer"
+							"type": "string"
 						}
 					},
 					"required": ["type", "options"]

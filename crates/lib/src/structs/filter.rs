@@ -43,7 +43,8 @@ pub enum FilterKind {
 		is_genre: bool,
 		uses_tag_style: bool,
 		options: Vec<Cow<'static, str>>,
-		default: Option<i32>,
+		ids: Option<Vec<Cow<'static, str>>>,
+		default: Option<Cow<'static, str>>,
 	},
 	/// A list of values that allows multiple selections.
 	MultiSelect {
@@ -183,13 +184,16 @@ create_filter_struct!(
 		uses_tag_style: bool,
 		/// The list of options to display.
 		options: Vec<Cow<'static, str>>,
-		/// The default selected option index.
-		default: Option<i32>,
+		/// Optional IDs for each option. If not provided, the options are used.
+		ids: Option<Vec<Cow<'static, str>>>,
+		/// The default selected option.
+		default: Option<Cow<'static, str>>,
 	},
 	{
 		is_genre: false,
 		uses_tag_style: false,
 		options: Vec::new(),
+		ids: None,
 		default: None,
 	}
 );
@@ -272,11 +276,13 @@ impl Serialize for Filter {
 				is_genre,
 				uses_tag_style,
 				options,
+				ids,
 				default,
 			} => {
 				state.serialize_field("is_genre", &Some(is_genre))?;
 				state.serialize_field("uses_tag_style", &Some(uses_tag_style))?;
 				state.serialize_field("options", &options)?;
+				state.serialize_field("ids", &ids)?;
 				state.serialize_field("default", &default)?
 			}
 			FilterKind::MultiSelect {
@@ -333,7 +339,7 @@ pub enum FilterValue {
 		/// The id of the filter.
 		id: String,
 		/// The value of the select filter.
-		value: i32,
+		value: String,
 	},
 	/// A list of values from a multi-select filter.
 	MultiSelect {
