@@ -118,11 +118,19 @@ macro_rules! convenience_http_methods {
 /// A type that makes a HTTP request.
 #[derive(Debug)]
 pub struct Request {
-	pub(crate) rid: Rid,
+	/// The reference id for the request.
+	///
+	/// This property is exposed for the functions that the [register_source](crate::register_source)
+	/// macro generates and should not be used directly.
+	pub rid: Rid,
 	http_method: HttpMethod,
 	url: Option<String>,
 	sent: bool,
-	pub(crate) forgotten: bool,
+	/// Whether the request has been closed and destroyed.
+	///
+	/// This property is exposed for the functions that the [register_source](crate::register_source)
+	/// macro generates and should not be used directly.
+	pub forgotten: bool,
 	/// The stored request response data.
 	pub data: Option<Vec<u8>>,
 }
