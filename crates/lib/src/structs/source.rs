@@ -131,7 +131,7 @@ pub trait MigrationHandler: Source {
 }
 
 /// The kind of id string.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 pub enum IdKind {
 	Manga = 0,
 	Chapter = 1,
@@ -148,7 +148,7 @@ impl IdKind {
 }
 
 /// A result of a deep link handling.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum DeepLinkResult {
 	Manga { key: String },
 	Chapter { manga_key: String, key: String },
@@ -183,7 +183,7 @@ impl Serialize for DeepLinkResult {
 }
 
 /// The details of a HTTP request.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ResponseRequest {
 	pub url: Option<String>,
 	pub headers: HashMap<String, String>,

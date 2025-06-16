@@ -8,21 +8,21 @@ use alloc::{string::String, vec::Vec};
 ///
 /// This should only be used with [send_partial_result](crate::imports::std::send_partial_result)
 /// in the [get_home](super::Home::get_home) function.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum HomePartialResult {
 	Layout(HomeLayout),
 	Component(HomeComponent),
 }
 
 /// A home layout for a source.
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct HomeLayout {
 	/// The components of the layout.
 	pub components: Vec<HomeComponent>,
 }
 
 /// A component for a home layout.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HomeComponent {
 	/// The title of the component.
 	pub title: Option<String>,
@@ -43,7 +43,7 @@ impl Default for HomeComponent {
 }
 
 /// The value of a component for a home layout.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum HomeComponentValue {
 	/// A horizontal scroller of images.
 	///
@@ -151,14 +151,14 @@ impl HomeComponentValue {
 }
 
 /// A paired manga and chapter.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MangaWithChapter {
 	pub manga: Manga,
 	pub chapter: Chapter,
 }
 
 /// A link to a listing that uses the provided filters.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FilterItem {
 	pub title: String,
 	pub values: Option<Vec<FilterValue>>,
@@ -183,7 +183,7 @@ impl From<&str> for FilterItem {
 }
 
 /// A link used in home components.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Link {
 	pub title: String,
 	pub subtitle: Option<String>,
@@ -192,7 +192,7 @@ pub struct Link {
 }
 
 /// A link value that can be opened by the Aidoku app.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum LinkValue {
 	Url(String),
 	Listing(Listing),

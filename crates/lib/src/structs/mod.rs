@@ -175,7 +175,7 @@ pub struct Chapter {
 }
 
 /// The content of a page.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PageContent {
 	/// A url to an image, with associated context.
 	///
@@ -204,7 +204,7 @@ impl PageContent {
 }
 
 /// A page for a chapter.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Page {
 	/// The page content.
 	pub content: PageContent,
@@ -239,7 +239,7 @@ pub enum ListingKind {
 }
 
 /// A listing of manga.
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Listing {
 	/// Unique identifier for the listing.
 	pub id: String,

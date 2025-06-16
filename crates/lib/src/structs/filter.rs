@@ -7,6 +7,7 @@ use alloc::{borrow::Cow, string::String, vec::Vec};
 ///
 /// This struct shouldn't be constructed directly. Instead, use the individual
 /// filter structs and call [into](Into::into).
+#[derive(Debug, Clone, PartialEq)]
 pub struct Filter {
 	pub id: Cow<'static, str>,
 	pub title: Option<Cow<'static, str>>,
@@ -14,13 +15,14 @@ pub struct Filter {
 	pub kind: FilterKind,
 }
 /// A default value for a sort filter.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SortFilterDefault {
 	pub index: i32,
 	pub ascending: bool,
 }
 
 /// The kind of filter.
+#[derive(Debug, Clone, PartialEq)]
 pub enum FilterKind {
 	/// A text field.
 	Text {
@@ -83,6 +85,7 @@ macro_rules! create_filter_struct {
 		#[doc = $doc_comment]
 		///
 		/// This filter can be converted into a generic [Filter] using the [Into] trait.
+		#[derive(Debug, Clone, PartialEq)]
 		pub struct $struct_name {
 			/// The identifier for this filter.
 			pub id: Cow<'static, str>,
@@ -309,7 +312,7 @@ impl Serialize for Filter {
 }
 
 /// A configured filter value.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FilterValue {
 	/// A string from a text field.
 	Text {

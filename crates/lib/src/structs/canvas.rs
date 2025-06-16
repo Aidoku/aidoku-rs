@@ -8,7 +8,7 @@ pub type Transform = euclid::default::Transform2D<f32>;
 pub type Angle = euclid::Angle<f32>;
 
 /// A rectangle.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Rect {
 	pub x: f32,
 	pub y: f32,
@@ -29,7 +29,7 @@ impl Rect {
 }
 
 /// A 2D point.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub struct Point {
 	pub x: f32,
 	pub y: f32,
@@ -42,7 +42,7 @@ impl Point {
 	}
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PathOp {
 	MoveTo(Point),
 	LineTo(Point),
@@ -64,6 +64,12 @@ pub struct Path {
 impl Path {
 	pub fn rect(rect: &Rect) -> Self {
 		PathBuilder::new().rect(rect).build()
+	}
+}
+
+impl PartialEq for Path {
+	fn eq(&self, other: &Self) -> bool {
+		self.ops == other.ops
 	}
 }
 
@@ -155,7 +161,7 @@ impl PathBuilder {
 }
 
 /// A color with red, green, blue, and alpha components.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Color {
 	pub red: f32,
 	pub green: f32,
@@ -207,7 +213,7 @@ impl Default for Color {
 }
 
 /// The endpoint style of a line.
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum LineCap {
 	Round,
 	Square,
@@ -216,7 +222,7 @@ pub enum LineCap {
 }
 
 /// The style of connected line joins.
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum LineJoin {
 	Round,
 	Bevel,
@@ -225,7 +231,7 @@ pub enum LineJoin {
 }
 
 /// The configuration options for drawing strokes.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StrokeStyle {
 	pub color: Color,
 	pub width: f32,
@@ -251,10 +257,12 @@ impl Default for StrokeStyle {
 }
 
 /// A standard typeface weight.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum FontWeight {
 	UltraLight = 0,
 	Thin = 1,
 	Light = 2,
+	#[default]
 	Regular = 3,
 	Medium = 4,
 	Semibold = 5,

@@ -7,7 +7,7 @@ use alloc::{borrow::Cow, string::String, vec::Vec};
 ///
 /// This struct shouldn't be constructed directly. Instead, use the individual
 /// settings structs and call [into](Into::into).
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Setting {
 	pub key: Cow<'static, str>,
 	pub title: Cow<'static, str>,
@@ -37,7 +37,7 @@ impl Serialize for Setting {
 }
 
 /// A login method.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LoginMethod {
 	/// Basic authentication with username and password.
 	Basic,
@@ -61,7 +61,7 @@ impl Serialize for LoginMethod {
 }
 
 /// The kind of setting.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum SettingValue {
 	/// A group of settings.
 	Group {
@@ -208,6 +208,7 @@ macro_rules! create_setting_struct {
 		#[doc = $doc_comment]
 		///
 		/// This setting can be converted into a generic [Setting] using the [Into] trait.
+		#[derive(Debug, Clone, PartialEq)]
 		pub struct $struct_name {
 			/// The unique key that identifies this setting.
 			pub key: Cow<'static, str>,
@@ -510,6 +511,7 @@ create_setting_struct!(
 /// A button that notifies the source when pressed.
 ///
 /// This setting can be converted into a generic [Setting] using the [Into] trait.
+#[derive(Debug, Clone, PartialEq)]
 pub struct ButtonSetting {
 	/// The unique key that identifies this setting.
 	pub key: Cow<'static, str>,
