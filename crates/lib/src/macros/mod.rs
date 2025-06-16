@@ -201,7 +201,16 @@ macro_rules! register_source {
 				return -2;
 			};
 
-			let result = __source().get_page_list(manga, chapter);
+			let result = __source()
+				.get_page_list(manga, chapter)
+				.map(|pages| {
+					pages.into_iter()
+						.map(|mut page| {
+							page.ensure_externally_managed();
+							page
+						})
+						.collect::<::aidoku::alloc::Vec<_>>()
+				});
 			__handle_result(result)
 		}
 

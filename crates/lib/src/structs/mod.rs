@@ -174,6 +174,32 @@ pub struct Chapter {
 	pub locked: bool,
 }
 
+#[cfg(feature = "imports")]
+mod __private {
+	use crate::imports::canvas::ImageRef;
+
+	#[derive(Debug, PartialEq)]
+	pub struct ImageRefPriv(pub(crate) ImageRef);
+
+	impl serde::Serialize for ImageRefPriv {
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			self.0.serialize(serializer)
+		}
+	}
+
+	impl<'de> serde::Deserialize<'de> for ImageRefPriv {
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			ImageRef::deserialize(deserializer).map(|inner| ImageRefPriv(inner))
+		}
+	}
+}
+
 /// The content of a page.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PageContent {
@@ -184,6 +210,11 @@ pub enum PageContent {
 	Url(String, Option<PageContext>),
 	/// A markdown text string.
 	Text(String),
+	/// A raw image.
+	#[cfg(feature = "imports")]
+	Image(__private::ImageRefPriv),
+	/// A url to zip archive and a file path to an image inside the archive.
+	Zip(String, String),
 }
 
 impl PageContent {
@@ -201,6 +232,12 @@ impl PageContent {
 	pub fn text<T: Into<String>>(text: T) -> Self {
 		Self::Text(text.into())
 	}
+
+	/// Create a new `PageContent` with a raw image.
+	#[cfg(feature = "imports")]
+	pub fn image(image: crate::imports::canvas::ImageRef) -> Self {
+		Self::Image(__private::ImageRefPriv(image))
+	}
 }
 
 /// A page for a chapter.
@@ -217,6 +254,19 @@ pub struct Page {
 	/// If `has_description` is `true` and this is `None`, [PageDescriptionProvider] will be used.
 	/// If `has_description` is `false`, this field will be ignored.
 	pub description: Option<String>,
+}
+
+impl Page {
+	/// Set the page content to be externally managed if it is an image.
+	///
+	/// This property is exposed for the functions that the [register_source](crate::register_source)
+	/// macro generates and should not be used directly.
+	#[cfg(feature = "imports")]
+	pub fn ensure_externally_managed(&mut self) {
+		if let PageContent::Image(ref mut image) = self.content {
+			image.0.externally_managed = true;
+		}
+	}
 }
 
 impl Default for Page {

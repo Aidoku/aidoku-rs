@@ -145,6 +145,12 @@ impl ImageRef {
 	}
 }
 
+impl PartialEq for ImageRef {
+	fn eq(&self, other: &Self) -> bool {
+		self.rid == other.rid
+	}
+}
+
 impl Drop for ImageRef {
 	fn drop(&mut self) {
 		if !self.externally_managed {
@@ -167,7 +173,7 @@ impl<'de> Deserialize<'de> for ImageRef {
 	where
 		D: serde::Deserializer<'de>,
 	{
-		// when deserializing from a response struct, the image ref
+		// when deserializing from a response struct, the image ref should be managed externally
 		Rid::deserialize(deserializer).map(|rid| ImageRef::from(rid, true))
 	}
 }
