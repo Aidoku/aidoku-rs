@@ -184,6 +184,10 @@
 				{
 					"type": "object",
 					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["segment"]
+						},
 						"options": {
 							"description": "The options for the segmented picker.",
 							"type": "array",
