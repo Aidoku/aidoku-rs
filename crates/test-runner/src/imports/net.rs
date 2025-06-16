@@ -1,13 +1,14 @@
-use std::{io::Cursor, str::FromStr};
-
 use crate::{
 	libs::{HttpMethod, ImageData, NetRequest, NetResponse, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
 };
 use image::ImageReader;
-use reqwest::header::{HeaderName, HeaderValue};
+use reqwest::header::{HeaderName, HeaderValue, USER_AGENT};
 use scraper::Html;
+use std::{io::Cursor, str::FromStr};
 use wasmer::FunctionEnvMut;
+
+const DEFAULT_USER_AGENT: &str = "Aidoku/1 CFNetwork/3826.500.131 Darwin/24.5.0";
 
 enum Result {
 	Success,
@@ -68,6 +69,11 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	else {
 		return Result::InvalidDescriptor.into();
 	};
+	// add a default user agent if none is provided
+	if !request.headers.contains_key(USER_AGENT) {
+		let default_ua = HeaderValue::from_static(DEFAULT_USER_AGENT);
+		request.headers.insert(USER_AGENT, default_ua);
+	}
 	// make a blocking request with reqwest
 	let Ok(response) = reqwest::blocking::Client::new()
 		.request(
