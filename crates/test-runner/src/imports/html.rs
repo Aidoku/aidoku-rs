@@ -295,6 +295,49 @@ pub fn prepend(_env: FunctionEnvMut<WasmEnv>, _rid: Rid, _html: u32, _html_len: 
 pub fn append(_env: FunctionEnvMut<WasmEnv>, _rid: Rid, _html: u32, _html_len: u32) -> FFIResult {
 	-1
 }
+pub fn parent(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
+	let Some(item) = env.data_mut().store.get_mut(rid) else {
+		return Result::InvalidDescriptor.into();
+	};
+	if let Some(element) = item.as_html_element() {
+		let Some(parent) = element.parent() else {
+			return Result::NoResult.into();
+		};
+		env.data_mut().store.store(StoreItem::HtmlElement(parent))
+	} else {
+		Result::InvalidDescriptor.into()
+	}
+}
+pub fn children(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
+	let Some(item) = env.data_mut().store.get_mut(rid) else {
+		return Result::InvalidDescriptor.into();
+	};
+	if let Some(element) = item.as_html_element() {
+		let Some(elements) = element.children() else {
+			return Result::NoResult.into();
+		};
+		env.data_mut()
+			.store
+			.store(StoreItem::HtmlElementList(elements))
+	} else {
+		Result::InvalidDescriptor.into()
+	}
+}
+pub fn siblings(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
+	let Some(item) = env.data_mut().store.get_mut(rid) else {
+		return Result::InvalidDescriptor.into();
+	};
+	if let Some(element) = item.as_html_element() {
+		let Some(elements) = element.siblings() else {
+			return Result::NoResult.into();
+		};
+		env.data_mut()
+			.store
+			.store(StoreItem::HtmlElementList(elements))
+	} else {
+		Result::InvalidDescriptor.into()
+	}
+}
 pub fn next(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	let Some(item) = env.data_mut().store.get_mut(rid) else {
 		return Result::InvalidDescriptor.into();

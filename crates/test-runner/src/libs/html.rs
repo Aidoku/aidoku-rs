@@ -65,6 +65,43 @@ impl HtmlElement {
 		Some(element.html())
 	}
 
+	pub fn parent(&self) -> Option<HtmlElement> {
+		let node = self.html.tree.get(self.id)?;
+		let element = ElementRef::wrap(node)?;
+		element.parent().map(|element| HtmlElement {
+			html: self.html.clone(),
+			id: element.id(),
+		})
+	}
+
+	pub fn children(&self) -> Option<HtmlElementList> {
+		let node = self.html.tree.get(self.id)?;
+		let element = ElementRef::wrap(node)?;
+		Some(HtmlElementList(
+			element
+				.child_elements()
+				.map(|element| HtmlElement {
+					html: self.html.clone(),
+					id: element.id(),
+				})
+				.collect::<Vec<HtmlElement>>(),
+		))
+	}
+
+	pub fn siblings(&self) -> Option<HtmlElementList> {
+		let node = self.html.tree.get(self.id)?;
+		let element = ElementRef::wrap(node)?;
+		Some(HtmlElementList(
+			element
+				.next_siblings()
+				.map(|element| HtmlElement {
+					html: self.html.clone(),
+					id: element.id(),
+				})
+				.collect::<Vec<HtmlElement>>(),
+		))
+	}
+
 	pub fn next_sibling(&self) -> Option<HtmlElement> {
 		let node = self.html.tree.get(self.id)?;
 		let element = ElementRef::wrap(node)?;
