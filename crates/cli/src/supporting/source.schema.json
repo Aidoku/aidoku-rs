@@ -85,6 +85,15 @@
 					"enum": ["single", "multi"],
 					"description": "Whether the language selection setting should allow multiple languages or a single language to be selected. Default is 'single'."
 				},
+				"supportsArtistSearch": {
+					"type": "boolean"
+				},
+				"supportsAuthorSearch": {
+					"type": "boolean"
+				},
+				"supportsTagSearch": {
+					"type": "boolean"
+				},
 				"allowsBaseUrlSelect": {
 					"type": "boolean"
 				},
