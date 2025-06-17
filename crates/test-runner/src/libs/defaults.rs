@@ -12,6 +12,7 @@ pub enum DefaultValue {
 	HashMap(HashMap<String, String>),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DefaultKind {
 	Data,
 	Bool,

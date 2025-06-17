@@ -76,10 +76,7 @@ pub fn set(
 	}
 
 	let default_kind: DefaultKind = kind.into();
-	let Ok(value_len) = env.data().read_u32(&env, value_ptr) else {
-		return Result::FailedDecoding.into();
-	};
-	let Ok(data) = env.data().read_bytes(&env, value_ptr, value_len) else {
+	let Ok(data) = env.data().read_item_bytes(&env, value_ptr) else {
 		return Result::FailedDecoding.into();
 	};
 
