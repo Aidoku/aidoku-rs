@@ -332,12 +332,17 @@
 						"logoutTitle": {
 							"type": "string",
 							"description": "A custom title for the button to click to log out."
+						},
+						"method": {
+							"type": "string",
+							"enum": ["basic", "web", "oauth"],
+							"description": "The login method to use. One of: 'basic', 'web', or 'oauth'."
 						}
 					},
-					"required": ["type", "key"]
+					"required": ["type", "key", "method"]
 				},
 				{
-					"anyOf": [
+					"oneOf": [
 						{
 							"type": "object",
 							"properties": {
@@ -349,7 +354,8 @@
 									"description": "Whether to prompt for an email instead of a username.",
 									"type": "boolean"
 								}
-							}
+							},
+							"required": ["method"]
 						},
 						{
 							"type": "object",
@@ -359,6 +365,7 @@
 									"enum": ["web"]
 								}
 							},
+							"required": ["method"],
 							"anyOf": [
 								{
 									"properties": {
@@ -400,6 +407,7 @@
 									"type": "string"
 								}
 							},
+							"required": ["method"],
 							"anyOf": [
 								{
 									"properties": {
