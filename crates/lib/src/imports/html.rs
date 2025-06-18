@@ -602,7 +602,7 @@ impl ElementList {
 		Self {
 			rid,
 			lower_bound: 0,
-			upper_bound: size,
+			upper_bound: size.wrapping_sub(1),
 			size,
 		}
 	}
