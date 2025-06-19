@@ -19,6 +19,7 @@ colored = "3.0"
 dialoguer = "0.11"
 image = "0.25"
 jsonschema = "0.30"
+local-ip-address = "0.6"
 rayon = "1.10"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

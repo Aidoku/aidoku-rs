@@ -61,9 +61,20 @@ pub async fn run(
 				),
 		);
 
-	let addr = SocketAddr::from(([127, 0, 0, 1], port));
+	let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
-	println!("Serving {} at http://{}", output_path.display(), addr);
+	let local_ip_address = local_ip_address::local_ip()
+		.map(|ip| ip.to_string())
+		.unwrap_or("localhost".into());
+
+	println!(
+		"Serving source list at http://{}:{}",
+		local_ip_address, port
+	);
+	println!(
+		"Add http://{}:{}/index.min.json as a source list in Aidoku",
+		local_ip_address, port
+	);
 	println!("Hit CTRL-C to stop the server.");
 
 	// start http server
