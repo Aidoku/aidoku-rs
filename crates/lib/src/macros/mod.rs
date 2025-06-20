@@ -137,19 +137,6 @@ macro_rules! register_source {
 		}
 
 		#[no_mangle]
-		#[export_name = "get_manga_list"]
-		pub unsafe extern "C" fn __wasm_get_manga_list(listing_descriptor: i32, page: i32) -> i32 {
-			let ::core::result::Result::Ok(listing) =
-				::aidoku::imports::std::read::<::aidoku::Listing>(listing_descriptor)
-			else {
-				return -1;
-			};
-
-			let result = __source().get_manga_list(listing, page);
-			__handle_result(result)
-		}
-
-		#[no_mangle]
 		#[export_name = "get_search_manga_list"]
 		pub unsafe extern "C" fn __wasm_get_search_manga_list(
 			query_descriptor: i32,
@@ -217,6 +204,21 @@ macro_rules! register_source {
 		$(
 			register_source!(@single $param);
 		)*
+	};
+
+	(@single ListingProvider) => {
+		#[no_mangle]
+		#[export_name = "get_manga_list"]
+		pub unsafe extern "C" fn __wasm_get_manga_list(listing_descriptor: i32, page: i32) -> i32 {
+			let ::core::result::Result::Ok(listing) =
+				::aidoku::imports::std::read::<::aidoku::Listing>(listing_descriptor)
+			else {
+				return -1;
+			};
+
+			let result = __source().get_manga_list(listing, page);
+			__handle_result(result)
+		}
 	};
 
 	(@single Home) => {

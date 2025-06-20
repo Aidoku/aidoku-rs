@@ -5,9 +5,9 @@ use aidoku::{
 	prelude::*,
 	AlternateCoverProvider, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
 	DynamicFilters, DynamicListings, DynamicSettings, Filter, FilterValue, Home, HomeComponent,
-	HomeLayout, Listing, Manga, MangaPageResult, MangaStatus, MangaWithChapter, MultiSelectFilter,
-	NotificationHandler, Page, PageContent, PageDescriptionProvider, Result, SelectFilter, Setting,
-	SortFilter, Source, TextFilter, ToggleSetting,
+	HomeLayout, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
+	MultiSelectFilter, NotificationHandler, Page, PageContent, PageDescriptionProvider, Result,
+	SelectFilter, Setting, SortFilter, Source, TextFilter, ToggleSetting,
 };
 
 const PAGE_SIZE: i32 = 20;
@@ -21,22 +21,6 @@ impl Source for ExampleSource {
 	// perform any necessary setup here
 	fn new() -> Self {
 		Self
-	}
-
-	// this method will be called when a listing or a home section with an associated listing is opened
-	fn get_manga_list(&self, listing: Listing, _page: i32) -> Result<MangaPageResult> {
-		if listing.id == "test" {
-			bail!("Not supported");
-		}
-		Ok(MangaPageResult {
-			entries: vec![Manga {
-				key: String::from("1"),
-				title: String::from("Manga 1"),
-				cover: Some(String::from("https://aidoku.app/images/icon.png")),
-				..Default::default()
-			}],
-			has_next_page: false,
-		})
 	}
 
 	// this method will be called first without a query when the search page is opened,
@@ -165,6 +149,26 @@ impl ExampleSource {
 			.ok()?
 			.select_first(".repository-content .Box a")?
 			.text()
+	}
+}
+
+// if your source provides any listings (static, dynamic, or in home components), this trait must be implemented
+// this should probably be most sources
+impl ListingProvider for ExampleSource {
+	// this method will be called when a listing or a home section with an associated listing is opened
+	fn get_manga_list(&self, listing: Listing, _page: i32) -> Result<MangaPageResult> {
+		if listing.id == "test" {
+			bail!("Not supported");
+		}
+		Ok(MangaPageResult {
+			entries: vec![Manga {
+				key: String::from("1"),
+				title: String::from("Manga 1"),
+				cover: Some(String::from("https://aidoku.app/images/icon.png")),
+				..Default::default()
+			}],
+			has_next_page: false,
+		})
 	}
 }
 
@@ -409,6 +413,7 @@ impl DeepLinkHandler for ExampleSource {
 register_source!(
 	ExampleSource,
 	// after the name of the source struct, list all the extra traits it implements
+	ListingProvider,
 	Home,
 	PageDescriptionProvider,
 	DynamicFilters,

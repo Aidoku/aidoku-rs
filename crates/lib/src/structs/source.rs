@@ -15,9 +15,6 @@ pub trait Source {
 	/// If a source requires any setup before other functions are called, it should happen here.
 	fn new() -> Self;
 
-	/// Returns the manga for the provided listing.
-	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult>;
-
 	/// Returns the manga for a search query with filters.
 	fn get_search_manga_list(
 		&self,
@@ -36,6 +33,12 @@ pub trait Source {
 
 	/// Returns the pages for a given manga chapter.
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>>;
+}
+
+/// A source that provides listings.
+pub trait ListingProvider: Source {
+	/// Returns the manga for the provided listing.
+	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult>;
 }
 
 /// A source that provides a home layout.
