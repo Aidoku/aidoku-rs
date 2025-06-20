@@ -216,6 +216,7 @@ macro_rules! register_source {
 				return -1;
 			};
 
+			use ::aidoku::ListingProvider;
 			let result = __source().get_manga_list(listing, page);
 			__handle_result(result)
 		}
@@ -225,6 +226,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_home"]
 		pub unsafe extern "C" fn __wasm_get_home() -> i32 {
+			use ::aidoku::Home;
 			let result = __source().get_home();
 			__handle_result(result)
 		}
@@ -234,6 +236,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_listings"]
 		pub unsafe extern "C" fn __wasm_get_listings() -> i32 {
+			use ::aidoku::DynamicListings;
 			let result = __source().get_dynamic_listings();
 			__handle_result(result)
 		}
@@ -243,6 +246,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_filters"]
 		pub unsafe extern "C" fn __wasm_get_filters() -> i32 {
+			use ::aidoku::DynamicFilters;
 			let result = __source().get_dynamic_filters();
 			__handle_result(result)
 		}
@@ -252,6 +256,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_settings"]
 		pub unsafe extern "C" fn __wasm_get_settings() -> i32 {
+			use ::aidoku::DynamicSettings;
 			let result = __source().get_dynamic_settings();
 			__handle_result(result)
 		}
@@ -310,6 +315,7 @@ macro_rules! register_source {
 				return -2;
 			};
 
+			use ::aidoku::ImageRequestProvider;
 			let mut result = __source().get_image_request(url, context);
 			if let Ok(request) = result.as_mut() {
 				request.should_close = false;
@@ -327,7 +333,7 @@ macro_rules! register_source {
 			else {
 				return -1;
 			};
-
+			use ::aidoku::PageDescriptionProvider;
 			let result = __source().get_page_description(page);
 			__handle_result(result)
 		}
@@ -342,6 +348,7 @@ macro_rules! register_source {
 			else {
 				return -1;
 			};
+			use ::aidoku::AlternateCoverProvider;
 			let result = __source().get_alternate_covers(manga);
 			__handle_result(result)
 		}
@@ -351,6 +358,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_base_url"]
 		pub unsafe extern "C" fn __wasm_get_base_url() -> i32 {
+			use ::aidoku::BaseUrlProvider;
 			let result = __source().get_base_url();
 			__handle_result(result)
 		}
@@ -365,6 +373,7 @@ macro_rules! register_source {
 			else {
 				return -1;
 			};
+			use ::aidoku::NotificationHandler;
 			__source().handle_notification(notification);
 			return 0;
 		}
@@ -379,6 +388,7 @@ macro_rules! register_source {
 			else {
 				return -1;
 			};
+			use ::aidoku::DeepLinkHandler;
 			let result = __source().handle_deep_link(url);
 			__handle_result(result)
 		}
@@ -407,6 +417,7 @@ macro_rules! register_source {
 			else {
 				return -3;
 			};
+			use ::aidoku::BasicLoginHandler;
 			let result = __source().handle_basic_login(key, username, password);
 			__handle_result(result)
 		}
@@ -435,6 +446,7 @@ macro_rules! register_source {
 			>(values_descriptor) else {
 				return -3;
 			};
+			use ::aidoku::WebLoginHandler;
 			let result = __source().handle_web_login(key, keys.into_iter().zip(values).collect());
 			__handle_result(result)
 		}
@@ -452,6 +464,7 @@ macro_rules! register_source {
 			let ::core::option::Option::Some(kind) = ::aidoku::IdKind::from(id_kind) else {
 				return -2;
 			};
+			use ::aidoku::MigrationHandler;
 			let result = __source().handle_id_migration(id, kind);
 			__handle_result(result)
 		}

@@ -57,21 +57,20 @@ impl Source for ExampleSource {
 	// this method will be called when a manga page is opened
 	fn get_manga_update(
 		&self,
-		manga: Manga,
+		mut manga: Manga,
 		needs_details: bool,
 		needs_chapters: bool,
 	) -> Result<Manga> {
-		let mut new_manga = manga.clone();
 		if needs_details {
-			new_manga.authors = Some(vec![String::from("Author")]);
-			new_manga.description = ExampleSource::get_latest_aidoku_version();
-			new_manga.status = MangaStatus::Ongoing;
-			new_manga.content_rating = ContentRating::Safe;
-			new_manga.tags = Some(vec![String::from("Tag 1"), String::from("Tag 2")]);
-			new_manga.url = Some(String::from("https://aidoku.app"));
+			manga.authors = Some(vec![String::from("Author")]);
+			manga.description = ExampleSource::get_latest_aidoku_version();
+			manga.status = MangaStatus::Ongoing;
+			manga.content_rating = ContentRating::Safe;
+			manga.tags = Some(vec![String::from("Tag 1"), String::from("Tag 2")]);
+			manga.url = Some(String::from("https://aidoku.app"));
 		}
 		if needs_chapters {
-			new_manga.chapters = Some(vec![
+			manga.chapters = Some(vec![
 				Chapter {
 					key: String::from("8"),
 					chapter_number: Some(8.0),
@@ -117,7 +116,7 @@ impl Source for ExampleSource {
 				},
 			]);
 		}
-		Ok(new_manga)
+		Ok(manga)
 	}
 
 	fn get_page_list(&self, _manga: Manga, _chapter: Chapter) -> Result<Vec<Page>> {
