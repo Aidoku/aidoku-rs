@@ -126,6 +126,11 @@
 					"type": "integer",
 					"description": "An indicator of a version that caused a breaking change and requires migration. Users on any version of the source below the indicated version will be prompted to migrate items after updating. Automatic migration functionality can be implemented by the source via the `MigrationHandler` trait.",
 					"minimum": 2
+				},
+				"hidesFiltersWhileSearching": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether the source hides filters with a search query."
 				}
 			}
 		}
