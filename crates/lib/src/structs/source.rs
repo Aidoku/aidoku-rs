@@ -62,7 +62,7 @@ pub trait DynamicSettings: Source {
 pub trait PageImageProcessor: Source {
 	fn process_page_image(
 		&self,
-		response: Response,
+		response: ImageResponse,
 		context: Option<PageContext>,
 	) -> Result<ImageRef>;
 }
@@ -184,20 +184,20 @@ impl Serialize for DeepLinkResult {
 
 /// The details of a HTTP request.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ResponseRequest {
+pub struct ImageRequest {
 	pub url: Option<String>,
 	pub headers: HashMap<String, String>,
 }
 
 /// A response from a network image request.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Response {
+pub struct ImageResponse {
 	/// The HTTP status code.
 	pub code: u16,
 	/// The HTTP response headers.
 	pub headers: HashMap<String, String>,
 	/// The HTTP request details.
-	pub request: ResponseRequest,
+	pub request: ImageRequest,
 	/// A reference to image data.
 	pub image: ImageRef,
 }

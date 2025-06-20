@@ -7,7 +7,6 @@ use super::{
 	FFIResult, Rid,
 };
 use crate::alloc::{String, Vec};
-use serde::{ser::SerializeStruct, Serialize};
 
 /// An HTTP request method.
 #[repr(C)]
@@ -115,7 +114,7 @@ macro_rules! convenience_http_methods {
 	};
 }
 
-/// A type that makes a HTTP request.
+/// An HTTP request.
 #[derive(Debug)]
 pub struct Request {
 	/// The reference id for the request.
@@ -125,12 +124,19 @@ pub struct Request {
 	pub rid: Rid,
 	http_method: HttpMethod,
 	url: Option<String>,
-	sent: bool,
-	/// Whether the request has been closed and destroyed.
+	/// Whether the request should be closed after being dropped.
 	///
 	/// This property is exposed for the functions that the [register_source](crate::register_source)
 	/// macro generates and should not be used directly.
-	pub forgotten: bool,
+	pub should_close: bool,
+}
+
+/// An HTTP response.
+#[derive(Debug)]
+pub struct Response {
+	rid: Rid,
+	http_method: HttpMethod,
+	url: Option<String>,
 	/// The stored request response data.
 	pub data: Option<Vec<u8>>,
 }
@@ -154,9 +160,7 @@ impl Request {
 				rid,
 				http_method,
 				url: None,
-				sent: false,
-				forgotten: false,
-				data: None,
+				should_close: true,
 			};
 			request.set_url(url)?;
 			Ok(request)
@@ -170,37 +174,37 @@ impl Request {
 	convenience_http_methods! { delete, HttpMethod::Delete, "Create a new DELETE request with the given URL." }
 
 	/// Send multiple requests in parallel, and wait for all of them to finish.
-	pub fn send_all<I>(requests: I) -> Vec<Result<Request, RequestError>>
+	pub fn send_all<I>(requests: I) -> Vec<Result<Response, RequestError>>
 	where
 		I: IntoIterator<Item = Request>,
 	{
 		let mut ids: Vec<i32> = Vec::new();
 		// mark all requests as sent and add their IDs to the vector
-		let requests = requests
+		let responses = requests
 			.into_iter()
 			.map(|mut r| {
-				r.sent = true;
+				r.should_close = false;
 				ids.push(r.rid);
-				Ok(r)
+				Ok(Response::from(r))
 			})
 			.collect();
 
 		let result = unsafe { send_all(ids.as_mut_ptr(), ids.len()) };
 
 		if result == 0 {
-			// success, resturn result
-			requests
+			// success, return result
+			responses
 		} else {
 			// one or more of the requests failed
 			// the error codes are stored in the ids vector
 			let mut idx = 0;
-			requests
+			responses
 				.into_iter()
-				.map(|request| {
+				.map(|response| {
 					let error = ids.get(idx).and_then(|id| RequestError::from(*id));
 					let result = match error {
 						Some(e) => Err(e),
-						None => request,
+						None => response,
 					};
 					idx += 1;
 					result
@@ -225,17 +229,19 @@ impl Request {
 	}
 
 	/// Set the HTTP body data in a builder.
-	pub fn body<T: AsRef<[u8]>>(self, data: T) -> Self {
+	pub fn body<T: AsRef<[u8]>>(mut self, data: T) -> Self {
+		self.set_body(data);
+		self
+	}
+
+	/// Set the HTTP body data.
+	pub fn set_body<T: AsRef<[u8]>>(&mut self, data: T) {
 		let data = data.as_ref();
 		unsafe { set_body(self.rid, data.as_ptr(), data.len()) };
-		self
 	}
 
 	/// Set the URL for the request.
 	pub fn set_url<T: AsRef<str>>(&mut self, url: T) -> Result<(), RequestError> {
-		if self.forgotten {
-			return Err(RequestError::Closed);
-		}
 		let url = url.as_ref();
 		self.url = Some(String::from(url));
 		let result = unsafe { set_url(self.rid, url.as_ptr(), url.len()) };
@@ -253,28 +259,52 @@ impl Request {
 
 	/// Send the request.
 	#[inline]
-	pub fn send(&mut self) -> Result<(), RequestError> {
-		if self.sent {
-			return Ok(());
-		}
-		if self.forgotten {
-			return Err(RequestError::Closed);
-		}
+	pub fn send(mut self) -> Result<Response, RequestError> {
 		let result = unsafe { send(self.rid) };
-		self.sent = true;
 		if let Some(error) = RequestError::from(result) {
 			Err(error)
 		} else {
-			Ok(())
+			self.should_close = false;
+			Ok(Response::from(self))
 		}
 	}
 
+	/// Get the raw data from the response, closing the request.
+	pub fn data(self) -> Result<Vec<u8>, RequestError> {
+		self.send()?.get_data()
+	}
+
+	/// Gets the response data as an image.
+	pub fn image(self) -> Result<ImageRef, RequestError> {
+		self.send()?.get_image()
+	}
+
+	/// Gets the response data as a string.
+	pub fn string(self) -> Result<String, AidokuError> {
+		self.send()?.get_string()
+	}
+
+	/// Get the response data as an HTML [Document].
+	pub fn html(self) -> Result<Document, RequestError> {
+		self.send()?.get_html()
+	}
+}
+
+#[cfg(feature = "json")]
+impl Request {
+	/// Get the response data as an owned JSON value.
+	pub fn json_owned<T>(self) -> Result<T, AidokuError>
+	where
+		T: serde::de::DeserializeOwned,
+	{
+		self.send()?.get_json_owned()
+	}
+}
+
+impl Response {
 	/// Get the response's status code.
 	#[inline]
 	pub fn status_code(&self) -> i32 {
-		if !self.sent {
-			return -1;
-		}
 		unsafe { get_status_code(self.rid) }
 	}
 
@@ -288,21 +318,8 @@ impl Request {
 		read_string_and_destroy(rid)
 	}
 
-	/// Get the raw data from the response, closing the request.
-	pub fn data(mut self) -> Result<Vec<u8>, RequestError> {
-		let result = self.get_data();
-		self.close();
-		result
-	}
-
 	/// Get the raw data from the response.
-	pub fn get_data(&mut self) -> Result<Vec<u8>, RequestError> {
-		if self.forgotten {
-			return Err(RequestError::Closed);
-		}
-		if !self.sent {
-			self.send()?;
-		}
+	pub fn get_data(&self) -> Result<Vec<u8>, RequestError> {
 		let size = unsafe { data_len(self.rid) };
 		if let Some(error) = RequestError::from(size) {
 			return Err(error);
@@ -320,10 +337,7 @@ impl Request {
 	}
 
 	/// Gets the response data as an image.
-	pub fn image(mut self) -> Result<ImageRef, RequestError> {
-		if !self.sent {
-			self.send()?;
-		}
+	pub fn get_image(&self) -> Result<ImageRef, RequestError> {
 		let result = unsafe { get_image(self.rid) };
 		if let Some(error) = RequestError::from(result) {
 			Err(error)
@@ -333,8 +347,8 @@ impl Request {
 	}
 
 	/// Gets the response data as a string.
-	pub fn string(self) -> Result<String, AidokuError> {
-		let res = String::from_utf8(self.data()?);
+	pub fn get_string(&self) -> Result<String, AidokuError> {
+		let res = String::from_utf8(self.get_data()?);
 		match res {
 			Ok(res) => Ok(res),
 			Err(err) => Err(AidokuError::Utf8Error(err.utf8_error())),
@@ -342,43 +356,33 @@ impl Request {
 	}
 
 	/// Get the response data as an HTML [Document].
-	pub fn html(mut self) -> Result<Document, RequestError> {
-		self.send()?;
+	pub fn get_html(&self) -> Result<Document, RequestError> {
 		let rid = unsafe { html(self.rid) };
-		self.close();
 		if let Some(error) = RequestError::from(rid) {
 			return Err(error);
 		}
 		Ok(unsafe { Document::from(rid) })
 	}
 
-	/// Reset the request, clearing any past response. This allows the request to be reused.
-	pub fn reset(&mut self) {
-		self.close();
-		self.rid = unsafe { init(self.http_method) };
+	/// Create a new request with the same method and url as the one sent to get this response.
+	pub fn into_request(self) -> Request {
+		let rid = unsafe { init(self.http_method) };
 		if let Some(url) = self.url.as_ref() {
-			_ = unsafe { set_url(self.rid, url.as_ptr(), url.len()) };
+			_ = unsafe { set_url(rid, url.as_ptr(), url.len()) };
 		}
-		self.sent = false;
-		self.forgotten = false;
-		self.data = None;
-	}
-
-	#[inline]
-	fn close(&mut self) {
-		if !self.forgotten {
-			if self.rid > 0 {
-				unsafe { destroy(self.rid) };
-			}
-			self.forgotten = true;
+		Request {
+			rid: rid,
+			http_method: self.http_method,
+			url: self.url.clone(),
+			should_close: true,
 		}
 	}
 }
 
 #[cfg(feature = "json")]
-impl Request {
+impl Response {
 	/// Get the response data as a JSON value. This requires the request to stay in scope so the data can be referenced.
-	pub fn json<'a, T>(&'a mut self) -> Result<T, AidokuError>
+	pub fn get_json<'a, T>(&'a mut self) -> Result<T, AidokuError>
 	where
 		T: serde::de::Deserialize<'a>,
 	{
@@ -390,31 +394,39 @@ impl Request {
 	}
 
 	/// Get the response data as an owned JSON value.
-	pub fn json_owned<T>(self) -> Result<T, AidokuError>
+	pub fn get_json_owned<T>(self) -> Result<T, AidokuError>
 	where
 		T: serde::de::DeserializeOwned,
 	{
-		let data = self.data()?;
+		let data = self.get_data()?;
 		let value = serde_json::from_slice(&data).map_err(|_| AidokuError::JsonParseError)?;
 		Ok(value)
 	}
 }
 
-impl Drop for Request {
-	fn drop(&mut self) {
-		self.close();
+impl Response {
+	// don't implement From<Request> here since this should stay private
+	fn from(request: Request) -> Self {
+		Self {
+			rid: request.rid,
+			http_method: request.http_method,
+			url: request.url.clone(),
+			data: None,
+		}
 	}
 }
 
-impl Serialize for Request {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: serde::Serializer,
-	{
-		let mut state = serializer.serialize_struct("Request", 2)?;
-		state.serialize_field("rid", &self.rid)?;
-		state.serialize_field("sent", &self.sent)?;
-		state.end()
+impl Drop for Request {
+	fn drop(&mut self) {
+		if self.should_close {
+			unsafe { destroy(self.rid) };
+		}
+	}
+}
+
+impl Drop for Response {
+	fn drop(&mut self) {
+		unsafe { destroy(self.rid) };
 	}
 }
 

@@ -263,7 +263,7 @@ macro_rules! register_source {
 			context_descriptor: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(response) =
-				::aidoku::imports::std::read::<::aidoku::Response>(response_descriptor)
+				::aidoku::imports::std::read::<::aidoku::ImageResponse>(response_descriptor)
 			else {
 				return -1;
 			};
@@ -310,7 +310,7 @@ macro_rules! register_source {
 
 			let mut result = __source().get_image_request(url, context);
 			if let Ok(request) = result.as_mut() {
-				request.forgotten = true;
+				request.should_close = false;
 			}
 			__handle_result(result.map(|r| r.rid))
 		}
