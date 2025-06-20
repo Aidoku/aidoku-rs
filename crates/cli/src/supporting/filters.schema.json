@@ -22,10 +22,30 @@
 				"hideFromHeader": {
 					"type": "boolean",
 					"description": "Whether to hide this filter from showing in the header view and only show it in the full sheet view."
+				},
+				"type": {
+					"type": "string",
+					"enum": [
+						"text",
+						"sort",
+						"check",
+						"select",
+						"multi-select",
+						"note"
+					],
+					"enumDescriptions": [
+						"A filter that allows for text entry.",
+						"A filter that shows a list of sorting options.",
+						"A filter that provides a single two-state or tri-state selection.",
+						"A filter that allows a single selection from a list of options.",
+						"A filter that provides a list of options that allows multiple selections.",
+						"A filter that provides non-editable text for info or explanation."
+					]
 				}
 			}
 		},
 		"textFilter": {
+			"type": "object",
 			"allOf": [
 				{
 					"$ref": "#/definitions/filterBase"
@@ -34,8 +54,7 @@
 					"type": "object",
 					"properties": {
 						"type": {
-							"type": "string",
-							"enum": ["text"],
+							"const": "text",
 							"description": "A filter that allows for text entry. Providing \"author\" or \"artist\" for the filter id will indicate that authors and artists provided for entries can be searched using this filter."
 						},
 						"placeholder": {
@@ -48,6 +67,7 @@
 			]
 		},
 		"sortFilter": {
+			"type": "object",
 			"allOf": [
 				{
 					"$ref": "#/definitions/filterBase"
@@ -56,8 +76,7 @@
 					"type": "object",
 					"properties": {
 						"type": {
-							"type": "string",
-							"enum": ["sort"],
+							"const": "sort",
 							"description": "A filter that shows a list of sorting options. The filter value is an object with an index and an ascending boolean."
 						},
 						"canAscend": {
@@ -88,6 +107,7 @@
 			]
 		},
 		"checkFilter": {
+			"type": "object",
 			"allOf": [
 				{
 					"$ref": "#/definitions/filterBase"
@@ -96,8 +116,7 @@
 					"type": "object",
 					"properties": {
 						"type": {
-							"type": "string",
-							"enum": ["check"],
+							"const": "check",
 							"description": "A filter that provides a single two-state or tri-state selection."
 						},
 						"name": {
@@ -118,6 +137,7 @@
 			]
 		},
 		"selectFilter": {
+			"type": "object",
 			"allOf": [
 				{
 					"$ref": "#/definitions/filterBase"
@@ -126,8 +146,7 @@
 					"type": "object",
 					"properties": {
 						"type": {
-							"type": "string",
-							"enum": ["select"],
+							"const": "select",
 							"description": "A filter that allows a single selection from a list of options."
 						},
 						"isGenre": {
@@ -159,6 +178,7 @@
 			]
 		},
 		"multiSelectFilter": {
+			"type": "object",
 			"allOf": [
 				{
 					"$ref": "#/definitions/filterBase"
@@ -167,8 +187,7 @@
 					"type": "object",
 					"properties": {
 						"type": {
-							"type": "string",
-							"enum": ["multi-select"],
+							"const": "multi-select",
 							"description": "A filter that provides a list of options that allows multiple selections"
 						},
 						"isGenre": {
@@ -213,8 +232,7 @@
 			"type": "object",
 			"properties": {
 				"type": {
-					"type": "string",
-					"enum": ["note"],
+					"const": "note",
 					"description": "A filter that provides non-editable text for info or explanation."
 				},
 				"text": {
