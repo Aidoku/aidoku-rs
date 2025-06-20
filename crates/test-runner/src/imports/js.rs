@@ -27,7 +27,9 @@ impl From<Result> for i32 {
 
 pub fn context_create(mut env: FunctionEnvMut<WasmEnv>) -> Rid {
 	let context = boa_engine::Context::default();
-	env.data_mut().store.store(StoreItem::JsContext(context))
+	env.data_mut()
+		.store
+		.store(StoreItem::JsContext(Box::new(context)))
 }
 pub fn context_eval(
 	mut env: FunctionEnvMut<WasmEnv>,
