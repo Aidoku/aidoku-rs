@@ -308,11 +308,17 @@ pub fn get_header(
 	let headers = response.headers.clone();
 	request.response = Some(response);
 
-	let Some(value) = headers.get(&name).map(|value| value.as_bytes()) else {
+	let value = headers
+		.get_all(&name)
+		.iter()
+		.map(|value| value.as_bytes())
+		.filter_map(|bytes| String::from_utf8(bytes.to_vec()).ok())
+		.collect::<Vec<String>>()
+		.join(", ");
+	if value.is_empty() {
 		return Result::MissingData.into();
 	};
-	let string = String::from_utf8(value.to_vec()).unwrap_or_default();
-	env.data_mut().store.store(StoreItem::String(string))
+	env.data_mut().store.store(StoreItem::String(value))
 }
 pub fn html(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	let Some(request) = env
