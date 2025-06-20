@@ -15,7 +15,7 @@ enum Result {
 	InvalidDescriptor,
 	InvalidString,
 	InvalidMethod,
-	// InvalidUrl,
+	InvalidUrl,
 	// InvalidHtml,
 	// InvalidBufferSize,
 	MissingData,
@@ -33,7 +33,7 @@ impl From<Result> for i32 {
 			Result::InvalidDescriptor => -1,
 			Result::InvalidString => -2,
 			Result::InvalidMethod => -3,
-			// Result::InvalidUrl => -4,
+			Result::InvalidUrl => -4,
 			// Result::InvalidHtml => -5,
 			// Result::InvalidBufferSize => -6,
 			Result::MissingData => -7,
@@ -132,6 +132,9 @@ pub fn set_url(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, ptr: Ptr, len: u32) -
 	let Ok(string) = env.data().read_string(&env, ptr, len) else {
 		return Result::InvalidString.into();
 	};
+	if string.is_empty() {
+		return Result::InvalidUrl.into();
+	}
 	let Some(request) = env
 		.data_mut()
 		.store
