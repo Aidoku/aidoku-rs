@@ -1,8 +1,9 @@
 use crate::{
-	libs::{HtmlElement, HtmlElementList, StoreItem},
+	libs::{HtmlDocument, HtmlElement, HtmlElementList, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
 };
 use scraper::{Html, Selector};
+use url::Url;
 use wasmer::FunctionEnvMut;
 
 enum Result {
@@ -33,33 +34,39 @@ pub fn parse(
 	mut env: FunctionEnvMut<WasmEnv>,
 	html_ptr: Ptr,
 	html_len: u32,
-	_base_url_ptr: Ptr,
-	_base_url_len: u32,
+	base_url_ptr: Ptr,
+	base_url_len: u32,
 ) -> FFIResult {
 	let Ok(text) = env.data().read_string(&env, html_ptr, html_len) else {
 		return Result::InvalidString.into();
 	};
-	// let Ok(base_url) = env.data().read_string(&env, base_url_ptr, base_url_len) else {
-	// 	return Result::InvalidString.into();
-	// };
+	let Ok(base_url_string) = env.data().read_string(&env, base_url_ptr, base_url_len) else {
+		return Result::InvalidString.into();
+	};
 	let html = Html::parse_document(&text);
-	env.data_mut().store.store(StoreItem::Html(html))
+	let base_uri = Url::parse(&base_url_string).ok();
+	env.data_mut()
+		.store
+		.store(StoreItem::HtmlDocument(HtmlDocument { html, base_uri }))
 }
 pub fn parse_fragment(
 	mut env: FunctionEnvMut<WasmEnv>,
 	html_ptr: Ptr,
 	html_len: u32,
-	_base_url_ptr: Ptr,
-	_base_url_len: u32,
+	base_url_ptr: Ptr,
+	base_url_len: u32,
 ) -> FFIResult {
 	let Ok(text) = env.data().read_string(&env, html_ptr, html_len) else {
 		return Result::InvalidString.into();
 	};
-	// let Ok(base_url) = env.data().read_string(&env, base_url_ptr, base_url_len) else {
-	// 	return Result::InvalidString.into();
-	// };
+	let Ok(base_url_string) = env.data().read_string(&env, base_url_ptr, base_url_len) else {
+		return Result::InvalidString.into();
+	};
 	let html = Html::parse_fragment(&text);
-	env.data_mut().store.store(StoreItem::Html(html))
+	let base_uri = Url::parse(&base_url_string).ok();
+	env.data_mut()
+		.store
+		.store(StoreItem::HtmlDocument(HtmlDocument { html, base_uri }))
 }
 pub fn escape(mut env: FunctionEnvMut<WasmEnv>, text_ptr: Ptr, text_len: u32) -> FFIResult {
 	let Ok(text) = env.data().read_string(&env, text_ptr, text_len) else {
@@ -124,12 +131,14 @@ pub fn select(
 	let Some(item) = env.data_mut().store.get_mut(rid) else {
 		return Result::InvalidDescriptor.into();
 	};
-	if let Some(html) = item.as_html() {
-		let elements: Vec<HtmlElement> = html
+	if let Some(document) = item.as_html_document() {
+		let elements: Vec<HtmlElement> = document
+			.html
 			.select(&selector)
 			.map(|element| HtmlElement {
-				html: html.clone(),
+				html: document.html.clone(),
 				id: element.id(),
+				base_uri: document.base_uri.clone(),
 			})
 			.collect();
 		env.data_mut()
@@ -168,12 +177,14 @@ pub fn select_first(
 	let Some(item) = env.data_mut().store.get_mut(rid) else {
 		return Result::InvalidDescriptor.into();
 	};
-	if let Some(html) = item.as_html() {
-		let Some(result) = html
+	if let Some(document) = item.as_html_document() {
+		let Some(result) = document
+			.html
 			.select(&selector)
 			.map(|element| HtmlElement {
-				html: html.clone(),
+				html: document.html.clone(),
 				id: element.id(),
+				base_uri: document.base_uri.clone(),
 			})
 			.next()
 		else {
@@ -368,8 +379,20 @@ pub fn previous(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 		Result::InvalidDescriptor.into()
 	}
 }
-pub fn base_uri(_env: FunctionEnvMut<WasmEnv>, _rid: Rid) -> FFIResult {
-	-1
+pub fn base_uri(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
+	let Some(item) = env.data_mut().store.get_mut(rid) else {
+		return Result::InvalidDescriptor.into();
+	};
+
+	if let Some(element) = item.as_html_element() {
+		let Some(base_uri) = element.base_uri.as_ref() else {
+			return Result::NoResult.into();
+		};
+		let uri = base_uri.to_string();
+		env.data_mut().store.store(StoreItem::String(uri))
+	} else {
+		Result::InvalidDescriptor.into()
+	}
 }
 pub fn own_text(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	let Some(item) = env.data_mut().store.get_mut(rid) else {

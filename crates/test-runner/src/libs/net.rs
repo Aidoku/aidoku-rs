@@ -1,4 +1,5 @@
 use reqwest::{header::HeaderMap, StatusCode};
+use url::Url;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum HttpMethod {
@@ -11,6 +12,7 @@ pub enum HttpMethod {
 
 #[derive(Debug)]
 pub struct NetResponse {
+	pub url: Url,
 	pub status: StatusCode,
 	pub headers: HeaderMap,
 	pub data: Vec<u8>,
@@ -19,7 +21,7 @@ pub struct NetResponse {
 #[derive(Debug)]
 pub struct NetRequest {
 	pub method: HttpMethod,
-	pub url: Option<String>,
+	pub url: Option<Url>,
 	pub headers: HeaderMap,
 	pub body: Option<Vec<u8>>,
 	pub response: Option<NetResponse>,

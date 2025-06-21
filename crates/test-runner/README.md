@@ -7,7 +7,6 @@ This features a (nearly) complete Aidoku source runner backed by [wasmer](https:
 - `send_partial_result`: the functionality doesn't make sense in tests, so we don't need it.
 - net module rate limiting: I was lazy.
 - html mutating functions: unsure of how to implement this with the `scraper` library.
-- html base url handling: haven't tested `scraper`'s functionality yet.
 - js module webview components: not sure how to implement this.
 - canvas module's `load_font` function: not sure if I need to save the font file somewhere in order to load it.
 - canvas module's image drawing/copying: I was lazy.

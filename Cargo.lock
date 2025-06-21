@@ -115,6 +115,7 @@ dependencies = [
  "reqwest",
  "scraper",
  "serde",
+ "url",
  "wasmer",
 ]
 

@@ -1,10 +1,18 @@
 use ego_tree::NodeId;
 use scraper::{CaseSensitivity, ElementRef, Html, Selector};
+use url::Url;
+
+#[derive(Debug, Clone)]
+pub struct HtmlDocument {
+	pub html: Html,
+	pub base_uri: Option<Url>,
+}
 
 #[derive(Debug, Clone)]
 pub struct HtmlElement {
 	pub html: Html,
 	pub id: NodeId,
+	pub base_uri: Option<Url>,
 }
 
 #[derive(Debug, Clone)]
@@ -20,6 +28,7 @@ impl HtmlElement {
 			.map(|element| HtmlElement {
 				html: self.html.clone(),
 				id: element.id(),
+				base_uri: self.base_uri.clone(),
 			})
 			.collect();
 
@@ -33,13 +42,34 @@ impl HtmlElement {
 		element.select(selector).next().map(|element| HtmlElement {
 			html: self.html.clone(),
 			id: element.id(),
+			base_uri: self.base_uri.clone(),
 		})
 	}
 
 	pub fn attr(&self, name: &str) -> Option<String> {
+		let has_abs_prefix = name.starts_with("abs:");
+		let name = if has_abs_prefix { &name[4..] } else { name };
 		let node = self.html.tree.get(self.id)?;
 		let element = ElementRef::wrap(node)?;
-		element.attr(name).map(|value| value.to_string())
+		let attr = element.attr(name).map(|value| value.to_string());
+		if has_abs_prefix {
+			if let Some(base_uri) = self.base_uri.as_ref() {
+				attr.as_ref()
+					// if the attribute is already a url, return it
+					.and_then(|value| Url::parse(&value).ok())
+					.map(|url| url.to_string())
+					.or_else(|| {
+						// otherwise, try to join it with the base uri
+						attr.as_ref()
+							.and_then(|value| base_uri.join(value.as_str()).ok())
+							.map(|value| value.to_string())
+					})
+			} else {
+				attr
+			}
+		} else {
+			attr
+		}
 	}
 
 	pub fn text(&self, trimmed: bool) -> Option<String> {
@@ -71,6 +101,7 @@ impl HtmlElement {
 		element.parent().map(|element| HtmlElement {
 			html: self.html.clone(),
 			id: element.id(),
+			base_uri: self.base_uri.clone(),
 		})
 	}
 
@@ -83,6 +114,7 @@ impl HtmlElement {
 				.map(|element| HtmlElement {
 					html: self.html.clone(),
 					id: element.id(),
+					base_uri: self.base_uri.clone(),
 				})
 				.collect::<Vec<HtmlElement>>(),
 		))
@@ -97,6 +129,7 @@ impl HtmlElement {
 				.map(|element| HtmlElement {
 					html: self.html.clone(),
 					id: element.id(),
+					base_uri: self.base_uri.clone(),
 				})
 				.collect::<Vec<HtmlElement>>(),
 		))
@@ -108,6 +141,7 @@ impl HtmlElement {
 		element.next_sibling().map(|element| HtmlElement {
 			html: self.html.clone(),
 			id: element.id(),
+			base_uri: self.base_uri.clone(),
 		})
 	}
 
@@ -117,6 +151,7 @@ impl HtmlElement {
 		element.prev_sibling().map(|element| HtmlElement {
 			html: self.html.clone(),
 			id: element.id(),
+			base_uri: self.base_uri.clone(),
 		})
 	}
 

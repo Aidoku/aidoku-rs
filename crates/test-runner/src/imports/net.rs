@@ -1,11 +1,12 @@
 use crate::{
-	libs::{HttpMethod, ImageData, NetRequest, NetResponse, StoreItem},
+	libs::{HtmlDocument, HttpMethod, ImageData, NetRequest, NetResponse, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
 };
 use image::ImageReader;
 use reqwest::header::{HeaderName, HeaderValue, USER_AGENT};
 use scraper::Html;
 use std::{io::Cursor, str::FromStr};
+use url::Url;
 use wasmer::FunctionEnvMut;
 
 const DEFAULT_USER_AGENT: &str = "Aidoku/1 CFNetwork/3826.500.131 Darwin/24.5.0";
@@ -74,6 +75,9 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 		let default_ua = HeaderValue::from_static(DEFAULT_USER_AGENT);
 		request.headers.insert(USER_AGENT, default_ua);
 	}
+	let Some(url) = request.url.as_ref() else {
+		return Result::InvalidUrl.into();
+	};
 	// make a blocking request with reqwest
 	let Ok(response) = reqwest::blocking::Client::new()
 		.request(
@@ -84,19 +88,21 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 				HttpMethod::Delete => reqwest::Method::DELETE,
 				HttpMethod::Head => reqwest::Method::HEAD,
 			},
-			request.url.as_ref().unwrap(),
+			url.to_string(),
 		)
 		.headers(request.headers.clone())
 		.send()
 	else {
 		return Result::RequestError.into();
 	};
+	let url = response.url().clone();
 	let status = response.status();
 	let headers = response.headers().clone();
 	let Ok(bytes) = response.bytes() else {
 		return Result::RequestError.into();
 	};
 	request.response = Some(NetResponse {
+		url,
 		status,
 		headers,
 		data: bytes.into(),
@@ -132,9 +138,9 @@ pub fn set_url(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, ptr: Ptr, len: u32) -
 	let Ok(string) = env.data().read_string(&env, ptr, len) else {
 		return Result::InvalidString.into();
 	};
-	if string.is_empty() {
+	let Ok(url) = Url::parse(&string) else {
 		return Result::InvalidUrl.into();
-	}
+	};
 	let Some(request) = env
 		.data_mut()
 		.store
@@ -143,7 +149,7 @@ pub fn set_url(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, ptr: Ptr, len: u32) -
 	else {
 		return Result::InvalidDescriptor.into();
 	};
-	request.url = Some(string);
+	request.url = Some(url);
 	Result::Success.into()
 }
 pub fn set_header(
@@ -336,13 +342,19 @@ pub fn html(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 		return Result::MissingResponse.into();
 	};
 	let data = response.data.clone();
+	let base_uri = response.url.clone();
 	request.response = Some(response);
 	let text = match String::from_utf8(data) {
 		Ok(s) => s,
 		Err(_) => return Result::InvalidString.into(),
 	};
 	let html = Html::parse_document(&text);
-	env.data_mut().store.store(StoreItem::Html(html))
+	env.data_mut()
+		.store
+		.store(StoreItem::HtmlDocument(HtmlDocument {
+			html: html,
+			base_uri: Some(base_uri),
+		}))
 }
 
 pub fn set_rate_limit(_env: FunctionEnvMut<WasmEnv>, _permits: i32, _period: i32, _unit: i32) {

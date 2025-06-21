@@ -26,4 +26,5 @@ raqote = "0.8.5"
 reqwest = { version = "0.12.12", features = ["blocking"] }
 scraper = { version = "0.22.0", features = ["atomic"] }
 serde = { version = "1.0.217", features = ["derive"] }
+url = "2.5.4"
 wasmer = "5.0.4"

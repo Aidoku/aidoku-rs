@@ -1,8 +1,7 @@
-use super::{HtmlElement, HtmlElementList, NetRequest, Rid};
+use super::{HtmlDocument, HtmlElement, HtmlElementList, NetRequest, Rid};
 use boa_engine::Context;
 use font_kit::font::Font;
 use raqote::DrawTarget;
-use scraper::Html;
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -15,7 +14,7 @@ pub struct ImageData {
 pub enum StoreItem {
 	String(String),
 	Request(Box<NetRequest>),
-	Html(Html),
+	HtmlDocument(HtmlDocument),
 	HtmlElement(HtmlElement),
 	HtmlElementList(HtmlElementList),
 	JsContext(Box<Context>),
@@ -46,8 +45,8 @@ impl StoreItem {
 		}
 	}
 
-	pub fn as_html(&mut self) -> Option<&mut Html> {
-		if let StoreItem::Html(h) = self {
+	pub fn as_html_document(&mut self) -> Option<&mut HtmlDocument> {
+		if let StoreItem::HtmlDocument(h) = self {
 			Some(h)
 		} else {
 			None
