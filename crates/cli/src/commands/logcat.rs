@@ -42,8 +42,13 @@ pub async fn run(port: u16) -> anyhow::Result<()> {
 	// open server on / listening for post requests
 	let app = Router::new().route("/", post(handle_post));
 
-	let addr = SocketAddr::from(([127, 0, 0, 1], port));
-	println!("Listening for logs at http://{}", addr);
+	let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+	let local_ip_address = local_ip_address::local_ip()
+		.map(|ip| ip.to_string())
+		.unwrap_or("localhost".into());
+
+	println!("Listening for logs at http://{}:{}", local_ip_address, port);
 
 	axum::serve(tokio::net::TcpListener::bind(addr).await?, app)
 		.await
