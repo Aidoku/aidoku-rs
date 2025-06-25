@@ -78,8 +78,7 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	let Some(url) = request.url.as_ref() else {
 		return Result::InvalidUrl.into();
 	};
-	// make a blocking request with reqwest
-	let Ok(response) = reqwest::blocking::Client::new()
+	let mut builder = reqwest::blocking::Client::new()
 		.request(
 			match request.method {
 				HttpMethod::Get => reqwest::Method::GET,
@@ -90,9 +89,12 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 			},
 			url.to_string(),
 		)
-		.headers(request.headers.clone())
-		.send()
-	else {
+		.headers(request.headers.clone());
+	if let Some(body) = request.body.take() {
+		builder = builder.body(body);
+	}
+	// make a blocking request with reqwest
+	let Ok(response) = builder.send() else {
 		return Result::RequestError.into();
 	};
 	let url = response.url().clone();
