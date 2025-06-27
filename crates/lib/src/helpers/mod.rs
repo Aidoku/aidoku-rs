@@ -8,4 +8,5 @@ pub mod date;
 #[cfg(feature = "imports")]
 pub mod element;
 
+pub mod string;
 pub mod uri;
