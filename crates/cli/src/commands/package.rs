@@ -132,7 +132,7 @@ pub fn run(path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
 fn create_zip(src_dir: &std::path::Path, dst_file: &std::path::Path) -> std::io::Result<()> {
 	let file = std::fs::File::create(dst_file)?;
 	let mut zip = zip::ZipWriter::new(file);
-	let options = zip::write::FileOptions::default()
+	let options = zip::write::SimpleFileOptions::default()
 		.compression_method(zip::CompressionMethod::Deflated)
 		.unix_permissions(0o755);
 
