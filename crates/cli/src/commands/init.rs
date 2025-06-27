@@ -25,12 +25,13 @@ static VALID_LANGUAGE_CODES: &[&str] = &[
 ];
 
 // load template files as static strings
-const CONFIG_TEMPLATE: &str = include_str!("../supporting/config.toml.template");
-const CARGO_TEMPLATE: &str = include_str!("../supporting/Cargo.toml.template");
-const SOURCE_LIB_TEMPLATE: &str = include_str!("../supporting/source-lib.rs.template");
+const CONFIG_TEMPLATE: &str = include_str!("../supporting/templates/config.toml.template");
+const CARGO_TEMPLATE: &str = include_str!("../supporting/templates/Cargo.toml.template");
+const SOURCE_LIB_TEMPLATE: &str = include_str!("../supporting/templates/source-lib.rs.template");
 const SOURCE_TEMPLATE_LIB_TEMPLATE: &str =
-	include_str!("../supporting/source-template-lib.rs.template");
-const TEMPLATE_LIB_TEMPLATE: &str = include_str!("../supporting/template-lib.rs.template");
+	include_str!("../supporting/templates/source-template-lib.rs.template");
+const TEMPLATE_LIB_TEMPLATE: &str =
+	include_str!("../supporting/templates/template-lib.rs.template");
 const CDYLIB_STR: &str = "
 [lib]
 crate-type = [\"cdylib\"]

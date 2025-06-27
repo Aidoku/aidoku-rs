@@ -6,9 +6,9 @@ use serde_json::Value;
 use std::io::prelude::*;
 
 // include json schemas as static strings
-const SOURCE_JSON_SCHEMA: &str = include_str!("../supporting/source.schema.json");
-const FILTERS_JSON_SCHEMA: &str = include_str!("../supporting/filters.schema.json");
-const SETTINGS_JSON_SCHEMA: &str = include_str!("../supporting/settings.schema.json");
+const SOURCE_JSON_SCHEMA: &str = include_str!("../supporting/schema/source.schema.json");
+const FILTERS_JSON_SCHEMA: &str = include_str!("../supporting/schema/filters.schema.json");
+const SETTINGS_JSON_SCHEMA: &str = include_str!("../supporting/schema/settings.schema.json");
 
 pub fn run(files: Vec<std::path::PathBuf>) -> anyhow::Result<()> {
 	// ensure files were provided
