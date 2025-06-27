@@ -1,0 +1,272 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"title": "Aidoku filters specification",
+	"definitions": {
+		"stringArray": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"filterBase": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string",
+					"description": "A unique identifier for the filter. If not provided, it defaults to the title, and then the filter type if neither is provided. You must ensure that this value is unique."
+				},
+				"title": {
+					"type": "string",
+					"description": "The title of the filter."
+				},
+				"hideFromHeader": {
+					"type": "boolean",
+					"description": "Whether to hide this filter from showing in the header view and only show it in the full sheet view."
+				},
+				"type": {
+					"type": "string",
+					"enum": [
+						"text",
+						"sort",
+						"check",
+						"select",
+						"multi-select",
+						"note"
+					],
+					"enumDescriptions": [
+						"A filter that allows for text entry.",
+						"A filter that shows a list of sorting options.",
+						"A filter that provides a single two-state or tri-state selection.",
+						"A filter that allows a single selection from a list of options.",
+						"A filter that provides a list of options that allows multiple selections.",
+						"A filter that provides non-editable text for info or explanation."
+					]
+				}
+			}
+		},
+		"textFilter": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "text",
+							"description": "A filter that allows for text entry. Providing \"author\" or \"artist\" for the filter id will indicate that authors and artists provided for entries can be searched using this filter."
+						},
+						"placeholder": {
+							"type": "string",
+							"description": "The placeholder text shown when the text input is empty."
+						}
+					},
+					"required": ["type"]
+				}
+			]
+		},
+		"sortFilter": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "sort",
+							"description": "A filter that shows a list of sorting options. The filter value is an object with an index and an ascending boolean."
+						},
+						"canAscend": {
+							"type": "boolean",
+							"default": true,
+							"description": "Whether the sort options can be changed to ascending order."
+						},
+						"options": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The list of sorting options.",
+							"uniqueItems": true
+						},
+						"default": {
+							"type": "object",
+							"description": "The default value for the filter.",
+							"properties": {
+								"index": {
+									"type": "integer"
+								},
+								"ascending": {
+									"type": "boolean"
+								}
+							}
+						}
+					},
+					"required": ["type", "options"]
+				}
+			]
+		},
+		"checkFilter": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "check",
+							"description": "A filter that provides a single two-state or tri-state selection."
+						},
+						"name": {
+							"type": "string",
+							"description": "The name of the filter. This value is shown on the filter selection, while the title is shown above. If not provided, the title will be used."
+						},
+						"canExclude": {
+							"type": "boolean",
+							"description": "Whether filter can be excluded as well as included (tri-state)."
+						},
+						"default": {
+							"type": "boolean",
+							"description": "The default value for the filter."
+						}
+					},
+					"required": ["type"]
+				}
+			]
+		},
+		"selectFilter": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "select",
+							"description": "A filter that allows a single selection from a list of options."
+						},
+						"isGenre": {
+							"type": "boolean",
+							"description": "Whether the filter is a genre filter. Genre filters default to using tag style and allow for filtering via the tags passed in entries."
+						},
+						"usesTagStyle": {
+							"type": "boolean",
+							"description": "Whether to use tag style for the filter. This defaults to false for non-genre filters, where a simple list of options is displayed."
+						},
+						"options": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The list of options for the filter.",
+							"minItems": 1,
+							"uniqueItems": true
+						},
+						"ids": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The list of values for the filter options. If not provided, the options will be used as the values.",
+							"uniqueItems": true
+						},
+						"default": {
+							"type": "string",
+							"description": "The default value for the filter."
+						}
+					},
+					"required": ["type", "options"]
+				}
+			]
+		},
+		"multiSelectFilter": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/filterBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "multi-select",
+							"description": "A filter that provides a list of options that allows multiple selections"
+						},
+						"isGenre": {
+							"type": "boolean",
+							"description": "Whether the filter is a genre filter. Genre filters default to using tag style and allow for filtering via the tags passed in entries."
+						},
+						"canExclude": {
+							"type": "boolean",
+							"description": "Whether filter options can be excluded as well as included (tri-state)."
+						},
+						"usesTagStyle": {
+							"type": "boolean",
+							"description": "Whether to use tag style for the filter. This defaults to false for non-genre filters, where a simple list of options is displayed."
+						},
+						"options": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The list of options for the filter.",
+							"minItems": 1,
+							"uniqueItems": true
+						},
+						"ids": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The list of values for the filter options. If not provided, the options will be used as the values.",
+							"uniqueItems": true
+						},
+						"defaultIncluded": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The default included values for the filter.",
+							"uniqueItems": true
+						},
+						"defaultExcluded": {
+							"$ref": "#/definitions/stringArray",
+							"description": "The default excluded values for the filter.",
+							"uniqueItems": true
+						}
+					},
+					"default": ["type", "options"]
+				}
+			]
+		},
+		"noteFilter": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"const": "note",
+					"description": "A filter that provides non-editable text for info or explanation."
+				},
+				"text": {
+					"type": "string",
+					"description": "The text to display."
+				}
+			},
+			"required": ["type", "text"]
+		},
+		"filter": {
+			"anyOf": [
+				{
+					"$ref": "#/definitions/textFilter"
+				},
+				{
+					"$ref": "#/definitions/sortFilter"
+				},
+				{
+					"$ref": "#/definitions/checkFilter"
+				},
+				{
+					"$ref": "#/definitions/selectFilter"
+				},
+				{
+					"$ref": "#/definitions/multiSelectFilter"
+				},
+				{
+					"$ref": "#/definitions/noteFilter"
+				}
+			]
+		}
+	},
+	"type": "array",
+	"items": {
+		"$ref": "#/definitions/filter"
+	}
+}

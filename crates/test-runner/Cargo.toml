@@ -1,0 +1,30 @@
+[package]
+name = "aidoku-test-runner"
+version = "0.1.0"
+description = "Test runner for Aidoku sources"
+repository = "https://github.com/Aidoku/aidoku-rs"
+authors = ["skitty"]
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "aidoku-test-runner"
+path = "src/bin/aidoku-test-runner.rs"
+
+[dependencies]
+aidoku = { path = "../lib", default-features = false }
+anyhow = "1"
+boa_engine = "0.20.0"
+chrono = "0.4.41"
+ego-tree = "0.10.0"
+euclid = "0.22.11"
+font-kit = "0.14.3"
+image = "0.25.6"
+libtest-mimic = "0.8.1"
+postcard = { version = "1.1.1", features = ["alloc"] }
+raqote = "0.8.5"
+reqwest = { version = "0.12.12", features = ["blocking"] }
+scraper = { version = "0.22.0", features = ["atomic"] }
+serde = { version = "1.0.217", features = ["derive"] }
+url = "2.5.4"
+wasmer = "5.0.4"

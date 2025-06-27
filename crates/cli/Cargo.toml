@@ -1,0 +1,32 @@
+[package]
+name = "aidoku-cli"
+version = "0.1.0"
+description = "Command-line utility for Aidoku source development"
+repository = "https://github.com/Aidoku/aidoku-rs"
+authors = ["skitty"]
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "aidoku"
+path = "src/bin/aidoku.rs"
+
+[dependencies]
+anyhow = "1.0"
+axum = "0.8"
+clap = { version = "4.5", features = ["derive", "string"] }
+colored = "3.0"
+dialoguer = "0.11"
+image = "0.25"
+jsonschema = "0.30"
+local-ip-address = "0.6"
+rayon = "1.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_repr = "0.1"
+tokio = { version = "1.45", features = ["full"] }
+tower = { version = "0.5", features = ["timeout"] }
+tower-http = { version = "0.6", features = ["fs", "trace"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+zip = "0.6"

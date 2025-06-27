@@ -1,0 +1,154 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"title": "Aidoku source JSON specification",
+	"definitions": {
+		"sourceInfo": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string",
+					"description": "A unique identifier for the source. Typically `{languageCode}.{name}`, where `languageCode` is the ISO 639-1 language code (or `mult` for multi-language sources) and `name` is the name of the source (lowercased, without spaces or special characters)."
+				},
+				"name": {
+					"type": "string",
+					"description": "The name of the source."
+				},
+				"altNames": {
+					"type": "array",
+					"description": "A list of alternative names for the source (e.g. localizations).",
+					"items": {
+						"type": "string"
+					},
+					"uniqueItems": true
+				},
+				"version": {
+					"type": "integer",
+					"description": "An integer that should be incremented whenever a change is made to the source.",
+					"minimum": 1
+				},
+				"url": {
+					"type": "string",
+					"description": "The base URL of the source."
+				},
+				"urls": {
+					"type": "array",
+					"description": "A list of base URLs for the source. The first URL is used by default, but if `allowsBaseUrlSelect` is specified in the config, an option to select a base URL is provided.",
+					"items": {
+						"type": "string"
+					},
+					"uniqueItems": true
+				},
+				"languages": {
+					"type": "array",
+					"description": "A list of languages supported by the source. Each language should be represented by its ISO 639-1 language code.",
+					"items": {
+						"type": "string"
+					},
+					"uniqueItems": true
+				},
+				"contentRating": {
+					"type": "integer",
+					"description": "The content rating of the source. If a source contains no mature content, it is considered safe (0). If it contains some mature content but is not primarily targeted towards mature audiences, it is considered mature (1). Otherwise, if it primarily mature content, it is considered adult (2).",
+					"minimum": 0,
+					"maximum": 2
+				},
+				"minAppVersion": {
+					"type": "string",
+					"description": "Optional minimum version of Aidoku to require for installing the source.",
+					"pattern": "\\d\\.\\d"
+				},
+				"maxAppVersion": {
+					"type": "string",
+					"description": "Optional maximum version of Aidoku to require for installing the source.",
+					"pattern": "\\d\\.\\d"
+				}
+			},
+			"required": ["id", "name", "version", "languages"],
+			"oneOf": [
+				{
+					"required": ["url"]
+				},
+				{
+					"required": ["urls"]
+				}
+			]
+		},
+		"listing": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "string",
+					"description": "The unique identifier of the source listing."
+				},
+				"name": {
+					"type": "string",
+					"description": "The name of the source listing displayed to users. If not specified, the id is used."
+				},
+				"type": {
+					"type": "integer",
+					"description": "The type of the source listing. The default value (0) is a grid, but it can also be a list (1).",
+					"minimum": 0,
+					"maximum": 1
+				}
+			},
+			"required": ["id"]
+		},
+		"config": {
+			"type": "object",
+			"properties": {
+				"languageSelectType": {
+					"type": "string",
+					"enum": ["single", "multi"],
+					"default": "single",
+					"description": "Whether the language selection setting should allow multiple languages or a single language to be selected. The selected language(s) can be accessed via the `languages` defaults key. Default is 'single'."
+				},
+				"supportsArtistSearch": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether the source supports searching by artist name. If a text filter with the id \"artist\" is provided by the source, this is automatically enabled. When searching by artist, a text filter value with the id \"artist\" is given."
+				},
+				"supportsAuthorSearch": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether the source supports searching by author name. If a text filter with the id \"author\" is provided by the source, this is automatically enabled. When searching by author, a text filter value with the id \"author\" is given."
+				},
+				"supportsTagSearch": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether the source supports searching by tag name. If any select or multi-select filters with the \"isGenre\" property set to true are provided by the source, those tags are marked searchable. Otherwise, this option enables searching for all tags. When searching by tag with this option enabled, a select filter value with the id \"genre\" is given."
+				},
+				"allowsBaseUrlSelect": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether the source supports selecting a URL from the provided list of source base URLs. The selected url can be accessed via the `url` defaults key."
+				},
+				"breakingChangeVersion": {
+					"type": "integer",
+					"description": "An indicator of a version that caused a breaking change and requires migration. Users on any version of the source below the indicated version will be prompted to migrate items after updating. Automatic migration functionality can be implemented by the source via the `MigrationHandler` trait.",
+					"minimum": 2
+				},
+				"hidesFiltersWhileSearching": {
+					"type": "boolean",
+					"default": false,
+					"description": "Whether the source hides filters with a search query."
+				}
+			}
+		}
+	},
+	"type": "object",
+	"properties": {
+		"info": {
+			"$ref": "#/definitions/sourceInfo"
+		},
+		"listings": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/listing"
+			}
+		},
+		"config": {
+			"$ref": "#/definitions/config"
+		}
+	},
+	"required": ["info"]
+}

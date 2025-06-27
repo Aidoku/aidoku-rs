@@ -1,70 +1,21 @@
 # Aidoku Rust Source API
-**NOTE:** This library currently requires Rust nightly, which can be installed with `rustup default nightly`.
 
-## Setup
-To make a new source:
-```shell
-cargo new <source_name>
+This repo contains the following crates:
+- [aidoku](crates/lib): A wrapper for Aidoku source libraries.
+- [aidoku-cli](crates/cli): A command-line utility for Aidoku source development and testing.
+- [aidoku-test](crates/test-macro): A crate that allows for exposing tests to `aidoku-test-runner`.
+- [aidoku-test-runner](crates/test-runner): A tool for running tests on Aidoku sources via a custom source runner.
+
+## Aidoku Source Development
+
+To get started with Aidoku source development, you'll need two things: Rust and aidoku-cli.
+
+If you don't have Rust installed, follow the instructions at [rustup.rs](https://rustup.rs/). For aidoku-cli, run the following command after installing Rust:
+
+```sh
+cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
 ```
 
-Then in the Cargo.toml add:
-```toml
-[lib]
-crate-type = ["cdylib"]
+Then, create a new source project by running `aidoku init`.
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-opt-level = "s"
-strip = true
-lto = true
-
-[dependencies]
-aidoku = "0.1.0"
-```
-
-Next, make a folder called .cargo and a file called "config.toml". In it, put:
-```toml
-[build]
-target = "wasm32-unknown-unknown"
-```
-
-Now, in your src/main.rs file, simply add:
-```rs
-#![no_std]
-use aidoku::{
-    error::Result,
-    prelude::*,
-    std::{String, Vec},
-    Chapter, Filter, Listing, Manga, MangaPageResult, Page,
-};
-
-#[get_manga_list]
-fn get_manga_list(_: Vec<Filter>, _: i32) -> Result<MangaPageResult> {
-    todo!()
-}
-
-#[get_manga_listing]
-fn get_manga_listing(_: Listing, _: i32) -> Result<MangaPageResult> {
-    todo!()
-}
-
-#[get_manga_details]
-fn get_manga_details(_: String) -> Result<Manga> {
-    todo!()
-}
-
-#[get_chapter_list]
-fn get_chapter_list(_: String) -> Result<Vec<Chapter>> {
-    todo!()
-}
-
-#[get_page_list]
-fn get_page_list(_: String, _: String) -> Result<Vec<Page>> {
-    todo!()
-}
-```
-
-And now you're ready to start making your source!
+A more detailed guide will be coming soon, once APIs are finalized for the Aidoku 0.7 release.

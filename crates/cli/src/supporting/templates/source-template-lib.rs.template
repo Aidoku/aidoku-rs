@@ -1,0 +1,27 @@
+#![no_std]
+use aidoku::{alloc::String, prelude::*, AidokuError, DeepLinkResult, HomeLayout, Result};
+use {{TEMPLATE_LIB_NAME}}::{{{TEMPLATE_NAME}}, Impl, Params};
+
+struct {{SOURCE_NAME}};
+
+impl Impl for {{SOURCE_NAME}} {
+	fn new() -> Self {
+		Self
+	}
+
+	fn params(&self) -> Params {
+		Params {
+			..Default::default()
+		}
+	}
+
+	fn get_home(&self, _params: &Params) -> Result<HomeLayout> {
+		Err(AidokuError::Unimplemented)
+	}
+
+	fn handle_deep_link(&self, _params: &Params, _url: String) -> Result<Option<DeepLinkResult>> {
+		Err(AidokuError::Unimplemented)
+	}
+}
+
+register_source!({{TEMPLATE_NAME}}<{{SOURCE_NAME}}>, ListingProvider, Home, DeepLinkHandler);

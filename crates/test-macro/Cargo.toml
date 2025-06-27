@@ -1,0 +1,15 @@
+[package]
+name = "aidoku-test"
+version = "1.0.0"
+description = "Test framework for Aidoku sources"
+repository = "https://github.com/Aidoku/aidoku-rs"
+authors = ["skitty"]
+edition = "2021"
+publish = false
+
+[dependencies]
+quote = "1.0.40"
+syn = { version = "2.0.101", features = ["full"] }
+
+[lib]
+proc-macro = true

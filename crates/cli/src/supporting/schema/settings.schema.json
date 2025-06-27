@@ -1,0 +1,568 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"title": "Aidoku settings specification",
+	"definitions": {
+		"settingBase": {
+			"type": "object",
+			"properties": {
+				"key": {
+					"description": "The defaults key to access the setting with.",
+					"type": "string"
+				},
+				"title": {
+					"description": "The title of the setting.",
+					"type": "string"
+				},
+				"notification": {
+					"description": "A notification to be posted whenever the value for this setting changes.",
+					"type": "string"
+				},
+				"requires": {
+					"description": "Require that another setting be enabled before this one can be modified.",
+					"type": "string"
+				},
+				"requiresFalse": {
+					"description": "Require that another setting be disabled before this one can be modified.",
+					"type": "string"
+				},
+				"refreshes": {
+					"description": "The content to refresh when this setting changes.",
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": ["content", "listings", "settings"]
+					}
+				}
+			}
+		},
+		"selectableSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"values": {
+							"description": "The values for the options, which are stored in defaults.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"titles": {
+							"description": "An optional list of display names for the options to be used instead of the values.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					"required": ["values"]
+				}
+			]
+		},
+		"selectSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/selectableSetting"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["select"]
+						},
+						"default": {
+							"description": "The default value for this setting.",
+							"type": "string"
+						}
+					},
+					"required": ["type", "key", "title"]
+				}
+			]
+		},
+		"multiSelectSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/selectableSetting"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["multi-select"]
+						},
+						"default": {
+							"description": "The default value for this setting.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					"required": ["type", "key", "title"]
+				}
+			]
+		},
+		"switchSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["switch"]
+						},
+						"subtitle": {
+							"description": "Setting subtitle, displayed as smaller gray text under the title.",
+							"type": "string"
+						},
+						"default": {
+							"description": "The default value for this switch.",
+							"type": "boolean"
+						}
+					},
+					"required": ["type", "key", "title"]
+				}
+			]
+		},
+		"stepperSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["stepper"]
+						},
+						"minimumValue": {
+							"description": "Minimum value for the stepper.",
+							"type": "number"
+						},
+						"maximumValue": {
+							"description": "Maximum value for the stepper.",
+							"type": "number"
+						},
+						"stepValue": {
+							"description": "The amount to increment or decrement the value by.",
+							"type": "number"
+						},
+						"default": {
+							"description": "The default value for this setting.",
+							"type": "number"
+						}
+					},
+					"required": [
+						"type",
+						"key",
+						"title",
+						"minimumValue",
+						"maximumValue"
+					]
+				}
+			]
+		},
+		"segmentSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["segment"]
+						},
+						"options": {
+							"description": "The options for the segmented picker.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"default": {
+							"description": "The default index value for this setting.",
+							"type": "integer",
+							"default": 0
+						}
+					},
+					"required": ["type", "key", "title", "options"]
+				}
+			]
+		},
+		"textSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["text"]
+						},
+						"placeholder": {
+							"description": "The placeholder for the text field.",
+							"type": "string"
+						},
+						"autocapitalizationType": {
+							"description": "The auto-capitalization type for the text field. Refer to [UITextAutocapitalizationType](https://developer.apple.com/documentation/uikit/uitextautocapitalizationtype) for possible values.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 3
+						},
+						"keyboardType": {
+							"description": "Specify the kind of keyboard to display for the text field. Refer to [UIKeyboardType](https://developer.apple.com/documentation/uikit/uikeyboardtype) for possible values.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 12
+						},
+						"returnKeyType": {
+							"description": "Specify the text string that displays in the Return key. Refer to [UIReturnKeyType](https://developer.apple.com/documentation/uikit/uireturnkeytype) for possible values.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 12
+						},
+						"autocorrectionDisabled": {
+							"description": "Whether auto-correction should be disabled for the text field.",
+							"type": "boolean"
+						},
+						"secure": {
+							"description": "Whether the text field should be secure (password) or not.",
+							"type": "boolean"
+						},
+						"default": {
+							"description": "The default value for this setting.",
+							"type": "string"
+						}
+					},
+					"required": ["type", "key"]
+				}
+			]
+		},
+		"buttonSetting": {
+			"type": "object",
+			"description": "A button that can be used to trigger an action. For this button to be useful, the source needs to handle notifications.",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["button"]
+						},
+						"destructive": {
+							"description": "Marks an action as destructive.",
+							"type": "boolean"
+						},
+						"confirmTitle": {
+							"description": "Title of a confirmation dialog that will be displayed when the button is pressed.",
+							"type": "string"
+						},
+						"confirmMessage": {
+							"description": "Message in a confirmation dialog that will be displayed when the button is pressed.",
+							"type": "string"
+						}
+					},
+					"required": ["type", "title", "notification"]
+				}
+			]
+		},
+		"linkSetting": {
+			"type": "object",
+			"description": "A link that opens a url in a browser.",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["link"]
+						},
+						"url": {
+							"description": "The URL to open.",
+							"type": "string"
+						},
+						"external": {
+							"description": "Marks a link as external (opens in Safari intead of in-app browser).",
+							"type": "boolean"
+						}
+					},
+					"required": ["type", "title", "url"]
+				}
+			]
+		},
+		"loginSetting": {
+			"type": "object",
+			"description": "A setting that allows the user to log in.",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["login"]
+						},
+						"logoutTitle": {
+							"type": "string",
+							"description": "A custom title for the button to click to log out."
+						},
+						"method": {
+							"type": "string",
+							"enum": ["basic", "web", "oauth"],
+							"description": "The login method to use. One of: 'basic', 'web', or 'oauth'."
+						}
+					},
+					"required": ["type", "key", "method"]
+				},
+				{
+					"oneOf": [
+						{
+							"type": "object",
+							"properties": {
+								"method": {
+									"type": "string",
+									"enum": ["basic"]
+								},
+								"useEmail": {
+									"description": "Whether to prompt for an email instead of a username.",
+									"type": "boolean"
+								}
+							},
+							"required": ["method"]
+						},
+						{
+							"type": "object",
+							"properties": {
+								"method": {
+									"type": "string",
+									"enum": ["web"]
+								}
+							},
+							"required": ["method"],
+							"anyOf": [
+								{
+									"properties": {
+										"url": {
+											"description": "The URL to a login page that will store cookies.",
+											"type": "string"
+										}
+									},
+									"required": ["url"]
+								},
+								{
+									"properties": {
+										"urlKey": {
+											"description": "The defaults key to read a login URL from.",
+											"type": "string"
+										}
+									},
+									"required": ["urlKey"]
+								}
+							]
+						},
+						{
+							"type": "object",
+							"properties": {
+								"method": {
+									"type": "string",
+									"enum": ["oauth"]
+								},
+								"pkce": {
+									"description": "Whether to use PKCE in the login flow.",
+									"type": "boolean"
+								},
+								"tokenUrl": {
+									"description": "The token URL to post when using PKCE.",
+									"type": "string"
+								},
+								"callbackScheme": {
+									"description": "The scheme used in the oauth redirect URL. Defaults to 'aidoku'.",
+									"type": "string"
+								}
+							},
+							"required": ["method"],
+							"anyOf": [
+								{
+									"properties": {
+										"url": {
+											"description": "The URL to an oauth login page.",
+											"type": "string"
+										}
+									},
+									"required": ["url"]
+								},
+								{
+									"properties": {
+										"urlKey": {
+											"description": "The defaults key to read an oauth login URL from.",
+											"type": "string"
+										}
+									},
+									"required": ["urlKey"]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		"editableListSetting": {
+			"type": "object",
+			"description": "An editable list of values.",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["editable-list"]
+						},
+						"lineLimit": {
+							"description": "The number of lines to display for each item in the list. Defaults to 0 (unlimited).",
+							"type": "integer"
+						},
+						"inline": {
+							"description": "Whether the list should be displayed inline, rather than in a separate page.",
+							"type": "boolean"
+						},
+						"placeholder": {
+							"description": "The placeholder text to use in the add item input field.",
+							"type": "string"
+						},
+						"default": {
+							"description": "The default list of values for the setting.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					"required": ["type", "key", "title"]
+				}
+			]
+		},
+		"pageSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["page"]
+						},
+						"items": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/groupSetting"
+							}
+						},
+						"inlineTitle": {
+							"description": "Whether the title should be displayed inline style instead of large.",
+							"type": "boolean"
+						}
+					},
+					"required": ["type", "title", "items"]
+				}
+			]
+		},
+		"ungroupedSetting": {
+			"oneOf": [
+				{
+					"$ref": "#/definitions/selectSetting"
+				},
+				{
+					"$ref": "#/definitions/multiSelectSetting"
+				},
+				{
+					"$ref": "#/definitions/switchSetting"
+				},
+				{
+					"$ref": "#/definitions/stepperSetting"
+				},
+				{
+					"$ref": "#/definitions/segmentSetting"
+				},
+				{
+					"$ref": "#/definitions/textSetting"
+				},
+				{
+					"$ref": "#/definitions/buttonSetting"
+				},
+				{
+					"$ref": "#/definitions/linkSetting"
+				},
+				{
+					"$ref": "#/definitions/loginSetting"
+				},
+				{
+					"$ref": "#/definitions/editableListSetting"
+				},
+				{
+					"$ref": "#/definitions/pageSetting"
+				}
+			]
+		},
+		"groupSetting": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"type": "string",
+					"enum": ["group"]
+				},
+				"title": {
+					"description": "Header text of the group.",
+					"type": "string"
+				},
+				"footer": {
+					"description": "Footer text of the group.",
+					"type": "string"
+				},
+				"items": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/ungroupedSetting"
+					}
+				}
+			},
+			"required": ["type", "items"]
+		}
+	},
+	"type": "array",
+	"items": {
+		"$ref": "#/definitions/groupSetting"
+	}
+}
