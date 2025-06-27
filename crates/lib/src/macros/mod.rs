@@ -12,10 +12,10 @@
 #[macro_export]
 macro_rules! println {
 	() => {
-		::aidoku::alloc::print("");
+		$crate::alloc::print("");
 	};
 	($($arg:tt)*) => {
-		::aidoku::imports::std::print(&::aidoku::prelude::format!($($arg)*));
+		$crate::imports::std::print(&$crate::prelude::format!($($arg)*));
 	};
 }
 
@@ -25,13 +25,13 @@ macro_rules! debug {
 	() => {
 		#[cfg(debug_assertions)]
 		{
-			::aidoku::prelude::println!();
+			$crate::prelude::println!();
 		}
 	};
 	($($arg:tt)*) => {
 		#[cfg(debug_assertions)]
 		{
-			::aidoku::prelude::println!($($arg)*);
+			$crate::prelude::println!($($arg)*);
 		}
 	};
 }
@@ -80,19 +80,19 @@ macro_rules! bail {
 #[macro_export]
 macro_rules! register_source {
 	($source_type:ty $(, $param:ident)*) => {
-		static mut SOURCE: ::core::option::Option<::aidoku::alloc::Box<$source_type>> =
+		static mut SOURCE: ::core::option::Option<$crate::alloc::Box<$source_type>> =
 			::core::option::Option::None;
 
 		fn __source() -> &'static mut $source_type {
 			unsafe { SOURCE.as_deref_mut().unwrap() }
 		}
 
-		fn __handle_result<T: ::aidoku::serde::Serialize>(
-			result: ::core::result::Result<T, ::aidoku::imports::error::AidokuError>,
+		fn __handle_result<T: $crate::serde::Serialize>(
+			result: ::core::result::Result<T, $crate::imports::error::AidokuError>,
 		) -> i32 {
 			match &result {
 				::core::result::Result::Ok(result) => {
-					let mut bytes = ::aidoku::postcard::to_allocvec(result).unwrap();
+					let mut bytes = $crate::postcard::to_allocvec(result).unwrap();
 
 				 	bytes.splice(0..0, [0,0,0,0,0,0,0,0]);
 					let len_bytes = (bytes.len() as i32).to_le_bytes();
@@ -108,12 +108,12 @@ macro_rules! register_source {
 			}
 		}
 
-		fn __handle_error(error: &::aidoku::imports::error::AidokuError) -> i32 {
-			::aidoku::prelude::println!("Error: {:?}", error);
+		fn __handle_error(error: &$crate::imports::error::AidokuError) -> i32 {
+			$crate::prelude::println!("Error: {:?}", error);
 			match error {
-				::aidoku::imports::error::AidokuError::Unimplemented => -2,
-				::aidoku::imports::error::AidokuError::RequestError(_) => -3,
-				::aidoku::imports::error::AidokuError::Message(string) => {
+				$crate::imports::error::AidokuError::Unimplemented => -2,
+				$crate::imports::error::AidokuError::RequestError(_) => -3,
+				$crate::imports::error::AidokuError::Message(string) => {
 					let mut buffer = (-1 as i32).to_le_bytes().to_vec();
 
 					buffer.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0]);
@@ -137,14 +137,14 @@ macro_rules! register_source {
 		pub extern "C" fn __start() {
 			unsafe {
 				SOURCE =
-					::core::option::Option::Some(::aidoku::alloc::Box::new(<$source_type>::new()))
+					::core::option::Option::Some($crate::alloc::Box::new(<$source_type>::new()))
 			};
 		}
 
 		#[no_mangle]
 		#[export_name = "free_result"]
 		pub unsafe extern "C" fn __wasm_free_result(ptr: i32) {
-			::aidoku::imports::std::free_result(ptr);
+			$crate::imports::std::free_result(ptr);
 		}
 
 		#[no_mangle]
@@ -154,9 +154,9 @@ macro_rules! register_source {
 			page: i32,
 			filters_descriptor: i32,
 		) -> i32 {
-			let query = ::aidoku::imports::std::read_string(query_descriptor);
+			let query = $crate::imports::std::read_string(query_descriptor);
 			let ::core::result::Result::Ok(filters) =
-				::aidoku::imports::std::read::<::aidoku::alloc::Vec<::aidoku::FilterValue>>(filters_descriptor)
+				$crate::imports::std::read::<$crate::alloc::Vec<$crate::FilterValue>>(filters_descriptor)
 			else {
 				return -1;
 			};
@@ -173,7 +173,7 @@ macro_rules! register_source {
 			needs_chapters: bool,
 		) -> i32 {
 			let ::core::result::Result::Ok(manga) =
-				::aidoku::imports::std::read::<::aidoku::Manga>(manga_descriptor)
+				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
 			else {
 				return -1;
 			};
@@ -189,12 +189,12 @@ macro_rules! register_source {
 			chapter_descriptor: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(manga) =
-				::aidoku::imports::std::read::<::aidoku::Manga>(manga_descriptor)
+				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
 			else {
 				return -1;
 			};
 			let ::core::result::Result::Ok(chapter) =
-				::aidoku::imports::std::read::<::aidoku::Chapter>(chapter_descriptor)
+				$crate::imports::std::read::<$crate::Chapter>(chapter_descriptor)
 			else {
 				return -2;
 			};
@@ -207,7 +207,7 @@ macro_rules! register_source {
 							page.ensure_externally_managed();
 							page
 						})
-						.collect::<::aidoku::alloc::Vec<_>>()
+						.collect::<$crate::alloc::Vec<_>>()
 				});
 			__handle_result(result)
 		}
@@ -222,12 +222,12 @@ macro_rules! register_source {
 		#[export_name = "get_manga_list"]
 		pub unsafe extern "C" fn __wasm_get_manga_list(listing_descriptor: i32, page: i32) -> i32 {
 			let ::core::result::Result::Ok(listing) =
-				::aidoku::imports::std::read::<::aidoku::Listing>(listing_descriptor)
+				$crate::imports::std::read::<$crate::Listing>(listing_descriptor)
 			else {
 				return -1;
 			};
 
-			use ::aidoku::ListingProvider;
+			use $crate::ListingProvider;
 			let result = __source().get_manga_list(listing, page);
 			__handle_result(result)
 		}
@@ -237,7 +237,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_home"]
 		pub unsafe extern "C" fn __wasm_get_home() -> i32 {
-			use ::aidoku::Home;
+			use $crate::Home;
 			let result = __source().get_home();
 			__handle_result(result)
 		}
@@ -247,7 +247,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_listings"]
 		pub unsafe extern "C" fn __wasm_get_listings() -> i32 {
-			use ::aidoku::DynamicListings;
+			use $crate::DynamicListings;
 			let result = __source().get_dynamic_listings();
 			__handle_result(result)
 		}
@@ -257,7 +257,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_filters"]
 		pub unsafe extern "C" fn __wasm_get_filters() -> i32 {
-			use ::aidoku::DynamicFilters;
+			use $crate::DynamicFilters;
 			let result = __source().get_dynamic_filters();
 			__handle_result(result)
 		}
@@ -267,7 +267,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_settings"]
 		pub unsafe extern "C" fn __wasm_get_settings() -> i32 {
-			use ::aidoku::DynamicSettings;
+			use $crate::DynamicSettings;
 			let result = __source().get_dynamic_settings();
 			__handle_result(result)
 		}
@@ -281,21 +281,21 @@ macro_rules! register_source {
 			context_descriptor: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(response) =
-				::aidoku::imports::std::read::<::aidoku::ImageResponse>(response_descriptor)
+				$crate::imports::std::read::<$crate::ImageResponse>(response_descriptor)
 			else {
 				return -1;
 			};
-			let context: ::core::option::Option<::aidoku::PageContext> = if context_descriptor < 0 {
+			let context: ::core::option::Option<$crate::PageContext> = if context_descriptor < 0 {
 				None
 			} else if let ::core::result::Result::Ok(context) =
-				::aidoku::imports::std::read::<::aidoku::PageContext>(context_descriptor)
+				$crate::imports::std::read::<$crate::PageContext>(context_descriptor)
 			{
 				Some(context)
 			} else {
 				return -2;
 			};
 
-			use ::aidoku::PageImageProcessor;
+			use $crate::PageImageProcessor;
 			let mut result = __source().process_page_image(response, context);
 			if let Ok(image_ref) = result.as_mut() {
 				image_ref.externally_managed = true;
@@ -312,21 +312,21 @@ macro_rules! register_source {
 			context_descriptor: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(url) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(url_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(url_descriptor)
 			else {
 				return -1;
 			};
-			let context: ::core::option::Option<::aidoku::PageContext> = if context_descriptor < 0 {
+			let context: ::core::option::Option<$crate::PageContext> = if context_descriptor < 0 {
 				None
 			} else if let ::core::result::Result::Ok(context) =
-				::aidoku::imports::std::read::<::aidoku::PageContext>(context_descriptor)
+				$crate::imports::std::read::<$crate::PageContext>(context_descriptor)
 			{
 				Some(context)
 			} else {
 				return -2;
 			};
 
-			use ::aidoku::ImageRequestProvider;
+			use $crate::ImageRequestProvider;
 			let mut result = __source().get_image_request(url, context);
 			if let Ok(request) = result.as_mut() {
 				request.should_close = false;
@@ -340,11 +340,11 @@ macro_rules! register_source {
 		#[export_name = "get_page_description"]
 		pub unsafe extern "C" fn __wasm_get_page_description(page_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(page) =
-				::aidoku::imports::std::read::<::aidoku::Page>(page_descriptor)
+				$crate::imports::std::read::<$crate::Page>(page_descriptor)
 			else {
 				return -1;
 			};
-			use ::aidoku::PageDescriptionProvider;
+			use $crate::PageDescriptionProvider;
 			let result = __source().get_page_description(page);
 			__handle_result(result)
 		}
@@ -355,11 +355,11 @@ macro_rules! register_source {
 		#[export_name = "get_alternate_covers"]
 		pub unsafe extern "C" fn __wasm_get_alternate_covers(manga_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(manga) =
-				::aidoku::imports::std::read::<::aidoku::Manga>(manga_descriptor)
+				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
 			else {
 				return -1;
 			};
-			use ::aidoku::AlternateCoverProvider;
+			use $crate::AlternateCoverProvider;
 			let result = __source().get_alternate_covers(manga);
 			__handle_result(result)
 		}
@@ -369,7 +369,7 @@ macro_rules! register_source {
 		#[no_mangle]
 		#[export_name = "get_base_url"]
 		pub unsafe extern "C" fn __wasm_get_base_url() -> i32 {
-			use ::aidoku::BaseUrlProvider;
+			use $crate::BaseUrlProvider;
 			let result = __source().get_base_url();
 			__handle_result(result)
 		}
@@ -380,11 +380,11 @@ macro_rules! register_source {
 		#[export_name = "handle_notification"]
 		pub unsafe extern "C" fn __wasm_handle_notification(string_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(notification) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(string_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(string_descriptor)
 			else {
 				return -1;
 			};
-			use ::aidoku::NotificationHandler;
+			use $crate::NotificationHandler;
 			__source().handle_notification(notification);
 			return 0;
 		}
@@ -395,11 +395,11 @@ macro_rules! register_source {
 		#[export_name = "handle_deep_link"]
 		pub unsafe extern "C" fn __wasm_handle_deep_link(string_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(url) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(string_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(string_descriptor)
 			else {
 				return -1;
 			};
-			use ::aidoku::DeepLinkHandler;
+			use $crate::DeepLinkHandler;
 			let result = __source().handle_deep_link(url);
 			__handle_result(result)
 		}
@@ -414,21 +414,21 @@ macro_rules! register_source {
 			password_descriptor: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(key) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(key_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(key_descriptor)
 			else {
 				return -1;
 			};
 			let ::core::result::Result::Ok(username) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(username_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(username_descriptor)
 			else {
 				return -2;
 			};
 			let ::core::result::Result::Ok(password) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(password_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(password_descriptor)
 			else {
 				return -3;
 			};
-			use ::aidoku::BasicLoginHandler;
+			use $crate::BasicLoginHandler;
 			let result = __source().handle_basic_login(key, username, password);
 			__handle_result(result)
 		}
@@ -443,21 +443,21 @@ macro_rules! register_source {
 			values_descriptor: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(key) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(key_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(key_descriptor)
 			else {
 				return -1;
 			};
-			let ::core::result::Result::Ok(keys) = ::aidoku::imports::std::read::<
-				::aidoku::alloc::Vec<::aidoku::alloc::String>,
+			let ::core::result::Result::Ok(keys) = $crate::imports::std::read::<
+				$crate::alloc::Vec<$crate::alloc::String>,
 			>(keys_descriptor) else {
 				return -2;
 			};
-			let ::core::result::Result::Ok(values) = ::aidoku::imports::std::read::<
-				::aidoku::alloc::Vec<::aidoku::alloc::String>,
+			let ::core::result::Result::Ok(values) = $crate::imports::std::read::<
+				$crate::alloc::Vec<$crate::alloc::String>,
 			>(values_descriptor) else {
 				return -3;
 			};
-			use ::aidoku::WebLoginHandler;
+			use $crate::WebLoginHandler;
 			let result = __source().handle_web_login(key, keys.into_iter().zip(values).collect());
 			__handle_result(result)
 		}
@@ -468,14 +468,14 @@ macro_rules! register_source {
 		#[export_name = "handle_id_migration"]
 		pub unsafe extern "C" fn __wasm_handle_id_migration(id_descriptor: i32, id_kind: i32) -> i32 {
 			let ::core::result::Result::Ok(id) =
-				::aidoku::imports::std::read::<::aidoku::alloc::String>(id_descriptor)
+				$crate::imports::std::read::<$crate::alloc::String>(id_descriptor)
 			else {
 				return -1;
 			};
-			let ::core::option::Option::Some(kind) = ::aidoku::IdKind::from(id_kind) else {
+			let ::core::option::Option::Some(kind) = $crate::IdKind::from(id_kind) else {
 				return -2;
 			};
-			use ::aidoku::MigrationHandler;
+			use $crate::MigrationHandler;
 			let result = __source().handle_id_migration(id, kind);
 			__handle_result(result)
 		}
