@@ -13,7 +13,7 @@ To get started with Aidoku source development, you'll need two things: Rust and 
 If you don't have Rust installed, follow the instructions at [rustup.rs](https://rustup.rs/). For aidoku-cli, run the following command after installing Rust:
 
 ```sh
-cargo install --git https://github.com/Aidoku/aidoku-rs --branch next aidoku-cli
+cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
 ```
 
 Then, create a new source project by running `aidoku init`.

@@ -31,7 +31,7 @@ mod test {
 Additionally, the `aidoku-test-runner` harness is required to run the tests. You can install it by running:
 
 ```sh
-cargo install --git https://github.com/Aidoku/aidoku-rs --branch next aidoku-cli
+cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-test-runner
 ```
 
 In `.cargo/config.toml`, add the following:

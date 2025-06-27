@@ -287,16 +287,12 @@ fn create_empty_aidoku_lib(
 			.arg("add")
 			.arg("aidoku")
 			.arg("--git")
-			.arg("https://github.com/Aidoku/aidoku-rs.git")
-			.arg("--branch")
-			.arg("next"),
+			.arg("https://github.com/Aidoku/aidoku-rs.git"),
 		add_test_lib_cmd
 			.arg("add")
 			.arg("aidoku")
 			.arg("--git")
 			.arg("https://github.com/Aidoku/aidoku-rs.git")
-			.arg("--branch")
-			.arg("next")
 			.arg("--features")
 			.arg("test")
 			.arg("--dev"),
@@ -305,8 +301,6 @@ fn create_empty_aidoku_lib(
 			.arg("aidoku-test")
 			.arg("--git")
 			.arg("https://github.com/Aidoku/aidoku-rs.git")
-			.arg("--branch")
-			.arg("next")
 			.arg("--dev"),
 	];
 

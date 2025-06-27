@@ -2,7 +2,7 @@
 
 A command-line utility for Aidoku source development and testing.
 
-To get started, run `cargo install --git https://github.com/Aidoku/aidoku-rs --branch next aidoku-cli`.
+To get started, run `cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli`.
 
 ## Usage
 
