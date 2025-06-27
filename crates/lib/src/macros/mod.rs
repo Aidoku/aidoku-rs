@@ -36,17 +36,28 @@ macro_rules! debug {
 	};
 }
 
+/// Constructs an error with a message.
+///
+/// This macro is equivalent to
+/// <code>AidokuError::message(format!($args\...))</code>.
+#[macro_export]
+macro_rules! error {
+	($($arg:tt)*) => {
+		$crate::AidokuError::message($crate::prelude::format!($($arg)*))
+	};
+}
+
 /// Returns early with an error.
 ///
 /// This macro is equivalent to
-/// <code>return Err(AidokuError::message(format!($args\...)))</code>.
+/// <code>return Err(error!($args\...))</code>.
 ///
 /// The surrounding function's or closure's return value is required to be
 /// <code>Result&lt;_, [aidoku::AidokuError][crate::AidokuError]&gt;</code>.
 #[macro_export]
 macro_rules! bail {
 	($($arg:tt)*) => {
-		return ::core::result::Result::Err(::aidoku::AidokuError::message(::aidoku::prelude::format!($($arg)*)));
+		return ::core::result::Result::Err($crate::error!($($arg)*));
 	};
 }
 
