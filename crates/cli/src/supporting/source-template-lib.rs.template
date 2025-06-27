@@ -1,8 +1,5 @@
 #![no_std]
-use aidoku::{
-	alloc::String, prelude::*, AidokuError, DeepLinkHandler, DeepLinkResult, Home, HomeLayout,
-	Result, Source,
-};
+use aidoku::{alloc::String, prelude::*, AidokuError, DeepLinkResult, HomeLayout, Result};
 use {{TEMPLATE_LIB_NAME}}::{{{TEMPLATE_NAME}}, Impl, Params};
 
 struct {{SOURCE_NAME}};
@@ -27,4 +24,4 @@ impl Impl for {{SOURCE_NAME}} {
 	}
 }
 
-register_source!({{TEMPLATE_NAME}}<{{SOURCE_NAME}}>, Home, DeepLinkHandler);
+register_source!({{TEMPLATE_NAME}}<{{SOURCE_NAME}}>, ListingProvider, Home, DeepLinkHandler);
