@@ -4,6 +4,7 @@ use crate::{
 	alloc::{String, Vec},
 	AidokuError,
 };
+use core::ptr::null;
 use serde::{de::DeserializeOwned, Serialize};
 
 #[link(wasm_import_module = "std")]
@@ -17,6 +18,20 @@ extern "C" {
 
 	#[link_name = "current_date"]
 	fn _current_date() -> f64;
+
+	fn utc_offset() -> i64;
+
+	#[link_name = "parse_date"]
+	fn _parse_date(
+		string_ptr: *const u8,
+		string_len: usize,
+		format_ptr: *const u8,
+		format_len: usize,
+		locale_ptr: *const u8,
+		locale_len: usize,
+		timezone_ptr: *const u8,
+		timezone_len: usize,
+	) -> f64;
 }
 
 // env module
@@ -33,6 +48,28 @@ extern "C" {
 
 	#[link_name = "send_partial_result"]
 	fn _send_partial_result(value: Ptr);
+}
+
+/// Error type for std functions.
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+pub enum StdError {
+	InvalidDescriptor,
+	InvalidBufferSize,
+	FailedMemoryWrite,
+	InvalidString,
+	InvalidDateString,
+}
+
+impl StdError {
+	fn from(value: i32) -> Option<Self> {
+		match value {
+			-1 => Some(Self::InvalidDescriptor),
+			-2 => Some(Self::InvalidBufferSize),
+			-3 => Some(Self::FailedMemoryWrite),
+			-4 => Some(Self::InvalidDateString),
+			_ => None,
+		}
+	}
 }
 
 /// Prints a message to the Aidoku logs.
@@ -126,8 +163,8 @@ pub fn send_partial_result<T: Serialize>(value: &T) {
 }
 
 /// Gets the current time as a Unix timestamp.
-pub fn current_date() -> f64 {
-	unsafe { _current_date() }
+pub fn current_date() -> i64 {
+	unsafe { _current_date() as i64 }
 }
 
 /// Reads an object from a descriptor.
@@ -182,4 +219,98 @@ pub(crate) fn read_buffer(rid: Rid) -> Option<Vec<u8>> {
 	}
 	unsafe { buffer.set_len(len) };
 	Some(buffer)
+}
+
+pub fn get_utc_offset() -> i64 {
+	unsafe { utc_offset() }
+}
+
+/// Parses a date string into a Unix timestamp (seconds since epoch) using the specified format.
+///
+/// The result will be in UTC. The format string should be valid for Swift's DateFormatter.
+///
+/// # Examples
+///
+/// ```ignore
+/// use aidoku::imports::std::parse_date;
+/// let timestamp = parse_date("07-01-2025 13:00", "MM-dd-yyyy HH:mm");
+/// assert_eq!(timestamp, Some(1751374800));
+/// ```
+pub fn parse_date<T: AsRef<str>, U: AsRef<str>>(date_str: T, format: U) -> Option<i64> {
+	let string = date_str.as_ref();
+	let format = format.as_ref();
+	let timezone = "UTC";
+	let result = unsafe {
+		_parse_date(
+			string.as_ptr(),
+			string.len(),
+			format.as_ptr(),
+			format.len(),
+			null(),
+			0,
+			timezone.as_ptr(),
+			timezone.len(),
+		)
+	};
+	if StdError::from(result as i32).is_some() {
+		return None;
+	}
+	Some(result as i64)
+}
+
+/// Parses a date string into a Unix timestamp using the specified format and the user's local timezone.
+///
+/// The format string should be valid for Swift's DateFormatter.
+pub fn parse_local_date<T: AsRef<str>, U: AsRef<str>>(date_str: T, format: U) -> Option<i64> {
+	let string = date_str.as_ref();
+	let format = format.as_ref();
+	let timezone = "current";
+	let result = unsafe {
+		_parse_date(
+			string.as_ptr(),
+			string.len(),
+			format.as_ptr(),
+			format.len(),
+			null(),
+			0,
+			timezone.as_ptr(),
+			timezone.len(),
+		)
+	};
+	if StdError::from(result as i32).is_some() {
+		return None;
+	}
+	Some(result as i64)
+}
+
+/// Parses a date string into a Unix timestamp using the specified format, locale, and timezone.
+///
+/// The format string should be valid for Swift's DateFormatter. The locale and timezone should be
+/// identifiers accepted by Swift's Locale and TimeZone.
+pub fn parse_date_with_options<T: AsRef<str>, U: AsRef<str>, V: AsRef<str>, W: AsRef<str>>(
+	date_str: T,
+	format: U,
+	locale: V,
+	timezone: W,
+) -> Option<i64> {
+	let string = date_str.as_ref();
+	let format = format.as_ref();
+	let locale = locale.as_ref();
+	let timezone = timezone.as_ref();
+	let result = unsafe {
+		_parse_date(
+			string.as_ptr(),
+			string.len(),
+			format.as_ptr(),
+			format.len(),
+			locale.as_ptr(),
+			locale.len(),
+			timezone.as_ptr(),
+			timezone.len(),
+		)
+	};
+	if StdError::from(result as i32).is_some() {
+		return None;
+	}
+	Some(result as i64)
 }

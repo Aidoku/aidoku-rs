@@ -55,7 +55,6 @@ dependencies = [
 name = "aidoku"
 version = "0.3.0"
 dependencies = [
- "chrono",
  "euclid",
  "hashbrown 0.14.5",
  "num-traits",
