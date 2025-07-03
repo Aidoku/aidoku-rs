@@ -16,6 +16,7 @@ aidoku = { path = "../lib", default-features = false }
 anyhow = "1"
 boa_engine = "0.20.0"
 chrono = "0.4.41"
+chrono-tz = "0.10.3"
 ego-tree = "0.10.0"
 euclid = "0.22.11"
 font-kit = "0.14.3"

@@ -10,6 +10,7 @@ This features a (nearly) complete Aidoku source runner backed by [wasmer](https:
 - js module webview components: not sure how to implement this.
 - canvas module's `load_font` function: not sure if I need to save the font file somewhere in order to load it.
 - canvas module's image drawing/copying: I was lazy.
+- locale handling in `parse_date`: chrono doesn't support this, and I'm not sure if there's a good alternative.
 
 However, I haven't tested most of the functionality yet to be honest. Feel free to make an issue if you encounter any problems.
 

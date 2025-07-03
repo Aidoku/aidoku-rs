@@ -23,6 +23,7 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"read_buffer" => Function::new_typed_with_env(store, env, std::read_buffer),
 			"current_date" => Function::new_typed_with_env(store, env, std::current_date),
 			"utc_offset" => Function::new_typed_with_env(store, env, std::utc_offset),
+			"parse_date" => Function::new_typed_with_env(store, env, std::parse_date),
 		},
 		"canvas" => {
 			"new_context" => Function::new_typed_with_env(store, env, canvas::new_context),
