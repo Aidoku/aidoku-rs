@@ -66,7 +66,8 @@ impl StdError {
 			-1 => Some(Self::InvalidDescriptor),
 			-2 => Some(Self::InvalidBufferSize),
 			-3 => Some(Self::FailedMemoryWrite),
-			-4 => Some(Self::InvalidDateString),
+			-4 => Some(Self::InvalidString),
+			-5 => Some(Self::InvalidDateString),
 			_ => None,
 		}
 	}
