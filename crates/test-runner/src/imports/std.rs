@@ -4,6 +4,7 @@ use wasmer::FunctionEnvMut;
 enum Result {
 	Success,
 	InvalidDescriptor,
+	// InvalidBufferSize,
 	FailedMemoryWrite,
 	InvalidString,
 	InvalidDateString,
@@ -14,9 +15,10 @@ impl From<Result> for i32 {
 		match result {
 			Result::Success => 0,
 			Result::InvalidDescriptor => -1,
-			Result::FailedMemoryWrite => -2,
-			Result::InvalidString => -3,
-			Result::InvalidDateString => -4,
+			// Result::InvalidBufferSize => -2,
+			Result::FailedMemoryWrite => -3,
+			Result::InvalidString => -4,
+			Result::InvalidDateString => -5,
 		}
 	}
 }
