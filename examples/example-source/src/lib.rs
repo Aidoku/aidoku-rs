@@ -6,8 +6,9 @@ use aidoku::{
 	AlternateCoverProvider, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
 	DynamicFilters, DynamicListings, DynamicSettings, Filter, FilterValue, Home, HomeComponent,
 	HomeLayout, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
-	MultiSelectFilter, NotificationHandler, Page, PageContent, PageDescriptionProvider, Result,
-	SelectFilter, Setting, SortFilter, Source, TextFilter, ToggleSetting,
+	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent,
+	PageDescriptionProvider, Result, SelectFilter, Setting, SortFilter, Source, TextFilter,
+	ToggleSetting,
 };
 
 const PAGE_SIZE: i32 = 20;
@@ -408,6 +409,26 @@ impl DeepLinkHandler for ExampleSource {
 	}
 }
 
+// if your source is changing the way it formats manga and chapter keys,
+// implement the MigrationHandler trait to automatically handle the migration of existing data.
+// this should be paired with the breakingChangeVersion inside the source configuration.
+// if this trait isn't implemented, the app will default to showing the manual migration view.
+impl MigrationHandler for ExampleSource {
+	fn handle_manga_migration(&self, key: String) -> Result<String> {
+		// example: add leading slash
+		if key.starts_with("/") {
+			Ok(key)
+		} else {
+			Ok(format!("/{key}"))
+		}
+	}
+
+	fn handle_chapter_migration(&self, _manga_key: String, chapter_key: String) -> Result<String> {
+		// example: keep chapter key as-is
+		Ok(chapter_key)
+	}
+}
+
 // the register_source! macro generates the necessary wasm functions for aidoku
 register_source!(
 	ExampleSource,
@@ -420,7 +441,8 @@ register_source!(
 	DynamicListings,
 	NotificationHandler,
 	AlternateCoverProvider,
-	DeepLinkHandler
+	DeepLinkHandler,
+	MigrationHandler
 );
 
 // you can also implement tests via our custom test runner!

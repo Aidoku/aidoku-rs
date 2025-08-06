@@ -465,18 +465,32 @@ macro_rules! register_source {
 
 	(@single MigrationHandler) => {
 		#[no_mangle]
-		#[export_name = "handle_id_migration"]
-		pub unsafe extern "C" fn __wasm_handle_id_migration(id_descriptor: i32, id_kind: i32) -> i32 {
-			let ::core::result::Result::Ok(id) =
-				$crate::imports::std::read::<$crate::alloc::String>(id_descriptor)
+		#[export_name = "handle_key_migration"]
+		pub unsafe extern "C" fn __wasm_handle_key_migration(
+			key_kind: i32,
+			manga_key_descriptor: i32,
+			chapter_key_descriptor: i32,
+		) -> i32 {
+			let ::core::result::Result::Ok(manga_key) =
+				$crate::imports::std::read::<$crate::alloc::String>(manga_key_descriptor)
 			else {
 				return -1;
 			};
-			let ::core::option::Option::Some(kind) = $crate::IdKind::from(id_kind) else {
-				return -2;
-			};
 			use $crate::MigrationHandler;
-			let result = __source().handle_id_migration(id, kind);
+			let result = match key_kind {
+				// manga
+				0 => __source().handle_manga_migration(manga_key),
+				// chapter
+				1 => {
+					let ::core::result::Result::Ok(chapter_key) =
+						$crate::imports::std::read::<$crate::alloc::String>(chapter_key_descriptor)
+					else {
+						return -2;
+					};
+					__source().handle_chapter_migration(manga_key, chapter_key)
+				}
+				_ => return -3,
+			};
 			__handle_result(result)
 		}
 	};

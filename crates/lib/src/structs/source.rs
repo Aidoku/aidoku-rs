@@ -124,30 +124,14 @@ pub trait WebLoginHandler: Source {
 	fn handle_web_login(&self, key: String, cookies: HashMap<String, String>) -> Result<bool>;
 }
 
-/// A source that handles id migration.
+/// A source that handles key migration.
 ///
-/// If a source provides a "breakingChangeVersion" in its configuration, this function will be
-/// called with all of a user's manga and chapter ids to migrate them after updating.
-/// This function should return the new id to replace the old one.
+/// If a source provides a "breakingChangeVersion" in its configuration, these functions will be
+/// called with all of a user's local manga and chapter keys to migrate them after updating.
+/// These functions should return the new key to replace the old one.
 pub trait MigrationHandler: Source {
-	fn handle_id_migration(&self, id: String, id_kind: IdKind) -> Result<String>;
-}
-
-/// The kind of id string.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-pub enum IdKind {
-	Manga = 0,
-	Chapter = 1,
-}
-
-impl IdKind {
-	pub fn from(value: i32) -> Option<Self> {
-		match value {
-			0 => Some(Self::Manga),
-			1 => Some(Self::Chapter),
-			_ => None,
-		}
-	}
+	fn handle_manga_migration(&self, key: String) -> Result<String>;
+	fn handle_chapter_migration(&self, manga_key: String, chapter_key: String) -> Result<String>;
 }
 
 /// A result of a deep link handling.
