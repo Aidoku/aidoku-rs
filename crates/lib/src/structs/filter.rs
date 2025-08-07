@@ -60,6 +60,12 @@ pub enum FilterKind {
 	},
 	/// A block of text displayed in the filter menu.
 	Note(Cow<'static, str>),
+	/// A range filter.
+	Range {
+		min: Option<f32>,
+		max: Option<f32>,
+		decimal: bool,
+	},
 }
 
 impl Filter {
@@ -230,6 +236,25 @@ create_filter_struct!(
 	}
 );
 
+create_filter_struct!(
+	RangeFilter,
+	Range,
+	"A range filter.",
+	{
+		/// The minimum value of the range.
+		min: Option<f32>,
+		/// The maximum value of the range.
+		max: Option<f32>,
+		/// Whether the range can be decimal.
+		decimal: bool,
+	},
+	{
+		min: None,
+		max: None,
+		decimal: false,
+	}
+);
+
 impl FilterKind {
 	fn raw_value(&self) -> &str {
 		match self {
@@ -239,6 +264,7 @@ impl FilterKind {
 			FilterKind::Select { .. } => "select",
 			FilterKind::MultiSelect { .. } => "multi-select",
 			FilterKind::Note(_) => "note",
+			FilterKind::Range { .. } => "range",
 		}
 	}
 }
@@ -306,6 +332,11 @@ impl Serialize for Filter {
 				state.serialize_field("default_excluded", &default_excluded)?;
 			}
 			FilterKind::Note(text) => state.serialize_field("text", &text)?,
+			FilterKind::Range { min, max, decimal } => {
+				state.serialize_field("min", &min)?;
+				state.serialize_field("max", &max)?;
+				state.serialize_field("decimal", &Some(decimal))?;
+			}
 		};
 		state.end()
 	}
@@ -352,5 +383,14 @@ pub enum FilterValue {
 		included: Vec<String>,
 		/// The list of excluded values.
 		excluded: Vec<String>,
+	},
+	/// A range of values from a range filter.
+	Range {
+		/// The id of the filter.
+		id: String,
+		/// The starting value of the range.
+		from: Option<f32>,
+		/// The ending value of the range.
+		to: Option<f32>,
 	},
 }

@@ -31,7 +31,8 @@
 						"check",
 						"select",
 						"multi-select",
-						"note"
+						"note",
+						"range"
 					],
 					"enumDescriptions": [
 						"A filter that allows for text entry.",
@@ -39,7 +40,8 @@
 						"A filter that provides a single two-state or tri-state selection.",
 						"A filter that allows a single selection from a list of options.",
 						"A filter that provides a list of options that allows multiple selections.",
-						"A filter that provides non-editable text for info or explanation."
+						"A filter that provides non-editable text for info or explanation.",
+						"A filter that provides an editable \"from\" and \"to\" range of numeric values."
 					]
 				}
 			}
@@ -242,6 +244,29 @@
 			},
 			"required": ["type", "text"]
 		},
+		"rangeFilter": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"const": "range",
+					"description": "A filter that provides an editable \"from\" and \"to\" range of numeric values."
+				},
+				"min": {
+					"type": "number",
+					"description": "The minimum allowed value."
+				},
+				"max": {
+					"type": "number",
+					"description": "The maximum allowed value."
+				},
+				"decimal": {
+					"type": "boolean",
+					"description": "Whether a decimal key should be added to the input keyboard.",
+					"default": false
+				}
+			},
+			"required": ["type", "text"]
+		},
 		"filter": {
 			"anyOf": [
 				{
@@ -261,6 +286,9 @@
 				},
 				{
 					"$ref": "#/definitions/noteFilter"
+				},
+				{
+					"$ref": "#/definitions/rangeFilter"
 				}
 			]
 		}

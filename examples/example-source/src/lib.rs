@@ -7,8 +7,8 @@ use aidoku::{
 	DynamicFilters, DynamicListings, DynamicSettings, Filter, FilterValue, Home, HomeComponent,
 	HomeLayout, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent,
-	PageDescriptionProvider, Result, SelectFilter, Setting, SortFilter, Source, TextFilter,
-	ToggleSetting,
+	PageDescriptionProvider, RangeFilter, Result, SelectFilter, Setting, SortFilter, Source,
+	TextFilter, ToggleSetting,
 };
 
 const PAGE_SIZE: i32 = 20;
@@ -336,6 +336,15 @@ impl DynamicFilters for ExampleSource {
 			}
 			.into(),
 			Filter::note("Testing note"),
+			RangeFilter {
+				id: "range".into(),
+				title: Some("Range".into()),
+				min: Some(0.0),
+				max: Some(100.0),
+				decimal: true,
+				..Default::default()
+			}
+			.into(),
 		])
 	}
 }
