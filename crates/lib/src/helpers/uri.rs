@@ -295,6 +295,7 @@ impl Serializer for &mut QueryParameters {
 		self.serialize_str(variant)
 	}
 
+	/// Serialize as the value wrapped in the struct.
 	fn serialize_newtype_struct<T>(
 		self,
 		name: &'static str,
@@ -303,20 +304,29 @@ impl Serializer for &mut QueryParameters {
 	where
 		T: ?Sized + Serialize,
 	{
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		value.serialize(self)
 	}
 
+	/// Serialize as the value contained within the variant.
 	fn serialize_newtype_variant<T>(
 		self,
 		name: &'static str,
-		variant_index: u32,
-		variant: &'static str,
+		_variant_index: u32,
+		_variant: &'static str,
 		value: &T,
 	) -> Result<Self::Ok, Self::Error>
 	where
 		T: ?Sized + Serialize,
 	{
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		value.serialize(self)
 	}
 
 	fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {

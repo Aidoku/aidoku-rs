@@ -78,6 +78,19 @@ value! {
 		}
 		A::B
 	} => "B")
+
+	newtype_struct({
+		#[derive(Serialize)]
+		struct A(char);
+		A(' ')
+	} => "%20")
+	newtype_variant({
+	#[derive(Serialize)]
+		enum A {
+			B(char),
+		}
+		A::B(' ')
+	} => "%20")
 }
 
 #[test]
@@ -157,5 +170,18 @@ top_level! {
 			B,
 		}
 		A::B
+	} => "A")
+
+	newtype_struct({
+		#[derive(Serialize)]
+		struct A(());
+		A(())
+	} => "A")
+	newtype_variant({
+		#[derive(Serialize)]
+		enum A {
+			B(()),
+		}
+		A::B(())
 	} => "A")
 }
