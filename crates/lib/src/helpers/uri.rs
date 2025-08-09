@@ -249,15 +249,21 @@ impl Serializer for &mut QueryParameters {
 		Ok(())
 	}
 
+	/// key1&key2&...
 	fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		self.params.try_last_mut("Option<T>")?.1 = None;
+		Ok(())
 	}
 
 	fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
 	where
 		T: ?Sized + Serialize,
 	{
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel("Option<T>"));
+		}
+
+		value.serialize(self)
 	}
 
 	fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {

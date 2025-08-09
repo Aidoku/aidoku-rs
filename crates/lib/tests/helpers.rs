@@ -1,6 +1,6 @@
 #![cfg(feature = "helpers")]
 
-use aidoku::helpers::uri::{encode_uri_component, QueryParameters, SerializeError};
+use aidoku::helpers::uri::{QueryParameters, SerializeError};
 use paste::paste;
 use serde::Serialize;
 
@@ -23,17 +23,23 @@ struct Test<V> {
 }
 
 macro_rules! value {
-    ($($name:ident($value:expr))+) => {$(paste! {
+    ($($name:ident($value:expr => $expected:expr))+) => {$(paste! {
 		#[test]
 		fn [<$name _value>]() {
 			assert_eq!(
 				QueryParameters::from_data(&Test { key: $value })
 					.unwrap()
 					.to_string(),
-				format!("key={}", encode_uri_component($value.to_string()))
+				format!("key={}", $expected)
 			);
 		}
 	})+};
+
+	($($name:ident($value:expr))+) => {
+		value! {
+			$($name($value => $value.to_string()))+
+		}
+	};
 }
 value! {
 	bool(true)
@@ -51,9 +57,22 @@ value! {
 
 	f32(f32::MIN)
 	f64(f64::MIN)
+}
+value! {
+	char(' ' => "%20")
+	str("a b c" => "a%20b%20c")
 
-	char(' ')
-	str("a b c")
+	some(Some(' ') => "%20")
+}
+
+#[test]
+fn none_value() {
+	assert_eq!(
+		QueryParameters::from_data(&Test { key: None::<()> })
+			.unwrap()
+			.to_string(),
+		"key"
+	);
 }
 
 #[test]
@@ -69,15 +88,21 @@ fn struct_value() {
 }
 
 macro_rules! top_level {
-	($($value:literal => $type:ident)+) => {$(paste! {
+	($($name:ident($value:expr => $type:expr))+) => {$(paste! {
 		#[test]
-		fn [<top_level_ $type>]() {
+		fn [<top_level_ $name>]() {
 			assert_eq!(
 				QueryParameters::from_data(&$value).unwrap_err(),
-				SerializeError::TopLevel(stringify!($type))
+				SerializeError::TopLevel($type)
 			);
 		}
 	})+};
+
+	($($value:literal => $type:ident)+) => {
+		top_level! {
+			$($type($value => stringify!($type)))+
+		}
+	};
 }
 top_level! {
 	true => bool
@@ -98,11 +123,9 @@ top_level! {
 
 	' ' => char
 }
+top_level! {
+	str("" => "&str")
 
-#[test]
-fn top_level_str() {
-	assert_eq!(
-		QueryParameters::from_data(&"").unwrap_err(),
-		SerializeError::TopLevel("&str")
-	);
+	none(None::<()> => "Option<T>")
+	some(Some(()) => "Option<T>")
 }
