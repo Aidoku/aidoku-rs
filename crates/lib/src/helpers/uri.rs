@@ -225,16 +225,28 @@ impl Serializer for &mut QueryParameters {
 
 	serialize_display! { f32, f64 }
 
+	/// key1=`a`&key2=`%20`&...
 	fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel("char"));
+		}
+
+		let mut b = [0; 4];
+		self.serialize_str(v.encode_utf8(&mut b))
 	}
 
+	/// key1=`abc`&key2=`a%20b%20c`&...
 	fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel("&str"));
+		}
+
+		self.serialize_bytes(v.as_bytes())
 	}
 
 	fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		self.params.try_last_mut("&[u8]")?.1 = Some(encode_uri_component(v));
+		Ok(())
 	}
 
 	fn serialize_none(self) -> Result<Self::Ok, Self::Error> {

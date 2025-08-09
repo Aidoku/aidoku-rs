@@ -1,6 +1,6 @@
 #![cfg(feature = "helpers")]
 
-use aidoku::helpers::uri::{QueryParameters, SerializeError};
+use aidoku::helpers::uri::{encode_uri_component, QueryParameters, SerializeError};
 use paste::paste;
 use serde::Serialize;
 
@@ -30,7 +30,7 @@ macro_rules! value {
 				QueryParameters::from_data(&Test { key: $value })
 					.unwrap()
 					.to_string(),
-				format!("key={}", $value)
+				format!("key={}", encode_uri_component($value.to_string()))
 			);
 		}
 	})+};
@@ -51,6 +51,9 @@ value! {
 
 	f32(f32::MIN)
 	f64(f64::MIN)
+
+	char(' ')
+	str("a b c")
 }
 
 #[test]
@@ -92,4 +95,14 @@ top_level! {
 
 	0_f32 => f32
 	0_f64 => f64
+
+	' ' => char
+}
+
+#[test]
+fn top_level_str() {
+	assert_eq!(
+		QueryParameters::from_data(&"").unwrap_err(),
+		SerializeError::TopLevel("&str")
+	);
 }
