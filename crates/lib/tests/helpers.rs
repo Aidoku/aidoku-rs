@@ -22,6 +22,16 @@ struct Test<V> {
 }
 
 #[test]
+fn bool_value() {
+	assert_eq!(
+		QueryParameters::from_data(&Test { key: true })
+			.unwrap()
+			.to_string(),
+		"key=true"
+	);
+}
+
+#[test]
 fn struct_value() {
 	#[derive(Serialize)]
 	struct A {
@@ -30,5 +40,13 @@ fn struct_value() {
 	assert_eq!(
 		QueryParameters::from_data(&Test { key: A { a: () } }).unwrap_err(),
 		SerializeError::NotTopLevel("A")
+	);
+}
+
+#[test]
+fn top_level_bool() {
+	assert_eq!(
+		QueryParameters::from_data(&true).unwrap_err(),
+		SerializeError::TopLevel("bool")
 	);
 }

@@ -190,8 +190,10 @@ impl Serializer for &mut QueryParameters {
 	type SerializeStruct = Self;
 	type SerializeStructVariant = Self;
 
+	/// key1=`true`&key2=`false`&...
 	fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		self.params.try_last_mut("bool")?.1 = Some(if v { "true" } else { "false" }.into());
+		Ok(())
 	}
 
 	fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
@@ -477,6 +479,8 @@ pub enum SerializeError {
 	Custom(String),
 	#[error("`{0}` can only be serialized at the top level")]
 	NotTopLevel(&'static str),
+	#[error("cannot serialize `{0}` at the top level")]
+	TopLevel(&'static str),
 }
 
 impl From<SerializeError> for AidokuError {
@@ -491,5 +495,17 @@ impl SerError for SerializeError {
 		T: Display,
 	{
 		Self::Custom(msg.to_string())
+	}
+}
+
+trait TryParams {
+	type Param;
+	fn try_last_mut(&mut self, r#type: &'static str) -> Result<&mut Self::Param, SerializeError>;
+}
+
+impl<T> TryParams for Vec<T> {
+	type Param = T;
+	fn try_last_mut(&mut self, r#type: &'static str) -> Result<&mut Self::Param, SerializeError> {
+		self.last_mut().ok_or(SerializeError::TopLevel(r#type))
 	}
 }
