@@ -281,13 +281,18 @@ impl Serializer for &mut QueryParameters {
 		self.serialize_unit()
 	}
 
+	/// Serialize as the name of the variant.
 	fn serialize_unit_variant(
 		self,
 		name: &'static str,
-		variant_index: u32,
+		_variant_index: u32,
 		variant: &'static str,
 	) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		self.serialize_str(variant)
 	}
 
 	fn serialize_newtype_struct<T>(

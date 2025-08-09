@@ -70,6 +70,14 @@ value! {
 		struct A;
 		A
 	} => "")
+
+	unit_variant({
+		#[derive(Serialize)]
+		enum A {
+			B,
+		}
+		A::B
+	} => "B")
 }
 
 #[test]
@@ -141,5 +149,13 @@ top_level! {
 		#[derive(Serialize)]
 		struct A;
 		A
+	} => "A")
+
+	unit_variant({
+		#[derive(Serialize)]
+		enum A {
+			B,
+		}
+		A::B
 	} => "A")
 }
