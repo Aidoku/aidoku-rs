@@ -191,6 +191,18 @@ macro_rules! serialize_integer {
 	})+};
 }
 
+macro_rules! serialize_display {
+	($($type:ty),+) => {$(paste! {
+		fn [<serialize_ $type>](self, v: $type) -> Result<Self::Ok, Self::Error> {
+			self.params
+				.last_mut()
+				.ok_or(SerializeError::TopLevel(stringify!($type)))?
+				.1 = Some(v.to_string());
+			Ok(())
+		}
+	})+};
+}
+
 impl Serializer for &mut QueryParameters {
 	type Ok = ();
 	type Error = SerializeError;
@@ -211,13 +223,7 @@ impl Serializer for &mut QueryParameters {
 
 	serialize_integer! { i8, i16, i32, i64, i128, u8, u16, u32, u64, u128 }
 
-	fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
+	serialize_display! { f32, f64 }
 
 	fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
 		todo!()
