@@ -63,6 +63,13 @@ value! {
 	str("a b c" => "a%20b%20c")
 
 	some(Some(' ') => "%20")
+
+	unit(() => "")
+	unit_struct({
+		#[derive(Serialize)]
+		struct A;
+		A
+	} => "")
 }
 
 #[test]
@@ -128,4 +135,11 @@ top_level! {
 
 	none(None::<()> => "Option<T>")
 	some(Some(()) => "Option<T>")
+
+	unit(() => "()")
+	unit_struct({
+		#[derive(Serialize)]
+		struct A;
+		A
+	} => "A")
 }

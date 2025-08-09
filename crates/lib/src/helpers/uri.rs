@@ -266,12 +266,19 @@ impl Serializer for &mut QueryParameters {
 		value.serialize(self)
 	}
 
+	/// key1=&key2=&...
 	fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		self.params.try_last_mut("()")?.1 = Some(String::new());
+		Ok(())
 	}
 
+	/// Serialize as a unit.
 	fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		self.serialize_unit()
 	}
 
 	fn serialize_unit_variant(
