@@ -11,6 +11,7 @@ use alloc::{
 	string::{String, ToString},
 	vec::Vec,
 };
+use paste::paste;
 use serde::{
 	ser::{
 		Error as SerError, SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant,
@@ -178,6 +179,18 @@ impl Display for QueryParameters {
 	}
 }
 
+macro_rules! serialize_integer {
+	($($type:ty),+) => {$(paste! {
+		fn [<serialize_ $type>](self, v: $type) -> Result<Self::Ok, Self::Error> {
+			self.params
+				.last_mut()
+				.ok_or(SerializeError::TopLevel(stringify!($type)))?
+				.1 = Some(itoa::Buffer::new().format(v).into());
+			Ok(())
+		}
+	})+};
+}
+
 impl Serializer for &mut QueryParameters {
 	type Ok = ();
 	type Error = SerializeError;
@@ -196,37 +209,7 @@ impl Serializer for &mut QueryParameters {
 		Ok(())
 	}
 
-	fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-
-	fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
+	serialize_integer! { i8, i16, i32, i64, i128, u8, u16, u32, u64, u128 }
 
 	fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
 		todo!()
