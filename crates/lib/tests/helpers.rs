@@ -1,7 +1,8 @@
-#[cfg(feature = "helpers")]
-use aidoku::helpers::uri::QueryParameters;
+#![cfg(feature = "helpers")]
 
-#[cfg(feature = "helpers")]
+use aidoku::helpers::uri::{QueryParameters, SerializeError};
+use serde::Serialize;
+
 #[test]
 fn query_builder() {
 	let mut query = QueryParameters::new();
@@ -13,4 +14,21 @@ fn query_builder() {
 
 	query.remove_all("name2");
 	assert_eq!(query.to_string(), "name=value&send%20help=now&bruh");
+}
+
+#[derive(Serialize)]
+struct Test<V> {
+	key: V,
+}
+
+#[test]
+fn struct_value() {
+	#[derive(Serialize)]
+	struct A {
+		a: (),
+	}
+	assert_eq!(
+		QueryParameters::from_data(&Test { key: A { a: () } }).unwrap_err(),
+		SerializeError::NotTopLevel("A")
+	);
 }

@@ -331,9 +331,13 @@ impl Serializer for &mut QueryParameters {
 	fn serialize_struct(
 		self,
 		name: &'static str,
-		len: usize,
+		_len: usize,
 	) -> Result<Self::SerializeStruct, Self::Error> {
-		todo!()
+		if !self.params.is_empty() {
+			return Err(SerializeError::NotTopLevel(name));
+		}
+
+		Ok(self)
 	}
 
 	fn serialize_struct_variant(
@@ -442,11 +446,12 @@ impl SerializeStruct for &mut QueryParameters {
 	where
 		T: ?Sized + Serialize,
 	{
-		todo!()
+		self.push_key(key);
+		value.serialize(&mut **self)
 	}
 
 	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		Ok(())
 	}
 }
 
@@ -466,10 +471,12 @@ impl SerializeStructVariant for &mut QueryParameters {
 	}
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq, Eq)]
 pub enum SerializeError {
 	#[error("{0}")]
 	Custom(String),
+	#[error("`{0}` can only be serialized at the top level")]
+	NotTopLevel(&'static str),
 }
 
 impl From<SerializeError> for AidokuError {
