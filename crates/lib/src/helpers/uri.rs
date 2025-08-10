@@ -251,7 +251,12 @@ impl Serializer for &mut QueryParameters {
 
 	/// key1&key2&...
 	fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-		self.params.try_last_mut("Option<T>")?.1 = None;
+		let last = self.params.try_last_mut("Option<T>")?;
+		if last.0.is_empty() {
+			return Err(SerializeError::InvalidKey("Option<T>"));
+		}
+
+		last.1 = None;
 		Ok(())
 	}
 
@@ -259,8 +264,14 @@ impl Serializer for &mut QueryParameters {
 	where
 		T: ?Sized + Serialize,
 	{
-		if self.params.last().is_none() {
-			return Err(SerializeError::TopLevel("Option<T>"));
+		if self
+			.params
+			.last()
+			.ok_or(SerializeError::TopLevel("Option<T>"))?
+			.0
+			.is_empty()
+		{
+			return Err(SerializeError::InvalidKey("Option<T>"));
 		}
 
 		value.serialize(self)
@@ -355,7 +366,11 @@ impl Serializer for &mut QueryParameters {
 		todo!()
 	}
 
-	fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+	fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+		if len.is_some() && !self.params.is_empty() {
+			return Err(SerializeError::NotTopLevel("Map<K, V>"));
+		}
+
 		Ok(self)
 	}
 

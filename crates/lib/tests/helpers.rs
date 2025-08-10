@@ -1,6 +1,9 @@
 #![cfg(feature = "helpers")]
 
-use aidoku::helpers::uri::{encode_uri_component, QueryParameters, SerializeError};
+use aidoku::{
+	helpers::uri::{encode_uri_component, QueryParameters, SerializeError},
+	HashMap,
+};
 use paste::paste;
 use serde::Serialize;
 
@@ -92,6 +95,54 @@ value! {
 		}
 		A::B(' ')
 	} => "key=%20")
+}
+
+#[test]
+fn none_key() {
+	let map: HashMap<Option<()>, ()> = [(None, ())].into();
+	assert_eq!(
+		QueryParameters::from_data(&map).unwrap_err(),
+		SerializeError::InvalidKey("Option<T>")
+	);
+}
+
+#[test]
+fn some_key() {
+	let map: HashMap<Option<()>, ()> = [(Some(()), ())].into();
+	assert_eq!(
+		QueryParameters::from_data(&map).unwrap_err(),
+		SerializeError::InvalidKey("Option<T>")
+	);
+}
+
+#[test]
+fn map_value() {
+	let map: HashMap<char, Option<bool>> = [('à', Some(true)), ('a', None)].into();
+	assert_eq!(
+		QueryParameters::from_data(&Test { key: map }).unwrap_err(),
+		SerializeError::NotTopLevel("Map<K, V>")
+	);
+}
+
+#[test]
+fn flattened_map_value() {
+	#[derive(Serialize)]
+	struct A {
+		a: char,
+		#[serde(flatten)]
+		map: HashMap<char, Option<bool>>,
+		b: (),
+	}
+	assert_eq!(
+		QueryParameters::from_data(&A {
+			a: ' ',
+			map: [('ç', Some(true)), ('c', None)].into(),
+			b: ()
+		})
+		.unwrap()
+		.to_string(),
+		"a=%20&%C3%A7=true&c&b="
+	);
 }
 
 #[test]
@@ -196,4 +247,13 @@ top_level! {
 		}
 		A::B(())
 	} => "A")
+}
+
+#[test]
+fn top_level_map() {
+	let map: HashMap<char, Option<bool>> = [('à', Some(true)), ('a', None)].into();
+	assert_eq!(
+		QueryParameters::from_data(&map).unwrap().to_string(),
+		"%C3%A0=true&a"
+	);
 }
