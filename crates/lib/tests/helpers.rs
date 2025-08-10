@@ -1,6 +1,6 @@
 #![cfg(feature = "helpers")]
 
-use aidoku::helpers::uri::{QueryParameters, SerializeError};
+use aidoku::helpers::uri::{encode_uri_component, QueryParameters, SerializeError};
 use paste::paste;
 use serde::Serialize;
 
@@ -30,14 +30,14 @@ macro_rules! value {
 				QueryParameters::from_data(&Test { key: $value })
 					.unwrap()
 					.to_string(),
-				format!("key={}", $expected)
+				$expected
 			);
 		}
 	})+};
 
 	($($name:ident($value:expr))+) => {
 		value! {
-			$($name($value => $value.to_string()))+
+			$($name($value => format!("key={}", encode_uri_component($value.to_string()))))+
 		}
 	};
 }
@@ -57,19 +57,20 @@ value! {
 
 	f32(f32::MIN)
 	f64(f64::MIN)
+
+	char(' ')
+	str("a b c")
 }
 value! {
-	char(' ' => "%20")
-	str("a b c" => "a%20b%20c")
+	none(None::<()> => "key")
+	some(Some(' ') => "key=%20")
 
-	some(Some(' ') => "%20")
-
-	unit(() => "")
+	unit(() => "key=")
 	unit_struct({
 		#[derive(Serialize)]
 		struct A;
 		A
-	} => "")
+	} => "key=")
 
 	unit_variant({
 		#[derive(Serialize)]
@@ -77,30 +78,20 @@ value! {
 			B,
 		}
 		A::B
-	} => "B")
+	} => "key=B")
 
 	newtype_struct({
 		#[derive(Serialize)]
 		struct A(char);
 		A(' ')
-	} => "%20")
+	} => "key=%20")
 	newtype_variant({
 	#[derive(Serialize)]
 		enum A {
 			B(char),
 		}
 		A::B(' ')
-	} => "%20")
-}
-
-#[test]
-fn none_value() {
-	assert_eq!(
-		QueryParameters::from_data(&Test { key: None::<()> })
-			.unwrap()
-			.to_string(),
-		"key"
-	);
+	} => "key=%20")
 }
 
 #[test]
@@ -112,6 +103,27 @@ fn struct_value() {
 	assert_eq!(
 		QueryParameters::from_data(&Test { key: A { a: () } }).unwrap_err(),
 		SerializeError::NotTopLevel("A")
+	);
+}
+
+#[test]
+fn flattened_struct_value() {
+	#[derive(Serialize)]
+	struct A {
+		a: char,
+		#[serde(flatten)]
+		test: Test<()>,
+		b: Option<()>,
+	}
+	assert_eq!(
+		QueryParameters::from_data(&A {
+			a: ' ',
+			test: Test { key: () },
+			b: None
+		})
+		.unwrap()
+		.to_string(),
+		"a=%20&key=&b"
 	);
 }
 

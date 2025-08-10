@@ -355,8 +355,8 @@ impl Serializer for &mut QueryParameters {
 		todo!()
 	}
 
-	fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-		todo!()
+	fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+		Ok(self)
 	}
 
 	fn serialize_struct(
@@ -454,18 +454,26 @@ impl SerializeMap for &mut QueryParameters {
 	where
 		T: ?Sized + Serialize,
 	{
-		todo!()
+		self.push_encoded("", None);
+		key.serialize(&mut **self)?;
+		let last = self.params.last_mut().ok_or(SerializeError::NoParam)?;
+		last.0 = last
+			.1
+			.as_deref()
+			.ok_or(SerializeError::InvalidKey("Option<T>"))?
+			.into();
+		Ok(())
 	}
 
 	fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
 	where
 		T: ?Sized + Serialize,
 	{
-		todo!()
+		value.serialize(&mut **self)
 	}
 
 	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		Ok(())
 	}
 }
 
@@ -510,6 +518,10 @@ pub enum SerializeError {
 	NotTopLevel(&'static str),
 	#[error("cannot serialize `{0}` at the top level")]
 	TopLevel(&'static str),
+	#[error("expected parameter after serialized key, but none was found")]
+	NoParam,
+	#[error("cannot serialize `{0}` as key")]
+	InvalidKey(&'static str),
 }
 
 impl From<SerializeError> for AidokuError {
