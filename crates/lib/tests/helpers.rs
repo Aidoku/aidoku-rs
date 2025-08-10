@@ -115,6 +115,46 @@ fn some_key() {
 	);
 }
 
+macro_rules! invalid_value {
+	($($name:ident($value:expr => $type:literal))+) => {$(paste! {
+		#[test]
+		fn [<$name _value>]() {
+			assert_eq!(
+				QueryParameters::from_data(&Test { key: $value }).unwrap_err(),
+				SerializeError::Invalid($type.into())
+			);
+		}
+	})+};
+}
+invalid_value! {
+	seq(vec![()] => "Vec<T>")
+
+	tuple((0, 'a') => "(T0, T1,...)` or `[T, T,...]")
+	array([0, 1] => "(T0, T1,...)` or `[T, T,...]")
+
+	tuple_struct({
+		#[derive(Serialize)]
+		struct A(u8,u8);
+		A(0,0)
+	} => "A")
+
+	tuple_variant({
+		#[derive(Serialize)]
+		enum A {
+			B(u8, u8),
+		}
+		A::B(0,0)
+	} => "A::B")
+
+	struct_variant({
+		#[derive(Serialize)]
+		enum A {
+			B { b: u8 },
+		}
+		A::B { b: 0 }
+	} => "A::B")
+}
+
 #[test]
 fn map_value() {
 	let map: HashMap<char, Option<bool>> = [('à', Some(true)), ('a', None)].into();

@@ -8,15 +8,13 @@ use core::fmt::Display;
 extern crate alloc;
 use crate::AidokuError;
 use alloc::{
+	format,
 	string::{String, ToString},
 	vec::Vec,
 };
 use paste::paste;
 use serde::{
-	ser::{
-		Error as SerError, SerializeMap, SerializeSeq, SerializeStruct, SerializeStructVariant,
-		SerializeTuple, SerializeTupleStruct, SerializeTupleVariant,
-	},
+	ser::{Error as SerError, Impossible, SerializeMap, SerializeStruct},
 	Serialize, Serializer,
 };
 use thiserror::Error;
@@ -207,13 +205,13 @@ impl Serializer for &mut QueryParameters {
 	type Ok = ();
 	type Error = SerializeError;
 
-	type SerializeSeq = Self;
-	type SerializeTuple = Self;
-	type SerializeTupleStruct = Self;
-	type SerializeTupleVariant = Self;
+	type SerializeSeq = Impossible<(), SerializeError>;
+	type SerializeTuple = Impossible<(), SerializeError>;
+	type SerializeTupleStruct = Impossible<(), SerializeError>;
+	type SerializeTupleVariant = Impossible<(), SerializeError>;
 	type SerializeMap = Self;
 	type SerializeStruct = Self;
-	type SerializeStructVariant = Self;
+	type SerializeStructVariant = Impossible<(), SerializeError>;
 
 	/// key1=`true`&key2=`false`&...
 	fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -340,30 +338,30 @@ impl Serializer for &mut QueryParameters {
 		value.serialize(self)
 	}
 
-	fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-		todo!()
+	fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+		Err(SerializeError::invalid("Vec<T>"))
 	}
 
-	fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-		todo!()
+	fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+		Err(SerializeError::invalid("(T0, T1,...)` or `[T, T,...]"))
 	}
 
 	fn serialize_tuple_struct(
 		self,
 		name: &'static str,
-		len: usize,
+		_len: usize,
 	) -> Result<Self::SerializeTupleStruct, Self::Error> {
-		todo!()
+		Err(SerializeError::invalid(name))
 	}
 
 	fn serialize_tuple_variant(
 		self,
 		name: &'static str,
-		variant_index: u32,
+		_variant_index: u32,
 		variant: &'static str,
-		len: usize,
+		_len: usize,
 	) -> Result<Self::SerializeTupleVariant, Self::Error> {
-		todo!()
+		Err(SerializeError::invalid(format!("{name}::{variant}")))
 	}
 
 	fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
@@ -389,75 +387,11 @@ impl Serializer for &mut QueryParameters {
 	fn serialize_struct_variant(
 		self,
 		name: &'static str,
-		variant_index: u32,
+		_variant_index: u32,
 		variant: &'static str,
-		len: usize,
+		_len: usize,
 	) -> Result<Self::SerializeStructVariant, Self::Error> {
-		todo!()
-	}
-}
-
-impl SerializeSeq for &mut QueryParameters {
-	type Ok = ();
-	type Error = SerializeError;
-
-	fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
-	where
-		T: ?Sized + Serialize,
-	{
-		todo!()
-	}
-
-	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-}
-
-impl SerializeTuple for &mut QueryParameters {
-	type Ok = ();
-	type Error = SerializeError;
-
-	fn serialize_element<T>(&mut self, value: &T) -> Result<(), Self::Error>
-	where
-		T: ?Sized + Serialize,
-	{
-		todo!()
-	}
-
-	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-}
-
-impl SerializeTupleStruct for &mut QueryParameters {
-	type Ok = ();
-	type Error = SerializeError;
-
-	fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
-	where
-		T: ?Sized + Serialize,
-	{
-		todo!()
-	}
-
-	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-}
-
-impl SerializeTupleVariant for &mut QueryParameters {
-	type Ok = ();
-	type Error = SerializeError;
-
-	fn serialize_field<T>(&mut self, value: &T) -> Result<(), Self::Error>
-	where
-		T: ?Sized + Serialize,
-	{
-		todo!()
-	}
-
-	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
+		Err(SerializeError::invalid(format!("{name}::{variant}")))
 	}
 }
 
@@ -509,22 +443,6 @@ impl SerializeStruct for &mut QueryParameters {
 	}
 }
 
-impl SerializeStructVariant for &mut QueryParameters {
-	type Ok = ();
-	type Error = SerializeError;
-
-	fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
-	where
-		T: ?Sized + Serialize,
-	{
-		todo!()
-	}
-
-	fn end(self) -> Result<Self::Ok, Self::Error> {
-		todo!()
-	}
-}
-
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum SerializeError {
 	#[error("{0}")]
@@ -537,6 +455,14 @@ pub enum SerializeError {
 	NoParam,
 	#[error("cannot serialize `{0}` as key")]
 	InvalidKey(&'static str),
+	#[error("cannot serialize `{0}`")]
+	Invalid(String),
+}
+
+impl SerializeError {
+	fn invalid<S: Display>(r#type: S) -> Self {
+		Self::Invalid(r#type.to_string())
+	}
 }
 
 impl From<SerializeError> for AidokuError {
