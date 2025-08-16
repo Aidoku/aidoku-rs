@@ -6,10 +6,18 @@
 use core::fmt::Display;
 
 extern crate alloc;
+use crate::AidokuError;
 use alloc::{
+	format,
 	string::{String, ToString},
 	vec::Vec,
 };
+use paste::paste;
+use serde::{
+	ser::{Error as SerError, Impossible, SerializeMap, SerializeStruct},
+	Serialize, Serializer,
+};
+use thiserror::Error;
 /// Percent-encode an entire URI string that is valid UTF-8.
 ///
 /// `internal_encode_uri` escapes all non-alphanumeric characters not
@@ -142,6 +150,13 @@ impl QueryParameters {
 		let name = name.as_ref();
 		self.params.retain(|(n, _)| n != name);
 	}
+
+	/// Serialize the given data as a [`QueryParameters`] struct.
+	pub fn from_data<T: Serialize>(value: &T) -> Result<Self, SerializeError> {
+		let mut query = Self::new();
+		value.serialize(&mut query)?;
+		Ok(query)
+	}
 }
 
 impl Display for QueryParameters {
@@ -159,5 +174,320 @@ impl Display for QueryParameters {
 			}
 		}
 		Ok(())
+	}
+}
+
+macro_rules! serialize_integer {
+	($($type:ty),+) => {$(paste! {
+		fn [<serialize_ $type>](self, v: $type) -> Result<Self::Ok, Self::Error> {
+			self.params
+				.last_mut()
+				.ok_or(SerializeError::TopLevel(stringify!($type)))?
+				.1 = Some(itoa::Buffer::new().format(v).into());
+			Ok(())
+		}
+	})+};
+}
+
+macro_rules! serialize_display {
+	($($type:ty),+) => {$(paste! {
+		fn [<serialize_ $type>](self, v: $type) -> Result<Self::Ok, Self::Error> {
+			self.params
+				.last_mut()
+				.ok_or(SerializeError::TopLevel(stringify!($type)))?
+				.1 = Some(v.to_string());
+			Ok(())
+		}
+	})+};
+}
+
+impl Serializer for &mut QueryParameters {
+	type Ok = ();
+	type Error = SerializeError;
+
+	type SerializeSeq = Impossible<(), SerializeError>;
+	type SerializeTuple = Impossible<(), SerializeError>;
+	type SerializeTupleStruct = Impossible<(), SerializeError>;
+	type SerializeTupleVariant = Impossible<(), SerializeError>;
+	type SerializeMap = Self;
+	type SerializeStruct = Self;
+	type SerializeStructVariant = Impossible<(), SerializeError>;
+
+	/// key1=`true`&key2=`false`&...
+	fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
+		self.params.try_last_mut("bool")?.1 = Some(if v { "true" } else { "false" }.into());
+		Ok(())
+	}
+
+	serialize_integer! { i8, i16, i32, i64, i128, u8, u16, u32, u64, u128 }
+
+	serialize_display! { f32, f64 }
+
+	/// key1=`a`&key2=`%20`&...
+	fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel("char"));
+		}
+
+		let mut b = [0; 4];
+		self.serialize_str(v.encode_utf8(&mut b))
+	}
+
+	/// key1=`abc`&key2=`a%20b%20c`&...
+	fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel("&str"));
+		}
+
+		self.serialize_bytes(v.as_bytes())
+	}
+
+	fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
+		self.params.try_last_mut("&[u8]")?.1 = Some(encode_uri_component(v));
+		Ok(())
+	}
+
+	/// key1&key2&...
+	fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
+		let last = self.params.try_last_mut("Option<T>")?;
+		if last.0.is_empty() {
+			return Err(SerializeError::InvalidKey("Option<T>"));
+		}
+
+		last.1 = None;
+		Ok(())
+	}
+
+	fn serialize_some<T>(self, value: &T) -> Result<Self::Ok, Self::Error>
+	where
+		T: ?Sized + Serialize,
+	{
+		if self
+			.params
+			.last()
+			.ok_or(SerializeError::TopLevel("Option<T>"))?
+			.0
+			.is_empty()
+		{
+			return Err(SerializeError::InvalidKey("Option<T>"));
+		}
+
+		value.serialize(self)
+	}
+
+	/// key1=&key2=&...
+	fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
+		self.params.try_last_mut("()")?.1 = Some(String::new());
+		Ok(())
+	}
+
+	/// Serialize as a unit.
+	fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		self.serialize_unit()
+	}
+
+	/// Serialize as the name of the variant.
+	fn serialize_unit_variant(
+		self,
+		name: &'static str,
+		_variant_index: u32,
+		variant: &'static str,
+	) -> Result<Self::Ok, Self::Error> {
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		self.serialize_str(variant)
+	}
+
+	/// Serialize as the value wrapped in the struct.
+	fn serialize_newtype_struct<T>(
+		self,
+		name: &'static str,
+		value: &T,
+	) -> Result<Self::Ok, Self::Error>
+	where
+		T: ?Sized + Serialize,
+	{
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		value.serialize(self)
+	}
+
+	/// Serialize as the value contained within the variant.
+	fn serialize_newtype_variant<T>(
+		self,
+		name: &'static str,
+		_variant_index: u32,
+		_variant: &'static str,
+		value: &T,
+	) -> Result<Self::Ok, Self::Error>
+	where
+		T: ?Sized + Serialize,
+	{
+		if self.params.last().is_none() {
+			return Err(SerializeError::TopLevel(name));
+		}
+
+		value.serialize(self)
+	}
+
+	fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+		Err(SerializeError::invalid("Vec<T>"))
+	}
+
+	fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+		Err(SerializeError::invalid("(T0, T1,...)` or `[T, T,...]"))
+	}
+
+	fn serialize_tuple_struct(
+		self,
+		name: &'static str,
+		_len: usize,
+	) -> Result<Self::SerializeTupleStruct, Self::Error> {
+		Err(SerializeError::invalid(name))
+	}
+
+	fn serialize_tuple_variant(
+		self,
+		name: &'static str,
+		_variant_index: u32,
+		variant: &'static str,
+		_len: usize,
+	) -> Result<Self::SerializeTupleVariant, Self::Error> {
+		Err(SerializeError::invalid(format!("{name}::{variant}")))
+	}
+
+	fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+		if len.is_some() && !self.params.is_empty() {
+			return Err(SerializeError::NotTopLevel("Map<K, V>"));
+		}
+
+		Ok(self)
+	}
+
+	fn serialize_struct(
+		self,
+		name: &'static str,
+		_len: usize,
+	) -> Result<Self::SerializeStruct, Self::Error> {
+		if !self.params.is_empty() {
+			return Err(SerializeError::NotTopLevel(name));
+		}
+
+		Ok(self)
+	}
+
+	fn serialize_struct_variant(
+		self,
+		name: &'static str,
+		_variant_index: u32,
+		variant: &'static str,
+		_len: usize,
+	) -> Result<Self::SerializeStructVariant, Self::Error> {
+		Err(SerializeError::invalid(format!("{name}::{variant}")))
+	}
+}
+
+impl SerializeMap for &mut QueryParameters {
+	type Ok = ();
+	type Error = SerializeError;
+
+	fn serialize_key<T>(&mut self, key: &T) -> Result<(), Self::Error>
+	where
+		T: ?Sized + Serialize,
+	{
+		self.push_encoded("", None);
+		key.serialize(&mut **self)?;
+		let last = self.params.last_mut().ok_or(SerializeError::NoParam)?;
+		last.0 = last
+			.1
+			.as_deref()
+			.ok_or(SerializeError::InvalidKey("Option<T>"))?
+			.into();
+		Ok(())
+	}
+
+	fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
+	where
+		T: ?Sized + Serialize,
+	{
+		value.serialize(&mut **self)
+	}
+
+	fn end(self) -> Result<Self::Ok, Self::Error> {
+		Ok(())
+	}
+}
+
+impl SerializeStruct for &mut QueryParameters {
+	type Ok = ();
+	type Error = SerializeError;
+
+	fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
+	where
+		T: ?Sized + Serialize,
+	{
+		self.push_key(key);
+		value.serialize(&mut **self)
+	}
+
+	fn end(self) -> Result<Self::Ok, Self::Error> {
+		Ok(())
+	}
+}
+
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum SerializeError {
+	#[error("{0}")]
+	Custom(String),
+	#[error("`{0}` can only be serialized at the top level")]
+	NotTopLevel(&'static str),
+	#[error("cannot serialize `{0}` at the top level")]
+	TopLevel(&'static str),
+	#[error("expected parameter after serialized key, but none was found")]
+	NoParam,
+	#[error("cannot serialize `{0}` as key")]
+	InvalidKey(&'static str),
+	#[error("cannot serialize `{0}`")]
+	Invalid(String),
+}
+
+impl SerializeError {
+	fn invalid<S: Display>(r#type: S) -> Self {
+		Self::Invalid(r#type.to_string())
+	}
+}
+
+impl From<SerializeError> for AidokuError {
+	fn from(error: SerializeError) -> Self {
+		Self::Message(error.to_string())
+	}
+}
+
+impl SerError for SerializeError {
+	fn custom<T>(msg: T) -> Self
+	where
+		T: Display,
+	{
+		Self::Custom(msg.to_string())
+	}
+}
+
+trait TryParams {
+	type Param;
+	fn try_last_mut(&mut self, r#type: &'static str) -> Result<&mut Self::Param, SerializeError>;
+}
+
+impl<T> TryParams for Vec<T> {
+	type Param = T;
+	fn try_last_mut(&mut self, r#type: &'static str) -> Result<&mut Self::Param, SerializeError> {
+		self.last_mut().ok_or(SerializeError::TopLevel(r#type))
 	}
 }

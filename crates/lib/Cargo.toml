@@ -15,6 +15,9 @@ serde_json = { version = "1.0.105", default-features = false, features = ["alloc
 postcard = { version = "1.1.1", features = ["alloc"] }
 euclid = { version = "0.22.11", default-features = false, features = ["libm"] }
 num-traits = { version = "0.2.19", default-features = false, features = ["libm"] }
+thiserror = { version = "2.0.12", default-features = false }
+itoa = "1.0.15"
+paste = "1.0.15"
 
 [features]
 default = ["talc", "imports", "helpers"]
