@@ -63,15 +63,7 @@
 					"pattern": "\\d\\.\\d"
 				}
 			},
-			"required": ["id", "name", "version", "languages"],
-			"oneOf": [
-				{
-					"required": ["url"]
-				},
-				{
-					"required": ["urls"]
-				}
-			]
+			"required": ["id", "name", "version", "languages"]
 		},
 		"listing": {
 			"type": "object",
