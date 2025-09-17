@@ -12,11 +12,11 @@ impl StripPrefixOrSelf for str {
 	}
 }
 
-pub trait PlaintText {
+pub trait PlainText {
 	fn escape_markdown(&self) -> String;
 }
 
-impl<S: AsRef<str>> PlaintText for S {
+impl<S: AsRef<str>> PlainText for S {
 	fn escape_markdown(&self) -> String {
 		let mut markdown = String::new();
 		for char in self.as_ref().chars() {
