@@ -76,6 +76,8 @@ pub enum SettingValue {
 		values: Vec<Cow<'static, str>>,
 		/// Optional display titles for the options. If not provided, the values will be used as titles.
 		titles: Option<Vec<Cow<'static, str>>>,
+		/// Whether to require authentication to open the page for this setting.
+		auth_to_open: Option<bool>,
 		/// The default selected value.
 		default: Option<String>,
 	},
@@ -85,6 +87,8 @@ pub enum SettingValue {
 		values: Vec<Cow<'static, str>>,
 		/// Optional display titles for the options. If not provided, the values will be used as titles.
 		titles: Option<Vec<Cow<'static, str>>>,
+		/// Whether to require authentication to open the page for this setting.
+		auth_to_open: Option<bool>,
 		/// The default selected value(s).
 		default: Option<Vec<String>>,
 	},
@@ -92,6 +96,8 @@ pub enum SettingValue {
 	Toggle {
 		/// Optional subtitle text.
 		subtitle: Option<Cow<'static, str>>,
+		/// Whether to require authentication to turn the toggle off.
+		auth_to_disable: Option<bool>,
 		/// The default state of the toggle.
 		default: bool,
 	},
@@ -126,7 +132,7 @@ pub enum SettingValue {
 		/// The return key type.
 		return_key_type: Option<i32>,
 		/// Whether the text field is for secure entry (password).
-		secure: bool,
+		secure: Option<bool>,
 		/// The default text value.
 		default: Option<Cow<'static, str>>,
 	},
@@ -164,6 +170,10 @@ pub enum SettingValue {
 		items: Vec<Setting>,
 		/// Whether to display the title inline.
 		inline_title: Option<bool>,
+		/// Whether to require authentication to open the page.
+		auth_to_open: Option<bool>,
+		/// An icon to be displayed along with the page title.
+		icon: Option<PageIcon>,
 	},
 	/// A list that can be edited by the user.
 	EditableList {
@@ -194,6 +204,44 @@ impl SettingValue {
 			Self::Page { .. } => "page",
 			Self::EditableList { .. } => "editable-list",
 		}
+	}
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum PageIcon {
+	System {
+		name: String,
+		color: String,
+		inset: Option<i32>,
+	},
+	Url(String),
+}
+
+impl Serialize for PageIcon {
+	fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		let mut state = serializer.serialize_struct(
+			"Setting",
+			match self {
+				Self::System { .. } => 2,
+				Self::Url(_) => 1,
+			},
+		)?;
+		match self {
+			Self::System { name, color, inset } => {
+				state.serialize_field("type", "system")?;
+				state.serialize_field("name", name)?;
+				state.serialize_field("color", color)?;
+				state.serialize_field("inset", inset)?;
+			}
+			Self::Url(url) => {
+				state.serialize_field("type", "url")?;
+				state.serialize_field("url", url)?;
+			}
+		}
+		state.end()
 	}
 }
 
@@ -249,22 +297,6 @@ macro_rules! create_setting_struct {
 			}
 		}
 
-  //	   impl Into<Setting> for $struct_name {
-		// 	fn into(self) -> Setting {
-		// 		Setting {
-  //				   key: self.key,
-  //				   title: self.title,
-  //				   notification: self.notification,
-  //				   requires: self.requires,
-  //				   requires_false: self.requires_false,
-  //				   refreshes: self.refreshes,
-  //				   value: SettingValue::$setting_kind {
-  //					   $($field_name: self.$field_name),*
-  //				   },
-  //			   }
-		// 	}
-		// }
-
 		impl Default for $struct_name {
 			fn default() -> Self {
 				Self {
@@ -306,13 +338,16 @@ create_setting_struct!(
 		values: Vec<Cow<'static, str>>,
 		/// Optional display titles for the options. If not provided, the values will be used as titles.
 		titles: Option<Vec<Cow<'static, str>>>,
+		/// Whether to require authentication to open the page for this setting.
+		auth_to_open: Option<bool>,
 		/// The default selected value. If not provided, the first value will be selected.
 		default: Option<String>,
 	},
 	{
-	  values: Vec::new(),
-	  titles: None,
-	  default: None,
+		values: Vec::new(),
+		titles: None,
+		auth_to_open: None,
+		default: None,
 	}
 );
 
@@ -325,13 +360,16 @@ create_setting_struct!(
 		values: Vec<Cow<'static, str>>,
 		/// Optional display titles for the options. If not provided, the values will be used as titles.
 		titles: Option<Vec<Cow<'static, str>>>,
+		/// Whether to require authentication to open the page for this setting.
+		auth_to_open: Option<bool>,
 		/// The default selected value(s).
 		default: Option<Vec<String>>,
 	},
 	{
-	  values: Vec::new(),
-	  titles: None,
-	  default: None,
+		values: Vec::new(),
+		titles: None,
+		auth_to_open: None,
+		default: None,
 	}
 );
 
@@ -342,11 +380,14 @@ create_setting_struct!(
 	{
 		/// Optional subtitle text.
 		subtitle: Option<Cow<'static, str>>,
+		/// Whether to require authentication to turn the toggle off.
+		auth_to_disable: Option<bool>,
 		/// The default state of the toggle.
 		default: bool,
 	},
 	{
 		subtitle: None,
+		auth_to_disable: None,
 		default: false,
 	}
 );
@@ -405,7 +446,7 @@ create_setting_struct!(
 		/// Whether autocorrection should be disabled.
 		autocorrection_disabled: Option<bool>,
 		/// Whether the text field is for secure entry (password).
-		secure: bool,
+		secure: Option<bool>,
 		/// The default text value.
 		default: Option<Cow<'static, str>>,
 	},
@@ -415,7 +456,7 @@ create_setting_struct!(
 		keyboard_type: None,
 		return_key_type: None,
 		autocorrection_disabled: None,
-		secure: false,
+		secure: None,
 		default: None,
 	}
 );
@@ -479,10 +520,16 @@ create_setting_struct!(
 		items: Vec<Setting>,
 		/// Whether to display the title inline.
 		inline_title: Option<bool>,
+		/// Whether to require authentication to open the page.
+		auth_to_open: Option<bool>,
+		/// An icon to be displayed along with the page title.
+		icon: Option<PageIcon>,
 	},
 	{
 		items: Vec::new(),
 		inline_title: None,
+		auth_to_open: None,
+		icon: None,
 	}
 );
 

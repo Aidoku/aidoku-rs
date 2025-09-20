@@ -57,6 +57,11 @@
 							"items": {
 								"type": "string"
 							}
+						},
+						"authToOpen": {
+							"description": "Whether authentication (face id, touch id) is required to open the page for this setting.",
+							"type": "boolean",
+							"default": false
 						}
 					},
 					"required": ["values"]
@@ -126,9 +131,15 @@
 							"description": "Setting subtitle, displayed as smaller gray text under the title.",
 							"type": "string"
 						},
+						"authToDisable": {
+							"description": "Whether authentication (face id, touch id) is required to disable this setting.",
+							"type": "boolean",
+							"default": false
+						},
 						"default": {
 							"description": "The default value for this switch.",
-							"type": "boolean"
+							"type": "boolean",
+							"default": false
 						}
 					},
 					"required": ["type", "key", "title"]
@@ -493,6 +504,54 @@
 						"inlineTitle": {
 							"description": "Whether the title should be displayed inline style instead of large.",
 							"type": "boolean"
+						},
+						"authToOpen": {
+							"description": "Whether authentication (face id, touch id) is required to open this page.",
+							"type": "boolean",
+							"default": false
+						},
+						"icon": {
+							"description": "The icon to display alongside the page title.",
+							"type": "object",
+							"oneOf": [
+								{
+									"type": "object",
+									"properties": {
+										"type": {
+											"type": "string",
+											"enum": ["system"]
+										},
+										"name": {
+											"type": "string",
+											"description": "The SF Symbol name of an icon."
+										},
+										"color": {
+											"type": "string",
+											"format": "color",
+											"description": "The background color for the icon. Uses a color name or hex code."
+										},
+										"inset": {
+											"type": "integer",
+											"description": "The padding outside the icon.",
+											"default": 5
+										}
+									},
+									"required": ["type", "name", "color"]
+								},
+								{
+									"type": "object",
+									"properties": {
+										"type": {
+											"type": "string",
+											"enum": ["url"]
+										},
+										"url": {
+											"type": "string"
+										}
+									},
+									"required": ["type", "url"]
+								}
+							]
 						}
 					},
 					"required": ["type", "title", "items"]
