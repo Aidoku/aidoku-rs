@@ -552,6 +552,10 @@
 									"required": ["type", "url"]
 								}
 							]
+						},
+						"info": {
+							"type": "string",
+							"description": "An optional string to display under the title in a header view (an icon must also be provided)."
 						}
 					},
 					"required": ["type", "title", "items"]

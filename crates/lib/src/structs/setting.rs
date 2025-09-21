@@ -174,6 +174,8 @@ pub enum SettingValue {
 		auth_to_open: Option<bool>,
 		/// An icon to be displayed along with the page title.
 		icon: Option<PageIcon>,
+		/// An optional string to display under the title in a header view (an icon must also be provided).
+		info: Option<String>,
 	},
 	/// A list that can be edited by the user.
 	EditableList {
@@ -524,12 +526,15 @@ create_setting_struct!(
 		auth_to_open: Option<bool>,
 		/// An icon to be displayed along with the page title.
 		icon: Option<PageIcon>,
+		/// An optional string to display under the title in a header view (an icon must also be provided).
+		info: Option<String>,
 	},
 	{
 		items: Vec::new(),
 		inline_title: None,
 		auth_to_open: None,
 		icon: None,
+		info: None,
 	}
 );
 
