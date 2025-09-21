@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CanvasError","FontWeight","LineCap","LineJoin","PathOp"],"struct":["Canvas","Color","Font","ImageRef","Path","PathBuilder","Point","Rect","StrokeStyle"],"type":["Angle","Transform"]};
