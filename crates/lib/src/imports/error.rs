@@ -68,3 +68,10 @@ impl From<Utf8Error> for AidokuError {
 		AidokuError::Utf8Error(error)
 	}
 }
+
+#[cfg(feature = "json")]
+impl From<serde_json::Error> for AidokuError {
+	fn from(error: serde_json::Error) -> AidokuError {
+		AidokuError::JsonParseError(error)
+	}
+}
