@@ -1,23 +1,20 @@
-//! Module for encoding URIs.
-//!
-//! This module encodes a UTF-8 URI string by replacing each instance of
-//! certain characters with an escape sequence representing the UTF-8
-//! encoding of the character.
-use core::fmt::Display;
-
+//! Module for encoding and decoding URIs.
 extern crate alloc;
+
 use crate::AidokuError;
 use alloc::{
 	format,
 	string::{String, ToString},
 	vec::Vec,
 };
+use core::fmt::Display;
 use paste::paste;
 use serde::{
 	ser::{Error as SerError, Impossible, SerializeMap, SerializeStruct},
 	Serialize, Serializer,
 };
 use thiserror::Error;
+
 /// Percent-encode an entire URI string that is valid UTF-8.
 ///
 /// `internal_encode_uri` escapes all non-alphanumeric characters not
@@ -75,6 +72,58 @@ pub fn encode_uri<T: AsRef<[u8]>>(url: T) -> String {
 /// ```
 pub fn encode_uri_component<T: AsRef<[u8]>>(url: T) -> String {
 	internal_encode_uri(url.as_ref(), b"-_.!~*'()")
+}
+
+/// Decodes a percent-encoded URI string.
+///
+/// Returns the decoded String, or an empty string if invalid UTF-8.
+///
+/// # Examples
+/// ```
+/// use aidoku::helpers::uri::decode_uri;
+/// assert_eq!(
+///     decode_uri("%3B%2C%2F%3F%3A%40%26%3D%2B%24"),
+///     ";,/?:@&=+$",
+/// )
+/// ```
+pub fn decode_uri<T: AsRef<[u8]>>(encoded: T) -> String {
+	let mut iter = encoded.as_ref().iter();
+	let mut result = Vec::with_capacity(encoded.as_ref().len());
+
+	while let Some(&c) = iter.next() {
+		if c == b'%' {
+			// read next two hex digits
+			let hi = iter.next();
+			let lo = iter.next();
+			match (hi, lo) {
+				(Some(&hi), Some(&lo)) => {
+					let hex = (hi as char).to_digit(16).zip((lo as char).to_digit(16));
+					match hex {
+						Some((hi, lo)) => result.push(((hi << 4) | lo) as u8),
+						None => {
+							// invalid hex, push as-is
+							result.push(b'%');
+							result.push(hi);
+							result.push(lo);
+						}
+					}
+				}
+				_ => {
+					// not enough chars, push as-is
+					result.push(b'%');
+					if let Some(&hi) = hi {
+						result.push(hi);
+					}
+					if let Some(&lo) = lo {
+						result.push(lo);
+					}
+				}
+			}
+		} else {
+			result.push(c);
+		}
+	}
+	String::from_utf8(result).unwrap_or_default()
 }
 
 /// Alternating, decoded query names and values.
