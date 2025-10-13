@@ -6,7 +6,7 @@ To get started, run `cargo install --git https://github.com/Aidoku/aidoku-rs aid
 
 ## Usage
 
-```
+```ignore
 Usage: aidoku <COMMAND>
 
 Commands:

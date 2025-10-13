@@ -173,15 +173,19 @@ fn flattened_map_value() {
 		map: HashMap<char, Option<bool>>,
 		b: (),
 	}
-	assert_eq!(
-		QueryParameters::from_data(&A {
-			a: ' ',
-			map: [('ç', Some(true)), ('c', None)].into(),
-			b: ()
-		})
-		.unwrap()
-		.to_string(),
-		"a=%20&%C3%A7=true&c&b="
+	let result = QueryParameters::from_data(&A {
+		a: ' ',
+		map: [('ç', Some(true)), ('c', None)].into(),
+		b: (),
+	})
+	.unwrap()
+	.to_string();
+	// hash map is unordered, so either of these could be the result
+	let expected1 = "a=%20&%C3%A7=true&c&b=";
+	let expected2 = "a=%20&c&%C3%A7=true&b=";
+	assert!(
+		result == expected1 || result == expected2,
+		"Unexpected result: {result}"
 	);
 }
 
@@ -292,8 +296,11 @@ top_level! {
 #[test]
 fn top_level_map() {
 	let map: HashMap<char, Option<bool>> = [('à', Some(true)), ('a', None)].into();
-	assert_eq!(
-		QueryParameters::from_data(&map).unwrap().to_string(),
-		"%C3%A0=true&a"
+	let result = QueryParameters::from_data(&map).unwrap().to_string();
+	let expected1 = "%C3%A0=true&a";
+	let expected2 = "a&%C3%A0=true";
+	assert!(
+		result == expected1 || result == expected2,
+		"Unexpected result: {result}"
 	);
 }
