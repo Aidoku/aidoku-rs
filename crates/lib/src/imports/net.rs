@@ -389,7 +389,7 @@ impl Response {
 		let data = self.get_data()?;
 		self.data = Some(data);
 		let value = serde_json::from_slice(self.data.as_ref().unwrap())
-			.map_err(|_| AidokuError::JsonParseError)?;
+			.map_err(|e| AidokuError::JsonParseError(e))?;
 		Ok(value)
 	}
 
@@ -399,7 +399,7 @@ impl Response {
 		T: serde::de::DeserializeOwned,
 	{
 		let data = self.get_data()?;
-		let value = serde_json::from_slice(&data).map_err(|_| AidokuError::JsonParseError)?;
+		let value = serde_json::from_slice(&data).map_err(|e| AidokuError::JsonParseError(e))?;
 		Ok(value)
 	}
 }

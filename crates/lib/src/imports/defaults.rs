@@ -64,7 +64,7 @@ pub fn defaults_get_map(key: &str) -> Option<HashMap<String, String>> {
 pub fn defaults_get_json<Value: DeserializeOwned>(key: &str) -> super::error::Result<Value> {
 	let data: String = defaults_get(key).unwrap_or_default();
 	let value = serde_json::from_slice(&data.as_bytes())
-		.map_err(|_| super::error::AidokuError::JsonParseError)?;
+		.map_err(|e| super::error::AidokuError::JsonParseError(e))?;
 	Ok(value)
 }
 

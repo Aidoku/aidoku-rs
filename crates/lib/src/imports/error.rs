@@ -9,7 +9,7 @@ use core::{fmt::Display, str::Utf8Error};
 pub type Result<T> = core::result::Result<T, AidokuError>;
 
 /// An error passed back to the source runner.
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Debug)]
 pub enum AidokuError {
 	/// This feature is unimplemented.
 	Unimplemented,
@@ -25,8 +25,9 @@ pub enum AidokuError {
 	CanvasError(CanvasError),
 	/// There was an error handling UTF-8 data.
 	Utf8Error(Utf8Error),
+	#[cfg(feature = "json")]
 	/// JSON parsing error.
-	JsonParseError,
+	JsonParseError(serde_json::Error),
 	/// Deserialization error.
 	DeserializeError,
 }
