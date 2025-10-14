@@ -54,6 +54,10 @@ pub fn init(mut env: FunctionEnvMut<WasmEnv>, method: u8) -> FFIResult {
 		2 => HttpMethod::Put,
 		3 => HttpMethod::Head,
 		4 => HttpMethod::Delete,
+		5 => HttpMethod::Patch,
+		6 => HttpMethod::Options,
+		7 => HttpMethod::Connect,
+		8 => HttpMethod::Trace,
 		_ => return Result::InvalidMethod.into(),
 	};
 	let request = NetRequest::new(method);
@@ -86,6 +90,10 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 				HttpMethod::Put => reqwest::Method::PUT,
 				HttpMethod::Delete => reqwest::Method::DELETE,
 				HttpMethod::Head => reqwest::Method::HEAD,
+				HttpMethod::Patch => reqwest::Method::PATCH,
+				HttpMethod::Options => reqwest::Method::OPTIONS,
+				HttpMethod::Connect => reqwest::Method::CONNECT,
+				HttpMethod::Trace => reqwest::Method::TRACE,
 			},
 			url.to_string(),
 		)

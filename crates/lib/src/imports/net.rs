@@ -17,6 +17,10 @@ pub enum HttpMethod {
 	Put,
 	Head,
 	Delete,
+	Patch,
+	Options,
+	Connect,
+	Trace,
 }
 
 #[link(wasm_import_module = "net")]
@@ -172,6 +176,7 @@ impl Request {
 	convenience_http_methods! { put, HttpMethod::Put, "Create a new PUT request with the given URL." }
 	convenience_http_methods! { head, HttpMethod::Head, "Create a new HEAD request with the given URL." }
 	convenience_http_methods! { delete, HttpMethod::Delete, "Create a new DELETE request with the given URL." }
+	convenience_http_methods! { patch, HttpMethod::Patch, "Create a new PATCH request with the given URL." }
 
 	/// Send multiple requests in parallel, and wait for all of them to finish.
 	pub fn send_all<I>(requests: I) -> Vec<Result<Response, RequestError>>

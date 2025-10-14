@@ -8,6 +8,10 @@ pub enum HttpMethod {
 	Put,
 	Head,
 	Delete,
+	Patch,
+	Options,
+	Connect,
+	Trace,
 }
 
 #[derive(Debug)]
