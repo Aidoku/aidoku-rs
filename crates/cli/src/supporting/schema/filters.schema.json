@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema",
-	"title": "Aidoku filters specification",
+	"title": "Buny filters specification",
 	"definitions": {
 		"stringArray": {
 			"type": "array",

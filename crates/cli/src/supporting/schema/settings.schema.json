@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema",
-	"title": "Aidoku settings specification",
+	"title": "Buny settings specification",
 	"definitions": {
 		"settingBase": {
 			"type": "object",
@@ -414,7 +414,7 @@
 									"type": "string"
 								},
 								"callbackScheme": {
-									"description": "The scheme used in the oauth redirect URL. Defaults to 'aidoku'.",
+									"description": "The scheme used in the oauth redirect URL. Defaults to 'buny'.",
 									"type": "string"
 								}
 							},

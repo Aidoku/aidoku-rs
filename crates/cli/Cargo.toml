@@ -1,15 +1,15 @@
 [package]
-name = "aidoku-cli"
+name = "buny-cli"
 version = "0.1.0"
-description = "Command-line utility for Aidoku source development"
-repository = "https://github.com/Aidoku/aidoku-rs"
+description = "Command-line utility for Buny source development"
+repository = "https://github.com/Buny/buny-rs"
 authors = ["skitty"]
 edition = "2021"
 publish = false
 
 [[bin]]
-name = "aidoku"
-path = "src/bin/aidoku.rs"
+name = "buny"
+path = "src/bin/buny.rs"
 
 [dependencies]
 anyhow = "1.0"
@@ -17,7 +17,6 @@ axum = "0.8"
 clap = { version = "4.5", features = ["derive", "string"] }
 colored = "3.0"
 dialoguer = "0.11"
-image = "0.25"
 jsonschema = "0.30"
 local-ip-address = "0.6"
 rayon = "1.10"

@@ -1,44 +1,44 @@
 use super::{
-	Chapter, Filter, FilterValue, HashMap, HomeLayout, Listing, Manga, MangaPageResult, Page,
+	Chapter, Filter, FilterValue, HashMap, HomeLayout, Listing, Novel, NovelPageResult, Page,
 	PageContext, Setting,
 };
 use crate::alloc::{String, Vec};
-use crate::imports::{canvas::ImageRef, net::Request};
+use crate::imports::{net::Request};
 use serde::{ser::SerializeStruct, Deserialize, Serialize};
 
-pub use crate::imports::error::{AidokuError, Result};
+pub use crate::imports::error::{BunyError, Result};
 
-/// The required functions an Aidoku source must implement.
+/// The required functions an Buny source must implement.
 pub trait Source {
 	/// Called to initialize a source.
 	///
 	/// If a source requires any setup before other functions are called, it should happen here.
 	fn new() -> Self;
 
-	/// Returns the manga for a search query with filters.
-	fn get_search_manga_list(
+	/// Returns the novel for a search query with filters.
+	fn get_search_novel_list(
 		&self,
 		query: Option<String>,
 		page: i32,
 		filters: Vec<FilterValue>,
-	) -> Result<MangaPageResult>;
+	) -> Result<NovelPageResult>;
 
-	/// Updates a given manga with new details and chapters, as requested.
-	fn get_manga_update(
+	/// Updates a given novel with new details and chapters, as requested.
+	fn get_novel_update(
 		&self,
-		manga: Manga,
+		novel: Novel,
 		needs_details: bool,
 		needs_chapters: bool,
-	) -> Result<Manga>;
+	) -> Result<Novel>;
 
-	/// Returns the pages for a given manga chapter.
-	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>>;
+	/// Returns the pages for a given novel chapter.
+	fn get_page_list(&self, novel: Novel, chapter: Chapter) -> Result<Vec<Page>>;
 }
 
 /// A source that provides listings.
 pub trait ListingProvider: Source {
-	/// Returns the manga for the provided listing.
-	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult>;
+	/// Returns the novel for the provided listing.
+	fn get_novel_list(&self, listing: Listing, page: i32) -> Result<NovelPageResult>;
 }
 
 /// A source that provides a home layout.
@@ -61,18 +61,9 @@ pub trait DynamicSettings: Source {
 	fn get_dynamic_settings(&self) -> Result<Vec<Setting>>;
 }
 
-/// A source that processes page image data after being fetched.
-pub trait PageImageProcessor: Source {
-	fn process_page_image(
-		&self,
-		response: ImageResponse,
-		context: Option<PageContext>,
-	) -> Result<ImageRef>;
-}
-
 /// A source that provides requests for images.
 ///
-/// By default, Aidoku will request covers, thumbnails, and pages without headers.
+/// By default, Buny will request covers, thumbnails, and pages without headers.
 /// This trait can be used to override the requests for source images.
 pub trait ImageRequestProvider: Source {
 	fn get_image_request(&self, url: String, context: Option<PageContext>) -> Result<Request>;
@@ -85,7 +76,7 @@ pub trait PageDescriptionProvider: Source {
 
 /// A source that provides multiple cover images.
 pub trait AlternateCoverProvider: Source {
-	fn get_alternate_covers(&self, manga: Manga) -> Result<Vec<String>>;
+	fn get_alternate_covers(&self, novel: Novel) -> Result<Vec<String>>;
 }
 
 /// A source that provides a programmatic base url.
@@ -105,7 +96,7 @@ pub trait NotificationHandler: Source {
 /// A source that handles deep links.
 ///
 /// If a url that is contained in one of the source's provided base urls is opened
-/// in Aidoku, it will be sent to the given source to handle.
+/// in Buny, it will be sent to the given source to handle.
 pub trait DeepLinkHandler: Source {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>>;
 }
@@ -127,18 +118,18 @@ pub trait WebLoginHandler: Source {
 /// A source that handles key migration.
 ///
 /// If a source provides a "breakingChangeVersion" in its configuration, these functions will be
-/// called with all of a user's local manga and chapter keys to migrate them after updating.
+/// called with all of a user's local novel and chapter keys to migrate them after updating.
 /// These functions should return the new key to replace the old one.
 pub trait MigrationHandler: Source {
-	fn handle_manga_migration(&self, key: String) -> Result<String>;
-	fn handle_chapter_migration(&self, manga_key: String, chapter_key: String) -> Result<String>;
+	fn handle_novel_migration(&self, key: String) -> Result<String>;
+	fn handle_chapter_migration(&self, novel_key: String, chapter_key: String) -> Result<String>;
 }
 
 /// A result of a deep link handling.
 #[derive(Debug, Clone, PartialEq)]
 pub enum DeepLinkResult {
-	Manga { key: String },
-	Chapter { manga_key: String, key: String },
+	Novel { key: String },
+	Chapter { novel_key: String, key: String },
 	Listing(Listing),
 }
 
@@ -149,18 +140,18 @@ impl Serialize for DeepLinkResult {
 	{
 		let mut state = serializer.serialize_struct("DeepLinkResult", 3)?;
 		match self {
-			DeepLinkResult::Manga { key } => {
-				state.serialize_field("manga_key", &Some(key))?;
+			DeepLinkResult::Novel { key } => {
+				state.serialize_field("novel_key", &Some(key))?;
 				state.serialize_field("chapter_key", &Option::<String>::None)?;
 				state.serialize_field("listing", &Option::<Listing>::None)?;
 			}
-			DeepLinkResult::Chapter { manga_key, key } => {
-				state.serialize_field("manga_key", &Some(manga_key))?;
+			DeepLinkResult::Chapter { novel_key, key } => {
+				state.serialize_field("novel_key", &Some(novel_key))?;
 				state.serialize_field("chapter_key", &Some(key))?;
 				state.serialize_field("listing", &Option::<Listing>::None)?;
 			}
 			DeepLinkResult::Listing(listing) => {
-				state.serialize_field("manga_key", &Option::<String>::None)?;
+				state.serialize_field("novel_key", &Option::<String>::None)?;
 				state.serialize_field("chapter_key", &Option::<String>::None)?;
 				state.serialize_field("listing", &Some(listing))?;
 			}
@@ -174,17 +165,4 @@ impl Serialize for DeepLinkResult {
 pub struct ImageRequest {
 	pub url: Option<String>,
 	pub headers: HashMap<String, String>,
-}
-
-/// A response from a network image request.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ImageResponse {
-	/// The HTTP status code.
-	pub code: u16,
-	/// The HTTP response headers.
-	pub headers: HashMap<String, String>,
-	/// The HTTP request details.
-	pub request: ImageRequest,
-	/// A reference to image data.
-	pub image: ImageRef,
 }

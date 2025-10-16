@@ -1,6 +1,6 @@
 # Supporting Files
 
-The following files are included in the `aidoku` cli binary:
+The following files are included in the `buny` cli binary:
 
 ### Schema
 - `source.schema.json`: A JSON schema for the `source.json` file included in source `res` directories.

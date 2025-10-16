@@ -1,4 +1,4 @@
-//! Initialize a new Aidoku source.
+//! Initialize a new Buny source.
 use crate::models::{SourceContentRating, SourceInfo, SourceJson};
 use anyhow::{anyhow, Context};
 use dialoguer::{Input, MultiSelect, Select};
@@ -249,9 +249,9 @@ pub fn run(
 	Ok(())
 }
 
-// create a new cargo library and add aidoku dependencies to it
+// create a new cargo library and add buny dependencies to it
 // moves the current directory into a newly created directory if in_workspace is true
-fn create_empty_aidoku_lib(
+fn create_empty_buny_lib(
 	name: &str,
 	in_workspace: bool,
 	template_name: Option<(&str, &str)>,
@@ -276,7 +276,7 @@ fn create_empty_aidoku_lib(
 		std::env::set_current_dir(PathBuf::from(name)).context("Failed to change directory")?;
 	}
 
-	// add aidoku library dependencies
+	// add buny library dependencies
 	let mut add_lib_cmd = std::process::Command::new("cargo");
 	let mut add_test_lib_cmd = std::process::Command::new("cargo");
 	let mut add_test_macro_cmd = std::process::Command::new("cargo");
@@ -285,22 +285,22 @@ fn create_empty_aidoku_lib(
 		// todo: remove --branch when this lands on main
 		add_lib_cmd
 			.arg("add")
-			.arg("aidoku")
+			.arg("buny")
 			.arg("--git")
-			.arg("https://github.com/Aidoku/aidoku-rs.git"),
+			.arg("https://github.com/Buny/buny-rs.git"),
 		add_test_lib_cmd
 			.arg("add")
-			.arg("aidoku")
+			.arg("buny")
 			.arg("--git")
-			.arg("https://github.com/Aidoku/aidoku-rs.git")
+			.arg("https://github.com/Buny/buny-rs.git")
 			.arg("--features")
 			.arg("test")
 			.arg("--dev"),
 		add_test_macro_cmd
 			.arg("add")
-			.arg("aidoku-test")
+			.arg("buny-test")
 			.arg("--git")
-			.arg("https://github.com/Aidoku/aidoku-rs.git")
+			.arg("https://github.com/Buny/buny-rs.git")
 			.arg("--dev"),
 	];
 
@@ -339,7 +339,7 @@ fn create_source_files(
 	let in_workspace = template_name.is_some();
 
 	// creates and moves into our new project folder if necessary
-	create_empty_aidoku_lib(package_name, in_workspace, template_name)?;
+	create_empty_buny_lib(package_name, in_workspace, template_name)?;
 
 	// override lib.rs
 	let lib_rs_path = PathBuf::from("src/lib.rs");
@@ -413,7 +413,7 @@ fn create_source_files(
 
 // creates files for a new source template
 fn create_template_files(package_name: &str, name: &str) -> Result<(), anyhow::Error> {
-	create_empty_aidoku_lib(package_name, true, None)?;
+	create_empty_buny_lib(package_name, true, None)?;
 
 	// override lib.rs
 	let lib_rs_path = PathBuf::from("src/lib.rs");

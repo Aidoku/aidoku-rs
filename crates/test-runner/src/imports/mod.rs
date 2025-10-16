@@ -1,7 +1,6 @@
 use crate::WasmEnv;
 use wasmer::*;
 
-mod canvas;
 mod defaults;
 mod env;
 mod html;
@@ -24,25 +23,6 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"current_date" => Function::new_typed_with_env(store, env, std::current_date),
 			"utc_offset" => Function::new_typed_with_env(store, env, std::utc_offset),
 			"parse_date" => Function::new_typed_with_env(store, env, std::parse_date),
-		},
-		"canvas" => {
-			"new_context" => Function::new_typed_with_env(store, env, canvas::new_context),
-			"set_transform" => Function::new_typed_with_env(store, env, canvas::set_transform),
-			"draw_image" => Function::new_typed_with_env(store, env, canvas::draw_image),
-			"copy_image" => Function::new_typed_with_env(store, env, canvas::copy_image),
-			"fill" => Function::new_typed_with_env(store, env, canvas::fill),
-			"stroke" => Function::new_typed_with_env(store, env, canvas::stroke),
-			"draw_text" => Function::new_typed_with_env(store, env, canvas::draw_text),
-			"get_image" => Function::new_typed_with_env(store, env, canvas::get_image),
-
-			"new_font" => Function::new_typed_with_env(store, env, canvas::new_font),
-			"system_font" => Function::new_typed_with_env(store, env, canvas::system_font),
-			"load_font" => Function::new_typed_with_env(store, env, canvas::load_font),
-
-			"new_image" => Function::new_typed_with_env(store, env, canvas::new_image),
-			"get_image_data" => Function::new_typed_with_env(store, env, canvas::get_image_data),
-			"get_image_width" => Function::new_typed_with_env(store, env, canvas::get_image_width),
-			"get_image_height" => Function::new_typed_with_env(store, env, canvas::get_image_height),
 		},
 		"defaults" => {
 			"get" => Function::new_typed_with_env(store, env, defaults::get),

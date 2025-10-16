@@ -1,6 +1,6 @@
-use aidoku_cli::commands;
-use aidoku_cli::models::SourceContentRating;
 use anyhow::Result;
+use buny_cli::commands;
+use buny_cli::models::SourceContentRating;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]

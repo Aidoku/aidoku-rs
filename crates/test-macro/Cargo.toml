@@ -1,8 +1,8 @@
 [package]
-name = "aidoku-test"
+name = "buny-test"
 version = "1.0.0"
-description = "Test framework for Aidoku sources"
-repository = "https://github.com/Aidoku/aidoku-rs"
+description = "Test framework for Buny sources"
+repository = "https://github.com/Buny/buny-rs"
 authors = ["skitty"]
 edition = "2021"
 publish = false

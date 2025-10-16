@@ -1,4 +1,4 @@
-//! Serve an Aidoku source as a local source list.
+//! Serve an Buny source as a local source list.
 use axum::{
 	http::{header::USER_AGENT, Request, Response},
 	Router,
@@ -16,7 +16,7 @@ pub async fn run(
 
 	// enable logging
 	tracing_subscriber::fmt()
-		.with_target(false) // hide the `aidoku_cli::commands::serve:` text
+		.with_target(false) // hide the `buny_cli::commands::serve:` text
 		.with_max_level(Level::INFO)
 		.init();
 
@@ -72,7 +72,7 @@ pub async fn run(
 		local_ip_address, port
 	);
 	println!(
-		"Add http://{}:{}/index.min.json as a source list in Aidoku",
+		"Add http://{}:{}/index.min.json as a source list in Buny",
 		local_ip_address, port
 	);
 	println!("Hit CTRL-C to stop the server.");

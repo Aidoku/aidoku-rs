@@ -1,16 +1,15 @@
-//! Error handling for Aidoku source library functions.
+//! Error handling for Buny source library functions.
 use super::{html::HtmlError, js::JsError, net::RequestError};
 use crate::{
 	alloc::{string::ToString, String},
-	imports::canvas::CanvasError,
 };
 use core::{fmt::Display, str::Utf8Error};
 
-pub type Result<T> = core::result::Result<T, AidokuError>;
+pub type Result<T> = core::result::Result<T, BunyError>;
 
 /// An error passed back to the source runner.
 #[derive(Debug)]
-pub enum AidokuError {
+pub enum BunyError {
 	/// This feature is unimplemented.
 	Unimplemented,
 	/// Pass a message back to the app.
@@ -21,8 +20,6 @@ pub enum AidokuError {
 	HtmlError(HtmlError),
 	/// There was an error performing a JavaScript operation.
 	JsError(JsError),
-	/// There was an error handling a canvas operation.
-	CanvasError(CanvasError),
 	/// There was an error handling UTF-8 data.
 	Utf8Error(Utf8Error),
 	#[cfg(feature = "json")]
@@ -32,46 +29,41 @@ pub enum AidokuError {
 	DeserializeError,
 }
 
-impl AidokuError {
+impl BunyError {
 	/// Creates a new message error.
 	pub fn message<S: Display>(message: S) -> Self {
 		Self::Message(message.to_string())
 	}
 }
 
-impl From<RequestError> for AidokuError {
+impl From<RequestError> for BunyError {
 	fn from(value: RequestError) -> Self {
 		Self::RequestError(value)
 	}
 }
 
-impl From<HtmlError> for AidokuError {
-	fn from(error: HtmlError) -> AidokuError {
-		AidokuError::HtmlError(error)
+impl From<HtmlError> for BunyError {
+	fn from(error: HtmlError) -> BunyError {
+		BunyError::HtmlError(error)
 	}
 }
 
-impl From<JsError> for AidokuError {
-	fn from(error: JsError) -> AidokuError {
-		AidokuError::JsError(error)
+impl From<JsError> for BunyError {
+	fn from(error: JsError) -> BunyError {
+		BunyError::JsError(error)
 	}
 }
 
-impl From<CanvasError> for AidokuError {
-	fn from(error: CanvasError) -> AidokuError {
-		AidokuError::CanvasError(error)
-	}
-}
 
-impl From<Utf8Error> for AidokuError {
-	fn from(error: Utf8Error) -> AidokuError {
-		AidokuError::Utf8Error(error)
+impl From<Utf8Error> for BunyError {
+	fn from(error: Utf8Error) -> BunyError {
+		BunyError::Utf8Error(error)
 	}
 }
 
 #[cfg(feature = "json")]
-impl From<serde_json::Error> for AidokuError {
-	fn from(error: serde_json::Error) -> AidokuError {
-		AidokuError::JsonParseError(error)
+impl From<serde_json::Error> for BunyError {
+	fn from(error: serde_json::Error) -> BunyError {
+		BunyError::JsonParseError(error)
 	}
 }

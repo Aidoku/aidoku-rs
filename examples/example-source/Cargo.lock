@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "aidoku"
+name = "buny"
 version = "0.3.0"
 dependencies = [
  "euclid",
@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "aidoku-test"
+name = "buny-test"
 version = "1.0.0"
 dependencies = [
  "quote",
@@ -104,8 +104,8 @@ dependencies = [
 name = "example-source"
 version = "0.1.0"
 dependencies = [
- "aidoku",
- "aidoku-test",
+ "buny",
+ "buny-test",
 ]
 
 [[package]]

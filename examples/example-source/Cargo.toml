@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aidoku = { path = "../../crates/lib" }
+buny = { path = "../../crates/lib" }
 
 [dev-dependencies]
-aidoku = { path = "../../crates/lib", features = ["test"] }
-aidoku-test = { path = "../../crates/test-macro" }
+buny = { path = "../../crates/lib", features = ["test"] }
+buny-test = { path = "../../crates/test-macro" }
 
 [lib]
 crate-type = ["cdylib"]

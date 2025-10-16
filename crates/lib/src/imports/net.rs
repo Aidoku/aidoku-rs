@@ -1,7 +1,6 @@
 //! Module for creating and sending HTTP requests.
 use super::{
-	canvas::ImageRef,
-	error::AidokuError,
+	error::BunyError,
 	html::Document,
 	std::{destroy, read_string_and_destroy},
 	FFIResult, Rid,
@@ -41,7 +40,6 @@ extern "C" {
 
 	fn data_len(rid: Rid) -> FFIResult;
 	fn read_data(rid: Rid, buffer: *mut u8, size: usize) -> FFIResult;
-	fn get_image(rid: Rid) -> FFIResult;
 	fn get_header(rid: Rid, key: *const u8, key_len: usize) -> FFIResult;
 	fn get_status_code(rid: Rid) -> FFIResult;
 	fn html(rid: Rid) -> FFIResult;
@@ -153,7 +151,7 @@ impl Request {
 	/// # Examples
 	///
 	/// ```ignore
-	/// use aidoku::imports::net::{HttpMethod, Request};
+	/// use buny::imports::net::{HttpMethod, Request};
 	/// Request::new("https://example.com", HttpMethod::Get).unwrap();
 	/// ```
 	pub fn new<T: AsRef<str>>(url: T, http_method: HttpMethod) -> Result<Self, RequestError> {
@@ -279,13 +277,8 @@ impl Request {
 		self.send()?.get_data()
 	}
 
-	/// Gets the response data as an image.
-	pub fn image(self) -> Result<ImageRef, RequestError> {
-		self.send()?.get_image()
-	}
-
 	/// Gets the response data as a string.
-	pub fn string(self) -> Result<String, AidokuError> {
+	pub fn string(self) -> Result<String, BunyError> {
 		self.send()?.get_string()
 	}
 
@@ -298,7 +291,7 @@ impl Request {
 #[cfg(feature = "json")]
 impl Request {
 	/// Get the response data as an owned JSON value.
-	pub fn json_owned<T>(self) -> Result<T, AidokuError>
+	pub fn json_owned<T>(self) -> Result<T, BunyError>
 	where
 		T: serde::de::DeserializeOwned,
 	{
@@ -341,22 +334,12 @@ impl Response {
 		Ok(buffer)
 	}
 
-	/// Gets the response data as an image.
-	pub fn get_image(&self) -> Result<ImageRef, RequestError> {
-		let result = unsafe { get_image(self.rid) };
-		if let Some(error) = RequestError::from(result) {
-			Err(error)
-		} else {
-			Ok(ImageRef::from(result, false))
-		}
-	}
-
 	/// Gets the response data as a string.
-	pub fn get_string(&self) -> Result<String, AidokuError> {
+	pub fn get_string(&self) -> Result<String, BunyError> {
 		let res = String::from_utf8(self.get_data()?);
 		match res {
 			Ok(res) => Ok(res),
-			Err(err) => Err(AidokuError::Utf8Error(err.utf8_error())),
+			Err(err) => Err(BunyError::Utf8Error(err.utf8_error())),
 		}
 	}
 
@@ -387,7 +370,7 @@ impl Response {
 #[cfg(feature = "json")]
 impl Response {
 	/// Get the response data as a JSON value. This requires the request to stay in scope so the data can be referenced.
-	pub fn get_json<'a, T>(&'a mut self) -> Result<T, AidokuError>
+	pub fn get_json<'a, T>(&'a mut self) -> Result<T, BunyError>
 	where
 		T: serde::de::Deserialize<'a>,
 	{
@@ -398,7 +381,7 @@ impl Response {
 	}
 
 	/// Get the response data as an owned JSON value.
-	pub fn get_json_owned<T>(self) -> Result<T, AidokuError>
+	pub fn get_json_owned<T>(self) -> Result<T, BunyError>
 	where
 		T: serde::de::DeserializeOwned,
 	{

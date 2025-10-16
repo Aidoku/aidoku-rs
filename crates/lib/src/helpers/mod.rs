@@ -1,4 +1,4 @@
-//! Utilities for commonly used functions when creating Aidoku sources.
+//! Utilities for commonly used functions when creating Buny sources.
 extern crate alloc;
 
 #[cfg(feature = "imports")]

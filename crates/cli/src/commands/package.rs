@@ -1,4 +1,4 @@
-//! Build and package an Aidoku source.
+//! Build and package an Buny source.
 use anyhow::{anyhow, Context};
 use std::io::prelude::*;
 
@@ -118,7 +118,7 @@ pub fn run(path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
 	}
 
 	// zip payload directory
-	let zip_output = current_path.join("package.aix");
+	let zip_output = current_path.join("package.bunpak");
 	create_zip(payload_dir.as_path(), zip_output.as_path())
 		.context("Failed to compress payload directory")?;
 

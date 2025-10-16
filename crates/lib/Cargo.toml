@@ -1,8 +1,8 @@
 [package]
-name = "aidoku"
+name = "buny"
 version = "0.3.0"
-description = "Aidoku source API wrapper"
-repository = "https://github.com/Aidoku/aidoku-rs"
+description = "Buny source API wrapper"
+repository = "https://github.com/Buny/buny-rs"
 authors = ["skitty"]
 edition = "2021"
 publish = false

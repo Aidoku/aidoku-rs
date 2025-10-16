@@ -8,7 +8,7 @@ use alloc::string::String;
 ///
 /// # Examples
 /// ```
-/// use aidoku::helpers::cfemail::parse_cfemail;
+/// use buny::helpers::cfemail::parse_cfemail;
 /// assert_eq!(
 ///     parse_cfemail("98d1fcf7f4f5d8ebecfdea"),
 ///     "Idolm@ster",

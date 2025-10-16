@@ -52,77 +52,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aidoku"
-version = "0.3.0"
-dependencies = [
- "euclid",
- "hashbrown 0.14.5",
- "itoa",
- "num-traits",
- "paste",
- "postcard",
- "serde",
- "serde_json",
- "talc",
- "thiserror 2.0.12",
-]
-
-[[package]]
-name = "aidoku-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "clap",
- "colored",
- "dialoguer",
- "image",
- "jsonschema",
- "local-ip-address",
- "rayon",
- "serde",
- "serde_json",
- "serde_repr",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "zip",
-]
-
-[[package]]
-name = "aidoku-test"
-version = "1.0.0"
-dependencies = [
- "quote",
- "syn 2.0.101",
-]
-
-[[package]]
-name = "aidoku-test-runner"
-version = "0.1.0"
-dependencies = [
- "aidoku",
- "anyhow",
- "boa_engine",
- "chrono",
- "chrono-tz",
- "ego-tree",
- "euclid",
- "font-kit",
- "image",
- "libtest-mimic",
- "postcard",
- "raqote",
- "reqwest",
- "scraper",
- "serde",
- "url",
- "wasmer",
-]
-
-[[package]]
 name = "aligned-vec"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -574,6 +503,76 @@ name = "bumpalo"
 version = "3.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
+
+[[package]]
+name = "buny"
+version = "0.3.0"
+dependencies = [
+ "euclid",
+ "hashbrown 0.14.5",
+ "itoa",
+ "num-traits",
+ "paste",
+ "postcard",
+ "serde",
+ "serde_json",
+ "talc",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "buny-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "clap",
+ "colored",
+ "dialoguer",
+ "jsonschema",
+ "local-ip-address",
+ "rayon",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "zip",
+]
+
+[[package]]
+name = "buny-test"
+version = "1.0.0"
+dependencies = [
+ "quote",
+ "syn 2.0.101",
+]
+
+[[package]]
+name = "buny-test-runner"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "boa_engine",
+ "buny",
+ "chrono",
+ "chrono-tz",
+ "ego-tree",
+ "euclid",
+ "font-kit",
+ "image",
+ "libtest-mimic",
+ "postcard",
+ "raqote",
+ "reqwest",
+ "scraper",
+ "serde",
+ "url",
+ "wasmer",
+]
 
 [[package]]
 name = "bytecheck"

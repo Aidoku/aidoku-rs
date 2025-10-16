@@ -1,11 +1,11 @@
 #![no_std]
-use aidoku::{
+use buny::{
 	alloc::{vec, String, Vec},
 	imports::{defaults::defaults_get, net::Request},
 	prelude::*,
 	AlternateCoverProvider, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
 	DynamicFilters, DynamicListings, DynamicSettings, Filter, FilterValue, Home, HomeComponent,
-	HomeLayout, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
+	HomeLayout, Listing, ListingProvider, Novel, NovelPageResult, NovelStatus, NovelWithChapter,
 	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent,
 	PageDescriptionProvider, RangeFilter, Result, SelectFilter, Setting, SortFilter, Source,
 	TextFilter, ToggleSetting,
@@ -26,52 +26,52 @@ impl Source for ExampleSource {
 
 	// this method will be called first without a query when the search page is opened,
 	// then when a search query is entered or filters are changed
-	fn get_search_manga_list(
+	fn get_search_novel_list(
 		&self,
 		query: Option<String>,
 		page: i32,
 		_filters: Vec<FilterValue>,
-	) -> Result<MangaPageResult> {
-		let mut entries: Vec<Manga> = Vec::new();
+	) -> Result<NovelPageResult> {
+		let mut entries: Vec<Novel> = Vec::new();
 		let start = (page - 1) * PAGE_SIZE + 1;
 		for i in start..start + PAGE_SIZE {
-			let title = format!("Manga {i}");
+			let title = format!("Novel {i}");
 			if let Some(query) = query.as_ref() {
 				if !title.contains(query) {
 					continue;
 				}
 			}
-			entries.push(Manga {
+			entries.push(Novel {
 				key: format!("{i}"),
 				title,
-				cover: Some(String::from("https://aidoku.app/images/icon.png")),
+				cover: Some(String::from("https://buny.app/images/icon.png")),
 				authors: Some(vec![String::from("Author")]),
 				..Default::default()
 			})
 		}
-		Ok(MangaPageResult {
+		Ok(NovelPageResult {
 			entries,
 			has_next_page: start < 40,
 		})
 	}
 
-	// this method will be called when a manga page is opened
-	fn get_manga_update(
+	// this method will be called when a novel page is opened
+	fn get_novel_update(
 		&self,
-		mut manga: Manga,
+		mut novel: Novel,
 		needs_details: bool,
 		needs_chapters: bool,
-	) -> Result<Manga> {
+	) -> Result<Novel> {
 		if needs_details {
-			manga.authors = Some(vec![String::from("Author")]);
-			manga.description = ExampleSource::get_latest_aidoku_version();
-			manga.status = MangaStatus::Ongoing;
-			manga.content_rating = ContentRating::Safe;
-			manga.tags = Some(vec![String::from("Tag 1"), String::from("Tag 2")]);
-			manga.url = Some(String::from("https://aidoku.app"));
+			novel.authors = Some(vec![String::from("Author")]);
+			novel.description = ExampleSource::get_latest_buny_version();
+			novel.status = NovelStatus::Ongoing;
+			novel.content_rating = ContentRating::Safe;
+			novel.tags = Some(vec![String::from("Tag 1"), String::from("Tag 2")]);
+			novel.url = Some(String::from("https://buny.app"));
 		}
 		if needs_chapters {
-			manga.chapters = Some(vec![
+			novel.chapters = Some(vec![
 				Chapter {
 					key: String::from("8"),
 					chapter_number: Some(8.0),
@@ -117,13 +117,13 @@ impl Source for ExampleSource {
 				},
 			]);
 		}
-		Ok(manga)
+		Ok(novel)
 	}
 
-	fn get_page_list(&self, _manga: Manga, _chapter: Chapter) -> Result<Vec<Page>> {
+	fn get_page_list(&self, _novel: Novel, _chapter: Chapter) -> Result<Vec<Page>> {
 		Ok(vec![
 			Page {
-				content: PageContent::url("https://aidoku.app/images/icon.png"),
+				content: PageContent::url("https://buny.app/images/icon.png"),
 				has_description: true,
 				description: Some("Description".into()),
 				..Default::default()
@@ -141,9 +141,9 @@ impl Source for ExampleSource {
 }
 
 impl ExampleSource {
-	// gets the latest version of aidoku from the github releases page
-	fn get_latest_aidoku_version() -> Option<String> {
-		Request::get("https://github.com/aidoku/aidoku/releases")
+	// gets the latest version of buny from the github releases page
+	fn get_latest_buny_version() -> Option<String> {
+		Request::get("https://github.com/buny/buny/releases")
 			.ok()?
 			.html()
 			.ok()?
@@ -156,15 +156,15 @@ impl ExampleSource {
 // this should probably be most sources
 impl ListingProvider for ExampleSource {
 	// this method will be called when a listing or a home section with an associated listing is opened
-	fn get_manga_list(&self, listing: Listing, _page: i32) -> Result<MangaPageResult> {
+	fn get_novel_list(&self, listing: Listing, _page: i32) -> Result<NovelPageResult> {
 		if listing.id == "test" {
 			bail!("Not supported");
 		}
-		Ok(MangaPageResult {
-			entries: vec![Manga {
+		Ok(NovelPageResult {
+			entries: vec![Novel {
 				key: String::from("1"),
-				title: String::from("Manga 1"),
-				cover: Some(String::from("https://aidoku.app/images/icon.png")),
+				title: String::from("Novel 1"),
+				cover: Some(String::from("https://buny.app/images/icon.png")),
 				..Default::default()
 			}],
 			has_next_page: false,
@@ -176,7 +176,7 @@ impl ListingProvider for ExampleSource {
 // where possible, try to replicate the associated web page's layout
 impl Home for ExampleSource {
 	fn get_home(&self) -> Result<HomeLayout> {
-		let entries = self.get_search_manga_list(None, 1, Vec::new())?.entries;
+		let entries = self.get_search_novel_list(None, 1, Vec::new())?.entries;
 		let chapter = Chapter {
 			key: String::from("1"),
 			chapter_number: Some(1.0),
@@ -184,10 +184,10 @@ impl Home for ExampleSource {
 			date_uploaded: Some(1692318525),
 			..Default::default()
 		};
-		let manga_chapters = entries
+		let novel_chapters = entries
 			.iter()
-			.map(|manga| MangaWithChapter {
-				manga: manga.clone(),
+			.map(|novel| NovelWithChapter {
+				novel: novel.clone(),
 				chapter: chapter.clone(),
 			})
 			.take(3)
@@ -197,24 +197,24 @@ impl Home for ExampleSource {
 				HomeComponent {
 					title: Some(String::from("Big Scroller")),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::BigScroller {
+					value: buny::HomeComponentValue::BigScroller {
 						entries: entries.clone(),
 						auto_scroll_interval: Some(10.0),
 					},
 				},
 				HomeComponent {
-					title: Some(String::from("Manga Chapter List")),
+					title: Some(String::from("Novel Chapter List")),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::MangaChapterList {
+					value: buny::HomeComponentValue::NovelChapterList {
 						page_size: None,
-						entries: manga_chapters,
+						entries: novel_chapters,
 						listing: None,
 					},
 				},
 				HomeComponent {
-					title: Some(String::from("Manga List")),
+					title: Some(String::from("Novel List")),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::MangaList {
+					value: buny::HomeComponentValue::NovelList {
 						ranking: false,
 						page_size: None,
 						entries: entries.iter().take(2).cloned().map(|m| m.into()).collect(),
@@ -222,9 +222,9 @@ impl Home for ExampleSource {
 					},
 				},
 				HomeComponent {
-					title: Some(String::from("Manga List (Paged, Ranking)")),
+					title: Some(String::from("Novel List (Paged, Ranking)")),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::MangaList {
+					value: buny::HomeComponentValue::NovelList {
 						ranking: true,
 						page_size: Some(3),
 						entries: entries.iter().take(8).cloned().map(|m| m.into()).collect(),
@@ -234,7 +234,7 @@ impl Home for ExampleSource {
 				HomeComponent {
 					title: Some(String::from("Scroller")),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::Scroller {
+					value: buny::HomeComponentValue::Scroller {
 						entries: entries.clone().into_iter().map(|m| m.into()).collect(),
 						listing: None,
 					},
@@ -242,8 +242,8 @@ impl Home for ExampleSource {
 				HomeComponent {
 					title: Some("Filters".into()),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::Filters(vec![
-						aidoku::FilterItem::from(String::from("Action")),
+					value: buny::HomeComponentValue::Filters(vec![
+						buny::FilterItem::from(String::from("Action")),
 						"Adventure".into(),
 						"Fantasy".into(),
 						"Horror".into(),
@@ -255,23 +255,23 @@ impl Home for ExampleSource {
 				HomeComponent {
 					title: Some(String::from("Links")),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::Links(vec![
-						aidoku::Link {
+					value: buny::HomeComponentValue::Links(vec![
+						buny::Link {
 							title: String::from("Website Link"),
-							value: Some(aidoku::LinkValue::Url(String::from("https://aidoku.app"))),
+							value: Some(buny::LinkValue::Url(String::from("https://buny.app"))),
 							..Default::default()
 						},
-						aidoku::Link {
-							title: String::from("Manga Link"),
-							value: Some(aidoku::LinkValue::Manga(entries.first().unwrap().clone())),
+						buny::Link {
+							title: String::from("Novel Link"),
+							value: Some(buny::LinkValue::Novel(entries.first().unwrap().clone())),
 							..Default::default()
 						},
-						aidoku::Link {
+						buny::Link {
 							title: String::from("Listing Link"),
-							value: Some(aidoku::LinkValue::Listing(Listing {
+							value: Some(buny::LinkValue::Listing(Listing {
 								id: String::from("listing"),
 								name: String::from("Listing"),
-								kind: aidoku::ListingKind::List,
+								kind: buny::ListingKind::List,
 							})),
 							..Default::default()
 						},
@@ -386,7 +386,7 @@ impl DynamicListings for ExampleSource {
 		Ok(vec![Listing {
 			id: String::from("listing"),
 			name: String::from("Listing"),
-			kind: aidoku::ListingKind::List,
+			kind: buny::ListingKind::List,
 		}])
 	}
 }
@@ -401,29 +401,29 @@ impl NotificationHandler for ExampleSource {
 
 // if your source supports displaying multiple covers for a title, use the AlternateCoverProvider trait
 impl AlternateCoverProvider for ExampleSource {
-	fn get_alternate_covers(&self, _manga: Manga) -> Result<Vec<String>> {
-		Ok(vec!["https://aidoku.app/images/icon.png".into()])
+	fn get_alternate_covers(&self, _novel: Novel) -> Result<Vec<String>> {
+		Ok(vec!["https://buny.app/images/icon.png".into()])
 	}
 }
 
 // it's recommended for all sources to implement the DeepLinkHandler trait
 // the url that is passed in will have the base of any of the source's urls
-// the source should determine if the url is a link to a manga, a chapter, or a listing page,
+// the source should determine if the url is a link to a novel, a chapter, or a listing page,
 // then return the appropriate DeepLinkResult to handle it.
 impl DeepLinkHandler for ExampleSource {
 	fn handle_deep_link(&self, _url: String) -> Result<Option<DeepLinkResult>> {
-		Ok(Some(DeepLinkResult::Manga {
-			key: String::from("manga_key"),
+		Ok(Some(DeepLinkResult::Novel {
+			key: String::from("novel_key"),
 		}))
 	}
 }
 
-// if your source is changing the way it formats manga and chapter keys,
+// if your source is changing the way it formats novel and chapter keys,
 // implement the MigrationHandler trait to automatically handle the migration of existing data.
 // this should be paired with the breakingChangeVersion inside the source configuration.
 // if this trait isn't implemented, the app will default to showing the manual migration view.
 impl MigrationHandler for ExampleSource {
-	fn handle_manga_migration(&self, key: String) -> Result<String> {
+	fn handle_novel_migration(&self, key: String) -> Result<String> {
 		// example: add leading slash
 		if key.starts_with("/") {
 			Ok(key)
@@ -432,13 +432,13 @@ impl MigrationHandler for ExampleSource {
 		}
 	}
 
-	fn handle_chapter_migration(&self, _manga_key: String, chapter_key: String) -> Result<String> {
+	fn handle_chapter_migration(&self, _novel_key: String, chapter_key: String) -> Result<String> {
 		// example: keep chapter key as-is
 		Ok(chapter_key)
 	}
 }
 
-// the register_source! macro generates the necessary wasm functions for aidoku
+// the register_source! macro generates the necessary wasm functions for buny
 register_source!(
 	ExampleSource,
 	// after the name of the source struct, list all the extra traits it implements
@@ -458,21 +458,21 @@ register_source!(
 #[cfg(test)]
 mod test {
 	use super::*;
-	use aidoku_test::aidoku_test;
+	use buny_test::buny_test;
 
-	// all tests need to be annotated with the #[aidoku_test] attribute instead of #[test]
-	#[aidoku_test]
+	// all tests need to be annotated with the #[buny_test] attribute instead of #[test]
+	#[buny_test]
 	fn test_request() {
-		let version = ExampleSource::get_latest_aidoku_version();
+		let version = ExampleSource::get_latest_buny_version();
 		println!("{:?}", version); // if the test fails (or you pass --nocapture), you can see this in the log,
 		assert!(version.is_some());
 		assert!(version.unwrap().chars().next().unwrap() == 'v');
 	}
 
-	#[aidoku_test]
+	#[buny_test]
 	fn test_js_execution() {
-		// most aidoku imports you'd want to use should also work
-		use aidoku::imports::js::JsContext;
+		// most buny imports you'd want to use should also work
+		use buny::imports::js::JsContext;
 		let context = JsContext::new();
 		let result = context.eval("1 + 2");
 		assert_eq!(result, Ok(String::from("3")));

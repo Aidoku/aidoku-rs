@@ -1,6 +1,5 @@
 //! Wrapper around imported source API functions.
 
-pub mod canvas;
 pub mod defaults;
 pub mod error;
 pub mod html;

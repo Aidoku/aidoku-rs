@@ -1,9 +1,9 @@
 #![no_std]
-use aidoku::{
+use buny::{
 	alloc::{String, Vec},
 	prelude::*,
-	AidokuError, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Home, HomeLayout, Listing,
-	ListingProvider, Manga, MangaPageResult, Page, Result, Source,
+	BunyError, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Home, HomeLayout, Listing,
+	ListingProvider, Novel, NovelPageResult, Page, Result, Source,
 };
 
 pub struct Params {}
@@ -24,50 +24,50 @@ pub trait Impl {
 
 	fn params(&self) -> Params;
 
-	fn get_search_manga_list(
+	fn get_search_novel_list(
 		&self,
 		_params: &Params,
 		_query: Option<String>,
 		_page: i32,
 		_filters: Vec<FilterValue>,
-	) -> Result<MangaPageResult> {
-		Err(AidokuError::Unimplemented)
+	) -> Result<NovelPageResult> {
+		Err(BunyError::Unimplemented)
 	}
 
-	fn get_manga_update(
+	fn get_novel_update(
 		&self,
 		_params: &Params,
-		_manga: Manga,
+		_novel: Novel,
 		_needs_details: bool,
 		_needs_chapters: bool,
-	) -> Result<Manga> {
-		Err(AidokuError::Unimplemented)
+	) -> Result<Novel> {
+		Err(BunyError::Unimplemented)
 	}
 
 	fn get_page_list(
 		&self,
 		_params: &Params,
-		_manga: Manga,
+		_novel: Novel,
 		_chapter: Chapter,
 	) -> Result<Vec<Page>> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 
-	fn get_manga_list(
+	fn get_novel_list(
 		&self,
 		_params: &Params,
 		_listing: Listing,
 		_page: i32,
-	) -> Result<MangaPageResult> {
-		Err(AidokuError::Unimplemented)
+	) -> Result<NovelPageResult> {
+		Err(BunyError::Unimplemented)
 	}
 
 	fn get_home(&self, _params: &Params) -> Result<HomeLayout> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 
 	fn handle_deep_link(&self, _params: &Params, _url: String) -> Result<Option<DeepLinkResult>> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 }
 
@@ -78,34 +78,34 @@ impl<T: Impl> Source for {{TEMPLATE_NAME}}<T> {
 		Self { inner, params }
 	}
 
-	fn get_search_manga_list(
+	fn get_search_novel_list(
 		&self,
 		query: Option<String>,
 		page: i32,
 		filters: Vec<FilterValue>,
-	) -> Result<MangaPageResult> {
+	) -> Result<NovelPageResult> {
 		self.inner
-			.get_search_manga_list(&self.params, query, page, filters)
+			.get_search_novel_list(&self.params, query, page, filters)
 	}
 
-	fn get_manga_update(
+	fn get_novel_update(
 		&self,
-		manga: Manga,
+		novel: Novel,
 		needs_details: bool,
 		needs_chapters: bool,
-	) -> Result<Manga> {
+	) -> Result<Novel> {
 		self.inner
-			.get_manga_update(&self.params, manga, needs_details, needs_chapters)
+			.get_novel_update(&self.params, novel, needs_details, needs_chapters)
 	}
 
-	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
-		self.inner.get_page_list(&self.params, manga, chapter)
+	fn get_page_list(&self, novel: Novel, chapter: Chapter) -> Result<Vec<Page>> {
+		self.inner.get_page_list(&self.params, novel, chapter)
 	}
 }
 
 impl<T: Impl> ListingProvider for {{TEMPLATE_NAME}}<T> {
-	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult> {
-		self.inner.get_manga_list(&self.params, listing, page)
+	fn get_novel_list(&self, listing: Listing, page: i32) -> Result<NovelPageResult> {
+		self.inner.get_novel_list(&self.params, listing, page)
 	}
 }
 

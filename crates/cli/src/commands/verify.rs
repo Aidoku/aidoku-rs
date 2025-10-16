@@ -1,4 +1,4 @@
-//! Verify an Aidoku source to ensure it's ready to be published.
+//! Verify an Buny source to ensure it's ready to be published.
 use anyhow::anyhow;
 use colored::Colorize;
 use image::GenericImageView;

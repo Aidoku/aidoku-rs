@@ -1,13 +1,13 @@
-# aidoku-cli
+# buny-cli
 
-A command-line utility for Aidoku source development and testing.
+A command-line utility for Buny source development and testing.
 
-To get started, run `cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli`.
+To get started, run `cargo install --git https://github.com/Buny/buny-rs buny-cli`.
 
 ## Usage
 
 ```ignore
-Usage: aidoku <COMMAND>
+Usage: buny <COMMAND>
 
 Commands:
   package  Build and package a source

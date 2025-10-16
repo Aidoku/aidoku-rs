@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema",
-	"title": "Aidoku source JSON specification",
+	"title": "Buny source JSON specification",
 	"definitions": {
 		"sourceInfo": {
 			"type": "object",
@@ -54,12 +54,12 @@
 				},
 				"minAppVersion": {
 					"type": "string",
-					"description": "Optional minimum version of Aidoku to require for installing the source.",
+					"description": "Optional minimum version of Buny to require for installing the source.",
 					"pattern": "\\d\\.\\d"
 				},
 				"maxAppVersion": {
 					"type": "string",
-					"description": "Optional maximum version of Aidoku to require for installing the source.",
+					"description": "Optional maximum version of Buny to require for installing the source.",
 					"pattern": "\\d\\.\\d"
 				}
 			},

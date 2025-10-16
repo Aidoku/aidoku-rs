@@ -1,4 +1,4 @@
-/// Prints to Aidoku logs.
+/// Prints to Buny logs.
 ///
 /// # Examples
 ///
@@ -19,7 +19,7 @@ macro_rules! println {
 	};
 }
 
-/// Prints to Aidoku logs if debug assertions are enabled.
+/// Prints to Buny logs if debug assertions are enabled.
 #[macro_export]
 macro_rules! debug {
 	() => {
@@ -39,11 +39,11 @@ macro_rules! debug {
 /// Constructs an error with a message.
 ///
 /// This macro is equivalent to
-/// <code>AidokuError::message(format!($args\...))</code>.
+/// <code>BunyError::message(format!($args\...))</code>.
 #[macro_export]
 macro_rules! error {
 	($($arg:tt)*) => {
-		$crate::AidokuError::message($crate::prelude::format!($($arg)*))
+		$crate::BunyError::message($crate::prelude::format!($($arg)*))
 	};
 }
 
@@ -53,7 +53,7 @@ macro_rules! error {
 /// <code>return Err(error!($args\...))</code>.
 ///
 /// The surrounding function's or closure's return value is required to be
-/// <code>Result&lt;_, [aidoku::AidokuError][crate::AidokuError]&gt;</code>.
+/// <code>Result&lt;_, [buny::BunyError][crate::BunyError]&gt;</code>.
 #[macro_export]
 macro_rules! bail {
 	($($arg:tt)*) => {
@@ -61,7 +61,7 @@ macro_rules! bail {
 	};
 }
 
-/// Registers a source for use with Aidoku.
+/// Registers a source for use with Buny.
 ///
 /// The first argument should be the struct that implements the Source trait, and the
 /// following arguments should be all the additional traits that the source implements.
@@ -88,7 +88,7 @@ macro_rules! register_source {
 		}
 
 		fn __handle_result<T: $crate::serde::Serialize>(
-			result: ::core::result::Result<T, $crate::imports::error::AidokuError>,
+			result: ::core::result::Result<T, $crate::imports::error::BunyError>,
 		) -> i32 {
 			match &result {
 				::core::result::Result::Ok(result) => {
@@ -108,12 +108,12 @@ macro_rules! register_source {
 			}
 		}
 
-		fn __handle_error(error: &$crate::imports::error::AidokuError) -> i32 {
+		fn __handle_error(error: &$crate::imports::error::BunyError) -> i32 {
 			$crate::prelude::println!("Error: {:?}", error);
 			match error {
-				$crate::imports::error::AidokuError::Unimplemented => -2,
-				$crate::imports::error::AidokuError::RequestError(_) => -3,
-				$crate::imports::error::AidokuError::Message(string) => {
+				$crate::imports::error::BunyError::Unimplemented => -2,
+				$crate::imports::error::BunyError::RequestError(_) => -3,
+				$crate::imports::error::BunyError::Message(string) => {
 					let mut buffer = (-1 as i32).to_le_bytes().to_vec();
 
 					buffer.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0]);
@@ -148,8 +148,8 @@ macro_rules! register_source {
 		}
 
 		#[no_mangle]
-		#[export_name = "get_search_manga_list"]
-		pub unsafe extern "C" fn __wasm_get_search_manga_list(
+		#[export_name = "get_search_novel_list"]
+		pub unsafe extern "C" fn __wasm_get_search_novel_list(
 			query_descriptor: i32,
 			page: i32,
 			filters_descriptor: i32,
@@ -161,35 +161,35 @@ macro_rules! register_source {
 				return -1;
 			};
 
-			let result = __source().get_search_manga_list(query, page, filters);
+			let result = __source().get_search_novel_list(query, page, filters);
 			__handle_result(result)
 		}
 
 		#[no_mangle]
-		#[export_name = "get_manga_update"]
-		pub unsafe extern "C" fn __wasm_get_manga_update(
-			manga_descriptor: i32,
+		#[export_name = "get_novel_update"]
+		pub unsafe extern "C" fn __wasm_get_novel_update(
+			novel_descriptor: i32,
 			needs_details: bool,
 			needs_chapters: bool,
 		) -> i32 {
-			let ::core::result::Result::Ok(manga) =
-				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
+			let ::core::result::Result::Ok(novel) =
+				$crate::imports::std::read::<$crate::Novel>(novel_descriptor)
 			else {
 				return -1;
 			};
 
-			let result = __source().get_manga_update(manga, needs_details, needs_chapters);
+			let result = __source().get_novel_update(novel, needs_details, needs_chapters);
 			__handle_result(result)
 		}
 
 		#[no_mangle]
 		#[export_name = "get_page_list"]
 		pub unsafe extern "C" fn __wasm_get_page_list(
-			manga_descriptor: i32,
+			novel_descriptor: i32,
 			chapter_descriptor: i32,
 		) -> i32 {
-			let ::core::result::Result::Ok(manga) =
-				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
+			let ::core::result::Result::Ok(novel) =
+				$crate::imports::std::read::<$crate::Novel>(novel_descriptor)
 			else {
 				return -1;
 			};
@@ -200,7 +200,7 @@ macro_rules! register_source {
 			};
 
 			let result = __source()
-				.get_page_list(manga, chapter)
+				.get_page_list(novel, chapter)
 				.map(|pages| {
 					pages.into_iter()
 						.map(|mut page| {
@@ -219,8 +219,8 @@ macro_rules! register_source {
 
 	(@single ListingProvider) => {
 		#[no_mangle]
-		#[export_name = "get_manga_list"]
-		pub unsafe extern "C" fn __wasm_get_manga_list(listing_descriptor: i32, page: i32) -> i32 {
+		#[export_name = "get_novel_list"]
+		pub unsafe extern "C" fn __wasm_get_novel_list(listing_descriptor: i32, page: i32) -> i32 {
 			let ::core::result::Result::Ok(listing) =
 				$crate::imports::std::read::<$crate::Listing>(listing_descriptor)
 			else {
@@ -228,7 +228,7 @@ macro_rules! register_source {
 			};
 
 			use $crate::ListingProvider;
-			let result = __source().get_manga_list(listing, page);
+			let result = __source().get_novel_list(listing, page);
 			__handle_result(result)
 		}
 	};
@@ -353,14 +353,14 @@ macro_rules! register_source {
 	(@single AlternateCoverProvider) => {
 		#[no_mangle]
 		#[export_name = "get_alternate_covers"]
-		pub unsafe extern "C" fn __wasm_get_alternate_covers(manga_descriptor: i32) -> i32 {
-			let ::core::result::Result::Ok(manga) =
-				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
+		pub unsafe extern "C" fn __wasm_get_alternate_covers(novel_descriptor: i32) -> i32 {
+			let ::core::result::Result::Ok(novel) =
+				$crate::imports::std::read::<$crate::Novel>(novel_descriptor)
 			else {
 				return -1;
 			};
 			use $crate::AlternateCoverProvider;
-			let result = __source().get_alternate_covers(manga);
+			let result = __source().get_alternate_covers(novel);
 			__handle_result(result)
 		}
 	};
@@ -468,18 +468,18 @@ macro_rules! register_source {
 		#[export_name = "handle_key_migration"]
 		pub unsafe extern "C" fn __wasm_handle_key_migration(
 			key_kind: i32,
-			manga_key_descriptor: i32,
+			novel_key_descriptor: i32,
 			chapter_key_descriptor: i32,
 		) -> i32 {
-			let ::core::result::Result::Ok(manga_key) =
-				$crate::imports::std::read::<$crate::alloc::String>(manga_key_descriptor)
+			let ::core::result::Result::Ok(novel_key) =
+				$crate::imports::std::read::<$crate::alloc::String>(novel_key_descriptor)
 			else {
 				return -1;
 			};
 			use $crate::MigrationHandler;
 			let result = match key_kind {
-				// manga
-				0 => __source().handle_manga_migration(manga_key),
+				// novel
+				0 => __source().handle_novel_migration(novel_key),
 				// chapter
 				1 => {
 					let ::core::result::Result::Ok(chapter_key) =
@@ -487,7 +487,7 @@ macro_rules! register_source {
 					else {
 						return -2;
 					};
-					__source().handle_chapter_migration(manga_key, chapter_key)
+					__source().handle_chapter_migration(novel_key, chapter_key)
 				}
 				_ => return -3,
 			};

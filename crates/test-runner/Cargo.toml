@@ -1,18 +1,18 @@
 [package]
-name = "aidoku-test-runner"
+name = "buny-test-runner"
 version = "0.1.0"
-description = "Test runner for Aidoku sources"
-repository = "https://github.com/Aidoku/aidoku-rs"
+description = "Test runner for Buny sources"
+repository = "https://github.com/Buny/buny-rs"
 authors = ["skitty"]
 edition = "2021"
 publish = false
 
 [[bin]]
-name = "aidoku-test-runner"
-path = "src/bin/aidoku-test-runner.rs"
+name = "buny-test-runner"
+path = "src/bin/buny-test-runner.rs"
 
 [dependencies]
-aidoku = { path = "../lib", default-features = false }
+buny = { path = "../lib", default-features = false }
 anyhow = "1"
 boa_engine = "0.20.0"
 chrono = "0.4.41"

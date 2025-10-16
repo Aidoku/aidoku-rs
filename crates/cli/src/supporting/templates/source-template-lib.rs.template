@@ -1,5 +1,5 @@
 #![no_std]
-use aidoku::{alloc::String, prelude::*, AidokuError, DeepLinkResult, HomeLayout, Result};
+use buny::{alloc::String, prelude::*, BunyError, DeepLinkResult, HomeLayout, Result};
 use {{TEMPLATE_LIB_NAME}}::{{{TEMPLATE_NAME}}, Impl, Params};
 
 struct {{SOURCE_NAME}};
@@ -16,11 +16,11 @@ impl Impl for {{SOURCE_NAME}} {
 	}
 
 	fn get_home(&self, _params: &Params) -> Result<HomeLayout> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 
 	fn handle_deep_link(&self, _params: &Params, _url: String) -> Result<Option<DeepLinkResult>> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 }
 

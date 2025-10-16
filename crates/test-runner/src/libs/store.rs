@@ -77,14 +77,6 @@ impl StoreItem {
 		}
 	}
 
-	pub fn as_canvas(&mut self) -> Option<&mut DrawTarget> {
-		if let StoreItem::Canvas(c) = self {
-			Some(c)
-		} else {
-			None
-		}
-	}
-
 	pub fn as_font(&self) -> Option<&Font> {
 		if let StoreItem::Font(s) = self {
 			Some(s)

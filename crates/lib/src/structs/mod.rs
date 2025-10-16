@@ -1,11 +1,10 @@
-//! Serializable data structures that are sent between Aidoku and sources.
+//! Serializable data structures that are sent between Buny and sources.
 
 use super::alloc::{String, Vec};
 use serde::{Deserialize, Serialize};
 
 pub use hashbrown::HashMap;
 
-pub mod canvas;
 mod filter;
 mod home;
 mod setting;
@@ -23,9 +22,9 @@ pub use source::*;
 /// Context associated with a page.
 pub type PageContext = HashMap<String, String>;
 
-/// The publishing status of a manga.
+/// The publishing status of a novel.
 #[derive(Default, PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
-pub enum MangaStatus {
+pub enum NovelStatus {
 	#[default]
 	Unknown = 0,
 	Ongoing,
@@ -34,7 +33,7 @@ pub enum MangaStatus {
 	Hiatus,
 }
 
-/// The content rating of a manga.
+/// The content rating of a novel.
 #[derive(Default, PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum ContentRating {
 	#[default]
@@ -44,10 +43,10 @@ pub enum ContentRating {
 	NSFW,
 }
 
-/// The proper reading viewer for a manga.
+/// The proper reading viewer for a novel.
 ///
-/// This is used for automatic selection of the reader view in Aidoku.
-/// `RightToLeft` is used for manga, `LeftToRight` is for western comics,
+/// This is used for automatic selection of the reader view in Buny.
+/// `RightToLeft` is used for novel, `LeftToRight` is for western comics,
 /// and `Webtoon` is used for manhwa and manhua.
 #[derive(Default, PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Viewer {
@@ -59,7 +58,7 @@ pub enum Viewer {
 	Webtoon,
 }
 
-/// The preferred update strategy for a manga.
+/// The preferred update strategy for a novel.
 ///
 /// Titles marked as `Always` will be included in library refreshes by default,
 /// while `Never` will be excluded. Useful for titles that are known to be fully
@@ -71,85 +70,85 @@ pub enum UpdateStrategy {
 	Never,
 }
 
-/// A manga, comic, webtoon, or other type of content for Aidoku to read.
+/// A novel, comic, webtoon, or other type of content for Buny to read.
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Manga {
-	/// Unique identifier for the manga.
+pub struct Novel {
+	/// Unique identifier for the novel.
 	pub key: String,
-	/// Title of the manga.
+	/// Title of the novel.
 	pub title: String,
-	/// Link to the manga cover image.
+	/// Link to the novel cover image.
 	pub cover: Option<String>,
 	/// Optional list of artists.
 	pub artists: Option<Vec<String>>,
 	/// Optional list of authors.
 	pub authors: Option<Vec<String>>,
-	/// Description of the manga.
+	/// Description of the novel.
 	pub description: Option<String>,
-	/// Link to the manga on the source website.
+	/// Link to the novel on the source website.
 	pub url: Option<String>,
 	/// Optional list of genres or tags (max: 255).
 	pub tags: Option<Vec<String>>,
-	/// Publishing status of the manga.
-	pub status: MangaStatus,
-	/// Content rating of the manga.
+	/// Publishing status of the novel.
+	pub status: NovelStatus,
+	/// Content rating of the novel.
 	pub content_rating: ContentRating,
-	/// Preferred viewer type of the manga.
+	/// Preferred viewer type of the novel.
 	pub viewer: Viewer,
-	/// Ideal update strategy for the manga.
+	/// Ideal update strategy for the novel.
 	pub update_strategy: UpdateStrategy,
-	/// Optional date for when the manga should next be updated.
+	/// Optional date for when the novel should next be updated.
 	pub next_update_time: Option<i64>,
 	/// List of chapters.
 	pub chapters: Option<Vec<Chapter>>,
 }
 
-impl Manga {
-	/// Copy the values from another manga into this one.
-	pub fn copy_from(&mut self, manga: Manga) {
-		self.key = manga.key;
-		self.title = manga.title;
-		if let Some(cover) = manga.cover {
+impl Novel {
+	/// Copy the values from another novel into this one.
+	pub fn copy_from(&mut self, novel: Novel) {
+		self.key = novel.key;
+		self.title = novel.title;
+		if let Some(cover) = novel.cover {
 			self.cover = Some(cover);
 		}
-		if let Some(artists) = manga.artists {
+		if let Some(artists) = novel.artists {
 			self.artists = Some(artists);
 		}
-		if let Some(authors) = manga.authors {
+		if let Some(authors) = novel.authors {
 			self.authors = Some(authors);
 		}
-		if let Some(description) = manga.description {
+		if let Some(description) = novel.description {
 			self.description = Some(description);
 		}
-		if let Some(url) = manga.url {
+		if let Some(url) = novel.url {
 			self.url = Some(url);
 		}
-		if let Some(tags) = manga.tags {
+		if let Some(tags) = novel.tags {
 			self.tags = Some(tags);
 		}
-		self.status = manga.status;
-		self.content_rating = manga.content_rating;
-		self.viewer = manga.viewer;
-		self.update_strategy = manga.update_strategy;
-		if let Some(next_update_time) = manga.next_update_time {
+		self.status = novel.status;
+		self.content_rating = novel.content_rating;
+		self.viewer = novel.viewer;
+		self.update_strategy = novel.update_strategy;
+		if let Some(next_update_time) = novel.next_update_time {
 			self.next_update_time = Some(next_update_time);
 		}
-		if let Some(chapters) = manga.chapters {
+		if let Some(chapters) = novel.chapters {
 			self.chapters = Some(chapters);
 		}
 	}
 }
 
-/// A page of manga entries.
+/// A page of novel entries.
 #[derive(Default, Clone, Debug, PartialEq, Serialize)]
-pub struct MangaPageResult {
-	/// List of manga entries.
-	pub entries: Vec<Manga>,
+pub struct NovelPageResult {
+	/// List of novel entries.
+	pub entries: Vec<Novel>,
 	/// Whether the next page is available or not.
 	pub has_next_page: bool,
 }
 
-/// A chapter of a manga.
+/// A chapter of a novel.
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Chapter {
 	/// Unique identifier for the chapter.
@@ -174,32 +173,6 @@ pub struct Chapter {
 	pub locked: bool,
 }
 
-#[cfg(feature = "imports")]
-mod __private {
-	use crate::imports::canvas::ImageRef;
-
-	#[derive(Debug, PartialEq)]
-	pub struct ImageRefPriv(pub(crate) ImageRef);
-
-	impl serde::Serialize for ImageRefPriv {
-		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-		where
-			S: serde::Serializer,
-		{
-			self.0.serialize(serializer)
-		}
-	}
-
-	impl<'de> serde::Deserialize<'de> for ImageRefPriv {
-		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-		where
-			D: serde::Deserializer<'de>,
-		{
-			ImageRef::deserialize(deserializer).map(|inner| ImageRefPriv(inner))
-		}
-	}
-}
-
 /// The content of a page.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PageContent {
@@ -212,7 +185,6 @@ pub enum PageContent {
 	Text(String),
 	/// A raw image.
 	#[cfg(feature = "imports")]
-	Image(__private::ImageRefPriv),
 	/// A url to zip archive and a file path to an image inside the archive.
 	Zip(String, String),
 }
@@ -232,12 +204,6 @@ impl PageContent {
 	pub fn text<T: Into<String>>(text: T) -> Self {
 		Self::Text(text.into())
 	}
-
-	/// Create a new `PageContent` with a raw image.
-	#[cfg(feature = "imports")]
-	pub fn image(image: crate::imports::canvas::ImageRef) -> Self {
-		Self::Image(__private::ImageRefPriv(image))
-	}
 }
 
 /// A page for a chapter.
@@ -256,18 +222,6 @@ pub struct Page {
 	pub description: Option<String>,
 }
 
-impl Page {
-	/// Set the page content to be externally managed if it is an image.
-	///
-	/// This property is exposed for the functions that the [register_source](crate::register_source)
-	/// macro generates and should not be used directly.
-	#[cfg(feature = "imports")]
-	pub fn ensure_externally_managed(&mut self) {
-		if let PageContent::Image(ref mut image) = self.content {
-			image.0.externally_managed = true;
-		}
-	}
-}
 
 impl Default for Page {
 	fn default() -> Self {
@@ -288,7 +242,7 @@ pub enum ListingKind {
 	List,
 }
 
-/// A listing of manga.
+/// A listing of novel.
 #[derive(Default, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Listing {
 	/// Unique identifier for the listing.

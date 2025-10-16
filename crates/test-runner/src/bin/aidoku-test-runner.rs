@@ -1,4 +1,4 @@
-use aidoku_test_runner::{imports, libs};
+use buny_test_runner::{imports, libs};
 use anyhow::{bail, Result};
 use libtest_mimic::{Arguments, Failed, Trial};
 use std::process::ExitCode;
@@ -10,7 +10,7 @@ fn main() -> Result<ExitCode> {
 	let file = match std::env::args().nth(1) {
 		Some(it) => it,
 		None => {
-			bail!("usage: aidoku-test-runner <wasm file>");
+			bail!("usage: buny-test-runner <wasm file>");
 		}
 	};
 
@@ -30,7 +30,7 @@ fn main() -> Result<ExitCode> {
 	for export in module.exports() {
 		if let Some(name) = export
 			.name()
-			.strip_prefix("$aidoku-test$")
+			.strip_prefix("$buny-test$")
 			.map(|s| s.to_string())
 		{
 			let mut ignore = true;

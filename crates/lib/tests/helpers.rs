@@ -1,6 +1,6 @@
 #![cfg(feature = "helpers")]
 
-use aidoku::{
+use buny::{
 	helpers::uri::{encode_uri_component, QueryParameters, SerializeError},
 	HashMap,
 };

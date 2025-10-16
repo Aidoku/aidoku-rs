@@ -1,4 +1,4 @@
-use super::{Chapter, FilterValue, Listing, Manga};
+use super::{Chapter, FilterValue, Listing, Novel};
 use serde::{Deserialize, Serialize};
 
 extern crate alloc;
@@ -45,45 +45,32 @@ impl Default for HomeComponent {
 /// The value of a component for a home layout.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum HomeComponentValue {
-	/// A horizontal scroller of images.
-	///
-	/// Only the image urls and values of the provided links are used.
 	ImageScroller {
 		links: Vec<Link>,
 		auto_scroll_interval: Option<f32>,
 		width: Option<i32>,
 		height: Option<i32>,
 	},
-	/// A large scroller of manga.
-	///
-	/// This component displays the title, author, cover image, description,
-	/// content rating and tags of the provided manga entries.
-	BigScroller {
-		entries: Vec<Manga>,
+	Details {
+		entries: Vec<Novel>,
 		auto_scroll_interval: Option<f32>,
+        listing: Option<Listing>,
 	},
-	/// A small scroller of manga.
-	///
-	/// The subtitles of the provided links are not used.
 	Scroller {
-		entries: Vec<Link>,
-		listing: Option<Listing>,
+		entries: Vec<Novel>,
+		auto_scroll_interval: Option<f32>,
+        listing: Option<Listing>,
+        size: i32,
 	},
-	/// A list of manga.
-	MangaList {
-		/// If the list should be displayed with ranking numbers.
-		ranking: bool,
-		page_size: Option<i32>,
-		entries: Vec<Link>,
-		listing: Option<Listing>,
+	Stack {
+	    entries: Vec<Novel>,
+		auto_scroll_interval: Option<f32>,
+        listing: Option<Listing>,
 	},
-	/// A list of manga chapters.
-	///
-	/// The relative time to the chapter's date uploaded is displayed if provided.
-	MangaChapterList {
-		page_size: Option<i32>,
-		entries: Vec<MangaWithChapter>,
-		listing: Option<Listing>,
+    Vertical {
+	    entries: Vec<Novel>,
+		auto_scroll_interval: Option<f32>,
+        listing: Option<Listing>,
 	},
 	/// A collection of links to filtered listings.
 	Filters(Vec<FilterItem>),
@@ -104,11 +91,11 @@ impl HomeComponentValue {
 		}
 	}
 
-	/// Creates an empty big scroller component.
-	pub fn empty_big_scroller() -> Self {
-		Self::BigScroller {
+	pub fn empty_details() -> Self {
+		Self::Details {
 			entries: Vec::new(),
 			auto_scroll_interval: None,
+            listing: None,
 		}
 	}
 
@@ -116,28 +103,29 @@ impl HomeComponentValue {
 	pub fn empty_scroller() -> Self {
 		Self::Scroller {
 			entries: Vec::new(),
-			listing: None,
+			auto_scroll_interval: None,
+            listing: None,
+            size: 200,
 		}
 	}
 
 	/// Creates an empty manga list component.
-	pub fn empty_manga_list() -> Self {
-		Self::MangaList {
-			ranking: false,
-			page_size: None,
+	pub fn empty_stack() -> Self {
+		Self::Stack {
 			entries: Vec::new(),
-			listing: None,
+			auto_scroll_interval: None,
+            listing: None,
 		}
 	}
 
-	/// Creates an empty manga chapter list component.
-	pub fn empty_manga_chapter_list() -> Self {
-		Self::MangaChapterList {
-			page_size: None,
+	/// Creates an empty manga list component.
+	pub fn empty_vertical() -> Self {
+		Self::Vertical {
 			entries: Vec::new(),
-			listing: None,
-		}
-	}
+			auto_scroll_interval: None,
+            listing: None,
+        }
+    }
 
 	/// Creates an empty filters component.
 	pub fn empty_filters() -> Self {
@@ -152,8 +140,8 @@ impl HomeComponentValue {
 
 /// A paired manga and chapter.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MangaWithChapter {
-	pub manga: Manga,
+pub struct NovelWithChapter {
+	pub novel: Novel,
 	pub chapter: Chapter,
 }
 
@@ -196,7 +184,7 @@ pub struct Link {
 pub enum LinkValue {
 	Url(String),
 	Listing(Listing),
-	Manga(Manga),
+	Manga(Novel),
 }
 
 impl Default for LinkValue {
@@ -205,8 +193,8 @@ impl Default for LinkValue {
 	}
 }
 
-impl From<Manga> for Link {
-	fn from(value: Manga) -> Self {
+impl From<Novel> for Link {
+	fn from(value: Novel) -> Self {
 		Link {
 			title: value.title.clone(),
 			subtitle: value

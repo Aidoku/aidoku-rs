@@ -1,7 +1,7 @@
 //! Module for encoding and decoding URIs.
 extern crate alloc;
 
-use crate::AidokuError;
+use crate::BunyError;
 use alloc::{
 	format,
 	string::{String, ToString},
@@ -47,7 +47,7 @@ pub fn internal_encode_uri<T: AsRef<[u8]>>(url: T, charset: T) -> String {
 ///
 /// # Examples
 /// ```
-/// use aidoku::helpers::uri::encode_uri;
+/// use buny::helpers::uri::encode_uri;
 /// assert_eq!(
 ///     encode_uri("http://www.example.org/a file with spaces.html"),
 ///     "http://www.example.org/a%20file%20with%20spaces.html",
@@ -64,7 +64,7 @@ pub fn encode_uri<T: AsRef<[u8]>>(url: T) -> String {
 ///
 /// # Examples
 /// ```
-/// use aidoku::helpers::uri::encode_uri_component;
+/// use buny::helpers::uri::encode_uri_component;
 /// assert_eq!(
 ///     encode_uri_component(";,/?:@&=+$"),
 ///     "%3B%2C%2F%3F%3A%40%26%3D%2B%24",
@@ -80,7 +80,7 @@ pub fn encode_uri_component<T: AsRef<[u8]>>(url: T) -> String {
 ///
 /// # Examples
 /// ```
-/// use aidoku::helpers::uri::decode_uri;
+/// use buny::helpers::uri::decode_uri;
 /// assert_eq!(
 ///     decode_uri("%3B%2C%2F%3F%3A%40%26%3D%2B%24"),
 ///     ";,/?:@&=+$",
@@ -514,7 +514,7 @@ impl SerializeError {
 	}
 }
 
-impl From<SerializeError> for AidokuError {
+impl From<SerializeError> for BunyError {
 	fn from(error: SerializeError) -> Self {
 		Self::Message(error.to_string())
 	}

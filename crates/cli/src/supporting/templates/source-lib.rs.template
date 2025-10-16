@@ -1,7 +1,7 @@
 #![no_std]
-use aidoku::{
-	AidokuError, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Home, HomeLayout, Listing,
-	ListingProvider, Manga, MangaPageResult, Page, Result, Source,
+use buny::{
+	BunyError, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Home, HomeLayout, Listing,
+	ListingProvider, Novel, NovelPageResult, Page, Result, Source,
 	alloc::{String, Vec},
 	prelude::*,
 };
@@ -13,44 +13,44 @@ impl Source for {{SOURCE_NAME}} {
 		Self
 	}
 
-	fn get_search_manga_list(
+	fn get_search_novel_list(
 		&self,
 		_query: Option<String>,
 		_page: i32,
 		_filters: Vec<FilterValue>,
-	) -> Result<MangaPageResult> {
-		Err(AidokuError::Unimplemented)
+	) -> Result<NovelPageResult> {
+		Err(BunyError::Unimplemented)
 	}
 
-	fn get_manga_update(
+	fn get_novel_update(
 		&self,
-		_manga: Manga,
+		_novel: Novel,
 		_needs_details: bool,
 		_needs_chapters: bool,
-	) -> Result<Manga> {
-		Err(AidokuError::Unimplemented)
+	) -> Result<Novel> {
+		Err(BunyError::Unimplemented)
 	}
 
-	fn get_page_list(&self, _manga: Manga, _chapter: Chapter) -> Result<Vec<Page>> {
-		Err(AidokuError::Unimplemented)
+	fn get_page_list(&self, _novel: Novel, _chapter: Chapter) -> Result<Vec<Page>> {
+		Err(BunyError::Unimplemented)
 	}
 }
 
 impl ListingProvider for {{SOURCE_NAME}} {
-	fn get_manga_list(&self, _listing: Listing, _page: i32) -> Result<MangaPageResult> {
-		Err(AidokuError::Unimplemented)
+	fn get_novel_list(&self, _listing: Listing, _page: i32) -> Result<NovelPageResult> {
+		Err(BunyError::Unimplemented)
 	}
 }
 
 impl Home for {{SOURCE_NAME}} {
 	fn get_home(&self) -> Result<HomeLayout> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 }
 
 impl DeepLinkHandler for {{SOURCE_NAME}} {
 	fn handle_deep_link(&self, _url: String) -> Result<Option<DeepLinkResult>> {
-		Err(AidokuError::Unimplemented)
+		Err(BunyError::Unimplemented)
 	}
 }
 
