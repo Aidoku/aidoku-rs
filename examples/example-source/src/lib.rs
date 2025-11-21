@@ -3,12 +3,12 @@ use buny::{
 	alloc::{vec, String, Vec},
 	imports::{defaults::defaults_get, net::Request},
 	prelude::*,
-	AlternateCoverProvider, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
-	DynamicFilters, DynamicListings, DynamicSettings, Filter, FilterValue, Home, HomeComponent,
-	HomeLayout, Listing, ListingProvider, Novel, NovelPageResult, NovelStatus, NovelWithChapter,
-	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent,
-	PageDescriptionProvider, RangeFilter, Result, SelectFilter, Setting, SortFilter, Source,
-	TextFilter, ToggleSetting,
+	AlternateCoverProvider, BaseUrlProvider, Chapter, CheckFilter, ContentBlock, ContentRating,
+	DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, DynamicSettings, Filter,
+	FilterValue, Home, HomeComponent, HomeLayout, Listing, ListingProvider, MigrationHandler,
+	MultiSelectFilter, NotificationHandler, Novel, NovelPageResult, NovelStatus, NovelWithChapter,
+	RangeFilter, Result, SelectFilter, Setting, SortFilter, Source, TextFilter, ToggleSetting,
+	UpdateStrategy,
 };
 
 const PAGE_SIZE: i32 = 20;
@@ -120,22 +120,17 @@ impl Source for ExampleSource {
 		Ok(novel)
 	}
 
-	fn get_page_list(&self, _novel: Novel, _chapter: Chapter) -> Result<Vec<Page>> {
+	fn get_chapter_content_list(
+		&self,
+		_novel: Novel,
+		_chapter: Chapter,
+	) -> Result<Vec<ContentBlock>> {
+		println!("Fetching chapter content for chapter key: {}", _chapter.key);
 		Ok(vec![
-			Page {
-				content: PageContent::url("https://buny.app/images/icon.png"),
-				has_description: true,
-				description: Some("Description".into()),
-				..Default::default()
-			},
-			Page {
-				content: PageContent::text(
-					"# Title\n\nThis is some description\n\n## Section\n\nThis is a section.",
-				),
-				has_description: true,
-				description: None,
-				..Default::default()
-			},
+			ContentBlock::paragraph("This is some text.", None),
+			ContentBlock::paragraph("This is some more text.", None),
+			ContentBlock::Divider,
+			ContentBlock::block_quote("This is a quote."),
 		])
 	}
 }
@@ -143,7 +138,7 @@ impl Source for ExampleSource {
 impl ExampleSource {
 	// gets the latest version of buny from the github releases page
 	fn get_latest_buny_version() -> Option<String> {
-		Request::get("https://github.com/buny/buny/releases")
+		Request::get("https://github.com/BunyApp/buny/releases")
 			.ok()?
 			.html()
 			.ok()?
@@ -156,19 +151,38 @@ impl ExampleSource {
 // this should probably be most sources
 impl ListingProvider for ExampleSource {
 	// this method will be called when a listing or a home section with an associated listing is opened
-	fn get_novel_list(&self, listing: Listing, _page: i32) -> Result<NovelPageResult> {
-		if listing.id == "test" {
-			bail!("Not supported");
-		}
+	fn get_novel_list(&self, _listing: Listing, _page: i32) -> Result<NovelPageResult> {
 		Ok(NovelPageResult {
-			entries: vec![Novel {
-				key: String::from("1"),
-				title: String::from("Novel 1"),
-				cover: Some(String::from("https://buny.app/images/icon.png")),
-				..Default::default()
-			}],
-			has_next_page: false,
+			entries: vec![
+				Novel {
+					key: String::from("A"),
+					title: String::from("Novel 1"),
+					cover: Some(String::from("xxxx.zzzz")),
+					authors: Some(vec![String::from("Author 1")]),
+					description: Some(String::from("Description 1")),
+					url: Some(String::from("https://example.com/novel1")),
+					tags: Some(vec![String::from("Tag1"), String::from("Tag2")]),
+					status: NovelStatus::Completed,
+					content_rating: ContentRating::Safe,
+					update_strategy: UpdateStrategy::Never,
+					next_update_time: Some(1692404925),
+					chapters: None,
+				},
+				Novel {
+					key: String::from("B"),
+					title: String::from("Novel 2"),
+					cover: Some(String::from("tttt.yyyy")),
+					..Default::default()
+				},
+			],
+			has_next_page: true,
 		})
+	}
+}
+
+impl BaseUrlProvider for ExampleSource {
+	fn get_base_url(&self) -> Result<String> {
+		Ok("https://example.com".into())
 	}
 }
 
@@ -184,7 +198,7 @@ impl Home for ExampleSource {
 			date_uploaded: Some(1692318525),
 			..Default::default()
 		};
-		let novel_chapters = entries
+		let _novel_chapters = entries
 			.iter()
 			.map(|novel| NovelWithChapter {
 				novel: novel.clone(),
@@ -192,102 +206,19 @@ impl Home for ExampleSource {
 			})
 			.take(3)
 			.collect::<Vec<_>>();
+		let size: i32 = 200;
 		Ok(HomeLayout {
-			components: vec![
-				HomeComponent {
-					title: Some(String::from("Big Scroller")),
-					subtitle: None,
-					value: buny::HomeComponentValue::BigScroller {
-						entries: entries.clone(),
-						auto_scroll_interval: Some(10.0),
-					},
+			components: vec![HomeComponent {
+				title: Some("Normal Scroller".into()),
+				value: buny::HomeComponentValue::Scroller {
+					entries: entries.clone(),
+					auto_scroll_interval: None,
+					listing: None,
+					size: size,
 				},
-				HomeComponent {
-					title: Some(String::from("Novel Chapter List")),
-					subtitle: None,
-					value: buny::HomeComponentValue::NovelChapterList {
-						page_size: None,
-						entries: novel_chapters,
-						listing: None,
-					},
-				},
-				HomeComponent {
-					title: Some(String::from("Novel List")),
-					subtitle: None,
-					value: buny::HomeComponentValue::NovelList {
-						ranking: false,
-						page_size: None,
-						entries: entries.iter().take(2).cloned().map(|m| m.into()).collect(),
-						listing: None,
-					},
-				},
-				HomeComponent {
-					title: Some(String::from("Novel List (Paged, Ranking)")),
-					subtitle: None,
-					value: buny::HomeComponentValue::NovelList {
-						ranking: true,
-						page_size: Some(3),
-						entries: entries.iter().take(8).cloned().map(|m| m.into()).collect(),
-						listing: None,
-					},
-				},
-				HomeComponent {
-					title: Some(String::from("Scroller")),
-					subtitle: None,
-					value: buny::HomeComponentValue::Scroller {
-						entries: entries.clone().into_iter().map(|m| m.into()).collect(),
-						listing: None,
-					},
-				},
-				HomeComponent {
-					title: Some("Filters".into()),
-					subtitle: None,
-					value: buny::HomeComponentValue::Filters(vec![
-						buny::FilterItem::from(String::from("Action")),
-						"Adventure".into(),
-						"Fantasy".into(),
-						"Horror".into(),
-						"Slice of Life".into(),
-						"Magic".into(),
-						"Adaptation".into(),
-					]),
-				},
-				HomeComponent {
-					title: Some(String::from("Links")),
-					subtitle: None,
-					value: buny::HomeComponentValue::Links(vec![
-						buny::Link {
-							title: String::from("Website Link"),
-							value: Some(buny::LinkValue::Url(String::from("https://buny.app"))),
-							..Default::default()
-						},
-						buny::Link {
-							title: String::from("Novel Link"),
-							value: Some(buny::LinkValue::Novel(entries.first().unwrap().clone())),
-							..Default::default()
-						},
-						buny::Link {
-							title: String::from("Listing Link"),
-							value: Some(buny::LinkValue::Listing(Listing {
-								id: String::from("listing"),
-								name: String::from("Listing"),
-								kind: buny::ListingKind::List,
-							})),
-							..Default::default()
-						},
-					]),
-				},
-			],
+				..Default::default()
+			}],
 		})
-	}
-}
-
-// to provide page descriptions asynchronously, use the PageDescriptionProvider trait
-// if fetching a page description requires an additional request, use this trait,
-// otherwise just provide it when fetching the page list
-impl PageDescriptionProvider for ExampleSource {
-	fn get_page_description(&self, _page: Page) -> Result<String> {
-		Ok("# Title\n\nThis is some description\n\n## Section\n\nThis is a section.".into())
 	}
 }
 
@@ -444,14 +375,14 @@ register_source!(
 	// after the name of the source struct, list all the extra traits it implements
 	ListingProvider,
 	Home,
-	PageDescriptionProvider,
+	AlternateCoverProvider,
+	BaseUrlProvider,
+	DeepLinkHandler,
 	DynamicFilters,
 	DynamicSettings,
 	DynamicListings,
-	NotificationHandler,
-	AlternateCoverProvider,
-	DeepLinkHandler,
-	MigrationHandler
+	MigrationHandler,
+	NotificationHandler
 );
 
 // you can also implement tests via our custom test runner!
