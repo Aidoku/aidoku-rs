@@ -287,12 +287,12 @@ fn create_empty_buny_lib(
 			.arg("add")
 			.arg("buny")
 			.arg("--git")
-			.arg("https://github.com/Buny/buny-rs.git"),
+			.arg("https://github.com/BunyApp/buny-rs.git"),
 		add_test_lib_cmd
 			.arg("add")
 			.arg("buny")
 			.arg("--git")
-			.arg("https://github.com/Buny/buny-rs.git")
+			.arg("https://github.com/BunyApp/buny-rs.git")
 			.arg("--features")
 			.arg("test")
 			.arg("--dev"),
@@ -300,7 +300,7 @@ fn create_empty_buny_lib(
 			.arg("add")
 			.arg("buny-test")
 			.arg("--git")
-			.arg("https://github.com/Buny/buny-rs.git")
+			.arg("https://github.com/BunyApp/buny-rs.git")
 			.arg("--dev"),
 	];
 

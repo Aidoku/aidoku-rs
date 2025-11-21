@@ -20,7 +20,7 @@ mod source;
 pub use source::*;
 
 /// Context associated with a page.
-pub type PageContext = HashMap<String, String>;
+pub type ContentURLContext = HashMap<String, String>;
 
 /// The publishing status of a novel.
 #[derive(Default, PartialEq, Eq, Clone, Copy, Debug, Serialize, Deserialize)]
@@ -79,8 +79,8 @@ pub struct Novel {
 	pub title: String,
 	/// Link to the novel cover image.
 	pub cover: Option<String>,
-	/// Optional list of artists.
-	pub artists: Option<Vec<String>>,
+	// /// Optional list of artists.
+	// pub artists: Option<Vec<String>>,
 	/// Optional list of authors.
 	pub authors: Option<Vec<String>>,
 	/// Description of the novel.
@@ -93,14 +93,16 @@ pub struct Novel {
 	pub status: NovelStatus,
 	/// Content rating of the novel.
 	pub content_rating: ContentRating,
-	/// Preferred viewer type of the novel.
-	pub viewer: Viewer,
+	// /// Preferred viewer type of the novel.
+	// pub viewer: Viewer,
 	/// Ideal update strategy for the novel.
 	pub update_strategy: UpdateStrategy,
 	/// Optional date for when the novel should next be updated.
 	pub next_update_time: Option<i64>,
 	/// List of chapters.
 	pub chapters: Option<Vec<Chapter>>,
+    /// Has more chapters.
+    pub has_more_chapters: Option<bool>,
 }
 
 impl Novel {
@@ -111,9 +113,9 @@ impl Novel {
 		if let Some(cover) = novel.cover {
 			self.cover = Some(cover);
 		}
-		if let Some(artists) = novel.artists {
-			self.artists = Some(artists);
-		}
+		// if let Some(artists) = novel.artists {
+		// 	self.artists = Some(artists);
+		// }
 		if let Some(authors) = novel.authors {
 			self.authors = Some(authors);
 		}
@@ -128,13 +130,14 @@ impl Novel {
 		}
 		self.status = novel.status;
 		self.content_rating = novel.content_rating;
-		self.viewer = novel.viewer;
+		// self.viewer = novel.viewer;
 		self.update_strategy = novel.update_strategy;
 		if let Some(next_update_time) = novel.next_update_time {
 			self.next_update_time = Some(next_update_time);
 		}
 		if let Some(chapters) = novel.chapters {
 			self.chapters = Some(chapters);
+            self.has_more_chapters = novel.has_more_chapters;
 		}
 	}
 }
@@ -173,64 +176,45 @@ pub struct Chapter {
 	pub locked: bool,
 }
 
-/// The content of a page.
+/// The an element of content of the novel chapter page.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub enum PageContent {
-	/// A url to an image, with associated context.
-	///
-	/// The context is sent to the page processor and/or image request modifier
-	/// if the source implements either.
-	Url(String, Option<PageContext>),
-	/// A markdown text string.
-	Text(String),
-	/// A raw image.
-	#[cfg(feature = "imports")]
-	/// A url to zip archive and a file path to an image inside the archive.
-	Zip(String, String),
+pub enum ContentBlock {
+	// /// Optional open a url in browser action.
+	// Url(String, Option<ContentURLContext>),
+	/// Block/Banner quoted text.
+	BlockQuote(String),
+	/// Markdown text content.
+	Paragraph(String, Option<String>),
+	/// HTML Table content.
+	Table(Vec<Vec<String>>),
+    /// Section break or divider.
+    Divider,
 }
 
-impl PageContent {
+impl ContentBlock {
 	/// Create a new `PageContent` with a url.
-	pub fn url<T: Into<String>>(url: T) -> Self {
-		Self::Url(url.into(), None)
+	pub fn divider() -> Self {
+		Self::Divider
 	}
-
-	/// Create a new `PageContent` with a url and context.
-	pub fn url_context<T: Into<String>>(url: T, context: PageContext) -> Self {
-		Self::Url(url.into(), Some(context))
-	}
-
 	/// Create a new `PageContent` with a markdown text string.
-	pub fn text<T: Into<String>>(text: T) -> Self {
-		Self::Text(text.into())
+	pub fn block_quote<T: Into<String>>(text: T) -> Self {
+		Self::BlockQuote(text.into())
+	}
+
+	/// Create a new `PageContent` with a markdown text string and optional style.
+	pub fn paragraph<T: Into<String>>(text: T, font_size: Option<String>) -> Self {
+		Self::Paragraph(text.into(), font_size)
+	}
+
+	/// Create a new `PageContent` with a table.
+	pub fn table(data: Vec<Vec<String>>) -> Self {
+		Self::Table(data)
 	}
 }
 
-/// A page for a chapter.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct Page {
-	/// The page content.
-	pub content: PageContent,
-	/// Optional thumbnail image url for the page.
-	pub thumbnail: Option<String>,
-	/// If the page has a description.
-	pub has_description: bool,
-	/// Optional description for the page.
-	///
-	/// If `has_description` is `true` and this is `None`, [PageDescriptionProvider] will be used.
-	/// If `has_description` is `false`, this field will be ignored.
-	pub description: Option<String>,
-}
-
-
-impl Default for Page {
+impl Default for ContentBlock {
 	fn default() -> Self {
-		Self {
-			content: PageContent::Text(String::default()),
-			thumbnail: None,
-			has_description: false,
-			description: None,
-		}
+		ContentBlock::Paragraph(String::default(), None)
 	}
 }
 

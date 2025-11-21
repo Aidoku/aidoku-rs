@@ -51,7 +51,7 @@ pub fn run(
 			};
 
 			// copy package file to sources directory
-			let output_filename = format!("{}-v{}.bunpak", parsed.info.id, parsed.info.version);
+			let output_filename = format!("{}-v{}.bunpack", parsed.info.id, parsed.info.version);
 			let output_path = sources_path.join(output_filename);
 			std::fs::copy(zip_path, &output_path).ok()?;
 
@@ -89,7 +89,7 @@ pub fn run(
 			name: json.info.name.clone(),
 			version: json.info.version,
 			icon_url: format!("icons/{}-v{}.png", json.info.id, json.info.version),
-			download_url: format!("sources/{}-v{}.bunpak", json.info.id, json.info.version),
+			download_url: format!("sources/{}-v{}.bunpack", json.info.id, json.info.version),
 			languages: json.info.languages,
 			content_rating: json
 				.info

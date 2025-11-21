@@ -13,9 +13,9 @@ To get started with Buny source development, you'll need two things: Rust and bu
 If you don't have Rust installed, follow the instructions at [rustup.rs](https://rustup.rs/). For buny-cli, run the following command after installing Rust:
 
 ```sh
-cargo install --git https://github.com/Buny/buny-rs buny-cli
+cargo install --git https://github.com/BunyApp/buny-rs buny-cli
 ```
 
 Then, create a new source project by running `buny init`.
 
-A more detailed guide will be coming soon, once APIs are finalized for the Buny 0.7 release.
+This is a new fork from Aidoku and a better guide will be out in the future.

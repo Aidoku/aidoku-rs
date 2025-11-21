@@ -2,7 +2,7 @@
 
 A command-line utility for Buny source development and testing.
 
-To get started, run `cargo install --git https://github.com/Buny/buny-rs buny-cli`.
+To get started, run `cargo install --git https://github.com/BunyApp/buny-rs buny-cli`.
 
 ## Usage
 

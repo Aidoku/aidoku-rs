@@ -118,12 +118,12 @@ pub fn run(path: Option<std::path::PathBuf>) -> anyhow::Result<()> {
 	}
 
 	// zip payload directory
-	let zip_output = current_path.join("package.bunpak");
+	let zip_output = current_path.join("package.bunpack");
 	create_zip(payload_dir.as_path(), zip_output.as_path())
 		.context("Failed to compress payload directory")?;
 
 	// remove package dir
-	std::fs::remove_dir_all(payload_dir).context("Failed to remove payload directory")?;
+	// std::fs::remove_dir_all(payload_dir).context("Failed to remove payload directory")?;
 
 	Ok(())
 }

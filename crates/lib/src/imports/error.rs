@@ -1,8 +1,6 @@
 //! Error handling for Buny source library functions.
 use super::{html::HtmlError, js::JsError, net::RequestError};
-use crate::{
-	alloc::{string::ToString, String},
-};
+use crate::alloc::{string::ToString, String};
 use core::{fmt::Display, str::Utf8Error};
 
 pub type Result<T> = core::result::Result<T, BunyError>;
@@ -53,7 +51,6 @@ impl From<JsError> for BunyError {
 		BunyError::JsError(error)
 	}
 }
-
 
 impl From<Utf8Error> for BunyError {
 	fn from(error: Utf8Error) -> BunyError {

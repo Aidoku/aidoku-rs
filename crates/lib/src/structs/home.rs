@@ -54,23 +54,23 @@ pub enum HomeComponentValue {
 	Details {
 		entries: Vec<Novel>,
 		auto_scroll_interval: Option<f32>,
-        listing: Option<Listing>,
+		listing: Option<Listing>,
 	},
 	Scroller {
 		entries: Vec<Novel>,
 		auto_scroll_interval: Option<f32>,
-        listing: Option<Listing>,
-        size: i32,
+		listing: Option<Listing>,
+		size: i32,
 	},
 	Stack {
-	    entries: Vec<Novel>,
+		entries: Vec<Novel>,
 		auto_scroll_interval: Option<f32>,
-        listing: Option<Listing>,
+		listing: Option<Listing>,
 	},
-    Vertical {
-	    entries: Vec<Novel>,
+	Vertical {
+		entries: Vec<Novel>,
 		auto_scroll_interval: Option<f32>,
-        listing: Option<Listing>,
+		listing: Option<Listing>,
 	},
 	/// A collection of links to filtered listings.
 	Filters(Vec<FilterItem>),
@@ -95,7 +95,7 @@ impl HomeComponentValue {
 		Self::Details {
 			entries: Vec::new(),
 			auto_scroll_interval: None,
-            listing: None,
+			listing: None,
 		}
 	}
 
@@ -104,8 +104,38 @@ impl HomeComponentValue {
 		Self::Scroller {
 			entries: Vec::new(),
 			auto_scroll_interval: None,
-            listing: None,
-            size: 200,
+			listing: None,
+			size: 0,
+		}
+	}
+
+	/// Creates an empty scroller component.
+	pub fn empty_scroller_small() -> Self {
+		Self::Scroller {
+			entries: Vec::new(),
+			auto_scroll_interval: None,
+			listing: None,
+			size: 0,
+		}
+	}
+
+	/// Creates an empty scroller component.
+	pub fn empty_scroller_medium() -> Self {
+		Self::Scroller {
+			entries: Vec::new(),
+			auto_scroll_interval: None,
+			listing: None,
+			size: 1,
+		}
+	}
+
+	/// Creates an empty scroller component.
+	pub fn empty_scroller_large() -> Self {
+		Self::Scroller {
+			entries: Vec::new(),
+			auto_scroll_interval: None,
+			listing: None,
+			size: 2,
 		}
 	}
 
@@ -114,7 +144,7 @@ impl HomeComponentValue {
 		Self::Stack {
 			entries: Vec::new(),
 			auto_scroll_interval: None,
-            listing: None,
+			listing: None,
 		}
 	}
 
@@ -123,9 +153,9 @@ impl HomeComponentValue {
 		Self::Vertical {
 			entries: Vec::new(),
 			auto_scroll_interval: None,
-            listing: None,
-        }
-    }
+			listing: None,
+		}
+	}
 
 	/// Creates an empty filters component.
 	pub fn empty_filters() -> Self {
@@ -184,7 +214,7 @@ pub struct Link {
 pub enum LinkValue {
 	Url(String),
 	Listing(Listing),
-	Manga(Novel),
+	Novel(Novel),
 }
 
 impl Default for LinkValue {
@@ -203,7 +233,7 @@ impl From<Novel> for Link {
 				.map(|a| a.join(", "))
 				.or(value.description.clone()),
 			image_url: value.cover.clone(),
-			value: Some(LinkValue::Manga(value)),
+			value: Some(LinkValue::Novel(value)),
 		}
 	}
 }

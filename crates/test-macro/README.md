@@ -31,7 +31,7 @@ mod test {
 Additionally, the `buny-test-runner` harness is required to run the tests. You can install it by running:
 
 ```sh
-cargo install --git https://github.com/Buny/buny-rs buny-test-runner
+cargo install --git https://github.com/BunyApp/buny-rs buny-test-runner
 ```
 
 In `.cargo/config.toml`, add the following:

@@ -171,6 +171,7 @@ macro_rules! register_source {
 			novel_descriptor: i32,
 			needs_details: bool,
 			needs_chapters: bool,
+            page: i32,
 		) -> i32 {
 			let ::core::result::Result::Ok(novel) =
 				$crate::imports::std::read::<$crate::Novel>(novel_descriptor)
@@ -178,13 +179,13 @@ macro_rules! register_source {
 				return -1;
 			};
 
-			let result = __source().get_novel_update(novel, needs_details, needs_chapters);
+			let result = __source().get_novel_update(novel, needs_details, needs_chapters, page);
 			__handle_result(result)
 		}
 
 		#[no_mangle]
-		#[export_name = "get_page_list"]
-		pub unsafe extern "C" fn __wasm_get_page_list(
+		#[export_name = "get_chapter_content_list"]
+		pub unsafe extern "C" fn __wasm_get_chapter_content_list(
 			novel_descriptor: i32,
 			chapter_descriptor: i32,
 		) -> i32 {
@@ -200,15 +201,7 @@ macro_rules! register_source {
 			};
 
 			let result = __source()
-				.get_page_list(novel, chapter)
-				.map(|pages| {
-					pages.into_iter()
-						.map(|mut page| {
-							page.ensure_externally_managed();
-							page
-						})
-						.collect::<$crate::alloc::Vec<_>>()
-				});
+				.get_chapter_content_list(novel, chapter);
 			__handle_result(result)
 		}
 
@@ -273,36 +266,6 @@ macro_rules! register_source {
 		}
 	};
 
-	(@single PageImageProcessor) => {
-		#[no_mangle]
-		#[export_name = "process_page_image"]
-		pub unsafe extern "C" fn __wasm_process_page_image(
-			response_descriptor: i32,
-			context_descriptor: i32,
-		) -> i32 {
-			let ::core::result::Result::Ok(response) =
-				$crate::imports::std::read::<$crate::ImageResponse>(response_descriptor)
-			else {
-				return -1;
-			};
-			let context: ::core::option::Option<$crate::PageContext> = if context_descriptor < 0 {
-				None
-			} else if let ::core::result::Result::Ok(context) =
-				$crate::imports::std::read::<$crate::PageContext>(context_descriptor)
-			{
-				Some(context)
-			} else {
-				return -2;
-			};
-
-			use $crate::PageImageProcessor;
-			let mut result = __source().process_page_image(response, context);
-			if let Ok(image_ref) = result.as_mut() {
-				image_ref.externally_managed = true;
-			}
-			__handle_result(result.map(|r| r.rid))
-		}
-	};
 
 	(@single ImageRequestProvider) => {
 		#[no_mangle]
@@ -332,21 +295,6 @@ macro_rules! register_source {
 				request.should_close = false;
 			}
 			__handle_result(result.map(|r| r.rid))
-		}
-	};
-
-	(@single PageDescriptionProvider) => {
-		#[no_mangle]
-		#[export_name = "get_page_description"]
-		pub unsafe extern "C" fn __wasm_get_page_description(page_descriptor: i32) -> i32 {
-			let ::core::result::Result::Ok(page) =
-				$crate::imports::std::read::<$crate::Page>(page_descriptor)
-			else {
-				return -1;
-			};
-			use $crate::PageDescriptionProvider;
-			let result = __source().get_page_description(page);
-			__handle_result(result)
 		}
 	};
 

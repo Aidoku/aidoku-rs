@@ -1,9 +1,8 @@
 use super::{
-	Chapter, Filter, FilterValue, HashMap, HomeLayout, Listing, Novel, NovelPageResult, Page,
-	PageContext, Setting,
+	Chapter, ContentBlock, Filter, FilterValue, HashMap, HomeLayout, Listing, Novel,
+	NovelPageResult, Setting,
 };
 use crate::alloc::{String, Vec};
-use crate::imports::{net::Request};
 use serde::{ser::SerializeStruct, Deserialize, Serialize};
 
 pub use crate::imports::error::{BunyError, Result};
@@ -29,10 +28,12 @@ pub trait Source {
 		novel: Novel,
 		needs_details: bool,
 		needs_chapters: bool,
+        page: i32,
 	) -> Result<Novel>;
 
-	/// Returns the pages for a given novel chapter.
-	fn get_page_list(&self, novel: Novel, chapter: Chapter) -> Result<Vec<Page>>;
+	/// Returns the content array for a given novel chapter.
+	fn get_chapter_content_list(&self, novel: Novel, chapter: Chapter)
+		-> Result<Vec<ContentBlock>>;
 }
 
 /// A source that provides listings.
@@ -59,19 +60,6 @@ pub trait DynamicFilters: Source {
 /// A source that provides dynamic settings.
 pub trait DynamicSettings: Source {
 	fn get_dynamic_settings(&self) -> Result<Vec<Setting>>;
-}
-
-/// A source that provides requests for images.
-///
-/// By default, Buny will request covers, thumbnails, and pages without headers.
-/// This trait can be used to override the requests for source images.
-pub trait ImageRequestProvider: Source {
-	fn get_image_request(&self, url: String, context: Option<PageContext>) -> Result<Request>;
-}
-
-/// A source that provides dynamic descriptions for pages.
-pub trait PageDescriptionProvider: Source {
-	fn get_page_description(&self, page: Page) -> Result<String>;
 }
 
 /// A source that provides multiple cover images.
