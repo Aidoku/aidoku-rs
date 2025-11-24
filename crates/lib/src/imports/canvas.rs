@@ -66,7 +66,7 @@ extern "C" {
 }
 
 /// Error type for canvas operations.
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum CanvasError {
 	InvalidContext,
 	InvalidImagePointer,

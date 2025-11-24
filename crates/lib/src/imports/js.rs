@@ -26,7 +26,7 @@ extern "C" {
 }
 
 /// Error type for JavaScript operations.
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum JsError {
 	MissingResult,
 	InvalidContext,
