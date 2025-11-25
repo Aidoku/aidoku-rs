@@ -1,5 +1,7 @@
 //! Error handling for Aidoku source library functions.
 use super::{html::HtmlError, js::JsError, net::RequestError};
+#[cfg(feature = "json")]
+use crate::alloc::rc::Rc;
 use crate::{
 	alloc::{string::ToString, String},
 	imports::canvas::CanvasError,
@@ -9,7 +11,7 @@ use core::{fmt::Display, str::Utf8Error};
 pub type Result<T> = core::result::Result<T, AidokuError>;
 
 /// An error passed back to the source runner.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AidokuError {
 	/// This feature is unimplemented.
 	Unimplemented,
@@ -27,7 +29,7 @@ pub enum AidokuError {
 	Utf8Error(Utf8Error),
 	#[cfg(feature = "json")]
 	/// JSON parsing error.
-	JsonParseError(serde_json::Error),
+	JsonParseError(Rc<serde_json::Error>),
 	/// Deserialization error.
 	DeserializeError,
 }
@@ -72,6 +74,6 @@ impl From<Utf8Error> for AidokuError {
 #[cfg(feature = "json")]
 impl From<serde_json::Error> for AidokuError {
 	fn from(error: serde_json::Error) -> AidokuError {
-		AidokuError::JsonParseError(error)
+		AidokuError::JsonParseError(Rc::new(error))
 	}
 }
