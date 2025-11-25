@@ -1,7 +1,7 @@
 //! Error handling for Aidoku source library functions.
 use super::{html::HtmlError, js::JsError, net::RequestError};
 #[cfg(feature = "json")]
-use crate::alloc::sync::Arc;
+use crate::alloc::rc::Rc;
 use crate::{
 	alloc::{string::ToString, String},
 	imports::canvas::CanvasError,
@@ -29,7 +29,7 @@ pub enum AidokuError {
 	Utf8Error(Utf8Error),
 	#[cfg(feature = "json")]
 	/// JSON parsing error.
-	JsonParseError(Arc<serde_json::Error>),
+	JsonParseError(Rc<serde_json::Error>),
 	/// Deserialization error.
 	DeserializeError,
 }
@@ -74,23 +74,6 @@ impl From<Utf8Error> for AidokuError {
 #[cfg(feature = "json")]
 impl From<serde_json::Error> for AidokuError {
 	fn from(error: serde_json::Error) -> AidokuError {
-		AidokuError::JsonParseError(Arc::new(error))
-	}
-}
-
-impl From<&Self> for AidokuError {
-	fn from(error: &Self) -> Self {
-		match *error {
-			Self::Unimplemented => Self::Unimplemented,
-			Self::Message(ref message) => Self::Message(message.clone()),
-			Self::RequestError(request_error) => Self::RequestError(request_error),
-			Self::HtmlError(html_error) => Self::HtmlError(html_error),
-			Self::JsError(js_error) => Self::JsError(js_error),
-			Self::CanvasError(canvas_error) => Self::CanvasError(canvas_error),
-			Self::Utf8Error(utf8_error) => Self::Utf8Error(utf8_error),
-			#[cfg(feature = "json")]
-			Self::JsonParseError(ref json_parse_error) => Self::JsonParseError(json_parse_error.clone()),
-			Self::DeserializeError => Self::DeserializeError,
-		}
+		AidokuError::JsonParseError(Rc::new(error))
 	}
 }

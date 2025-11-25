@@ -63,7 +63,7 @@ extern "C" {
 }
 
 /// Error type for HTML operations.
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum HtmlError {
 	InvalidDescriptor,
 	InvalidString,
