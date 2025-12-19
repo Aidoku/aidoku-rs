@@ -362,7 +362,7 @@ pub fn html(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	env.data_mut()
 		.store
 		.store(StoreItem::HtmlDocument(HtmlDocument {
-			html: html,
+			html,
 			base_uri: Some(base_uri),
 		}))
 }

@@ -157,7 +157,7 @@ fn validate_json(
 	validator: &jsonschema::Validator,
 	required: bool,
 ) -> bool {
-	let file_name = path.split('/').last().unwrap_or_default();
+	let file_name = path.split('/').next_back().unwrap_or_default();
 
 	if let Ok(mut source_json) = archive.by_name(path) {
 		println!("  * {file_name}");
