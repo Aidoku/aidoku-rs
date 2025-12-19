@@ -314,7 +314,7 @@
 							"enum": ["link"]
 						},
 						"url": {
-							"description": "The URL to open.",
+							"description": "The URL to open on press.",
 							"type": "string"
 						},
 						"external": {
@@ -374,6 +374,13 @@
 								"method": {
 									"type": "string",
 									"enum": ["web"]
+								},
+								"localStorageKeys": {
+									"type": "array",
+									"description": "An array of localStorage keys to extract from the web view.",
+									"items": {
+										"type": "string"
+									}
 								}
 							},
 							"required": ["method"],

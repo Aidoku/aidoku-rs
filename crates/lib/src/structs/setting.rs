@@ -163,6 +163,8 @@ pub enum SettingValue {
 		callback_scheme: Option<Cow<'static, str>>,
 		/// Whether to prompt for an email instead of username for basic authentication.
 		use_email: bool,
+		/// An array of localStorage keys to extract after login.
+		local_storage_keys: Option<Vec<String>>,
 	},
 	/// A page of settings.
 	Page {
@@ -500,6 +502,8 @@ create_setting_struct!(
 		callback_scheme: Option<Cow<'static, str>>,
 		/// Whether to prompt for an email instead of username for basic authentication.
 		use_email: bool,
+		/// An array of localStorage keys to extract after login.
+		local_storage_keys: Option<Vec<String>>,
 	},
 	{
 		method: LoginMethod::OAuth,
@@ -510,6 +514,7 @@ create_setting_struct!(
 		token_url: None,
 		callback_scheme: None,
 		use_email: false,
+		local_storage_keys: None,
 	}
 );
 
