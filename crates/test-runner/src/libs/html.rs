@@ -56,7 +56,7 @@ impl HtmlElement {
 			if let Some(base_uri) = self.base_uri.as_ref() {
 				attr.as_ref()
 					// if the attribute is already a url, return it
-					.and_then(|value| Url::parse(&value).ok())
+					.and_then(|value| Url::parse(value).ok())
 					.map(|url| url.to_string())
 					.or_else(|| {
 						// otherwise, try to join it with the base uri

@@ -63,7 +63,7 @@ pub fn defaults_get_map(key: &str) -> Option<HashMap<String, String>> {
 #[cfg(feature = "json")]
 pub fn defaults_get_json<Value: DeserializeOwned>(key: &str) -> super::error::Result<Value> {
 	let data: String = defaults_get(key).unwrap_or_default();
-	let value = serde_json::from_slice(&data.as_bytes())?;
+	let value = serde_json::from_slice(data.as_bytes())?;
 	Ok(value)
 }
 

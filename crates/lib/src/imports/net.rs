@@ -376,7 +376,7 @@ impl Response {
 			_ = unsafe { set_url(rid, url.as_ptr(), url.len()) };
 		}
 		Request {
-			rid: rid,
+			rid,
 			http_method: self.http_method,
 			url: self.url.clone(),
 			should_close: true,

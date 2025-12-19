@@ -195,7 +195,7 @@ mod __private {
 		where
 			D: serde::Deserializer<'de>,
 		{
-			ImageRef::deserialize(deserializer).map(|inner| ImageRefPriv(inner))
+			ImageRef::deserialize(deserializer).map(ImageRefPriv)
 		}
 	}
 }
