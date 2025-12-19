@@ -1,0 +1,21 @@
+name: Run Clippy
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/clippy.yml"
+      - "**/*.rs"
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: wasm32-unknown-unknown
+          components: clippy
+      - run: sudo apt-get update && sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev
+      - uses: clechasseur/rs-clippy-check@v5
+        with:
+          args: --all-features
