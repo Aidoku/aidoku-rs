@@ -1,0 +1,34 @@
+name: Build Documentation
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: wasm32-unknown-unknown
+      - run: sudo apt-get update && sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev
+      - run: cargo doc --workspace --no-deps --lib
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: docs
+          path: target/doc
+          if-no-files-found: ignore
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          branch: gh-pages
+          folder: target/doc
+          git-config-name: GitHub Actions
+          git-config-email: github-actions[bot]@users.noreply.github.com
+          commit-message: Update documentation
+          single-commit: true
