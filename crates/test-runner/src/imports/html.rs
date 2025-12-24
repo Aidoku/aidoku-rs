@@ -1,9 +1,8 @@
 use crate::{
-	libs::{HtmlDocument, HtmlElement, HtmlElementList, StoreItem},
+	libs::{HtmlDocument, HtmlElement, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
 };
-use scraper::{Html, Selector};
-use url::Url;
+use scraper::Selector;
 use wasmer::FunctionEnvMut;
 
 enum Result {
@@ -43,11 +42,10 @@ pub fn parse(
 	let Ok(base_url_string) = env.data().read_string(&env, base_url_ptr, base_url_len) else {
 		return Result::InvalidString.into();
 	};
-	let html = Html::parse_document(&text);
-	let base_uri = Url::parse(&base_url_string).ok();
+	let document = HtmlDocument::parse(&text, Some(&base_url_string));
 	env.data_mut()
 		.store
-		.store(StoreItem::HtmlDocument(HtmlDocument { html, base_uri }))
+		.store(StoreItem::HtmlDocument(document))
 }
 pub fn parse_fragment(
 	mut env: FunctionEnvMut<WasmEnv>,
@@ -62,11 +60,10 @@ pub fn parse_fragment(
 	let Ok(base_url_string) = env.data().read_string(&env, base_url_ptr, base_url_len) else {
 		return Result::InvalidString.into();
 	};
-	let html = Html::parse_fragment(&text);
-	let base_uri = Url::parse(&base_url_string).ok();
+	let document = HtmlDocument::parse_fragment(&text, Some(&base_url_string));
 	env.data_mut()
 		.store
-		.store(StoreItem::HtmlDocument(HtmlDocument { html, base_uri }))
+		.store(StoreItem::HtmlDocument(document))
 }
 pub fn escape(mut env: FunctionEnvMut<WasmEnv>, text_ptr: Ptr, text_len: u32) -> FFIResult {
 	let Ok(text) = env.data().read_string(&env, text_ptr, text_len) else {
@@ -132,18 +129,10 @@ pub fn select(
 		return Result::InvalidDescriptor.into();
 	};
 	if let Some(document) = item.as_html_document() {
-		let elements: Vec<HtmlElement> = document
-			.html
-			.select(&selector)
-			.map(|element| HtmlElement {
-				html: document.html.clone(),
-				id: element.id(),
-				base_uri: document.base_uri.clone(),
-			})
-			.collect();
+		let elements = document.select(&selector);
 		env.data_mut()
 			.store
-			.store(StoreItem::HtmlElementList(HtmlElementList(elements)))
+			.store(StoreItem::HtmlElementList(elements))
 	} else if let Some(element) = item.as_html_element() {
 		let Some(elements) = element.select(&selector) else {
 			return Result::NoResult.into();

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Test runner for Aidoku sources"
 repository = "https://github.com/Aidoku/aidoku-rs"
 authors = ["skitty"]
-edition = "2021"
+edition = "2024"
 publish = false
 
 [[bin]]

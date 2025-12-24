@@ -18,13 +18,41 @@ pub struct HtmlElement {
 #[derive(Debug, Clone)]
 pub struct HtmlElementList(pub Vec<HtmlElement>);
 
+impl HtmlDocument {
+	pub fn parse(html: &str, base_uri: Option<&str>) -> Self {
+		let html = Html::parse_document(html);
+		let base_uri = base_uri.and_then(|s| Url::parse(s).ok());
+		Self { html, base_uri }
+	}
+
+	pub fn parse_fragment(html: &str, base_uri: Option<&str>) -> Self {
+		let html = Html::parse_fragment(html);
+		let base_uri = base_uri.and_then(|s| Url::parse(s).ok());
+		Self { html, base_uri }
+	}
+
+	pub fn select(&self, selector: &Selector) -> HtmlElementList {
+		let elements: Vec<HtmlElement> = self
+			.html
+			.select_with_root(selector)
+			.map(|element| HtmlElement {
+				html: self.html.clone(),
+				id: element.id(),
+				base_uri: self.base_uri.clone(),
+			})
+			.collect();
+
+		HtmlElementList(elements)
+	}
+}
+
 impl HtmlElement {
 	pub fn select(&self, selector: &Selector) -> Option<HtmlElementList> {
 		let node = self.html.tree.get(self.id)?;
 		let element = ElementRef::wrap(node)?;
 
 		let elements: Vec<HtmlElement> = element
-			.select(selector)
+			.select_with_root(selector)
 			.map(|element| HtmlElement {
 				html: self.html.clone(),
 				id: element.id(),
@@ -39,11 +67,14 @@ impl HtmlElement {
 		let node = self.html.tree.get(self.id)?;
 		let element = ElementRef::wrap(node)?;
 
-		element.select(selector).next().map(|element| HtmlElement {
-			html: self.html.clone(),
-			id: element.id(),
-			base_uri: self.base_uri.clone(),
-		})
+		element
+			.select_with_root(selector)
+			.next()
+			.map(|element| HtmlElement {
+				html: self.html.clone(),
+				id: element.id(),
+				base_uri: self.base_uri.clone(),
+			})
 	}
 
 	pub fn attr(&self, name: &str) -> Option<String> {
@@ -257,5 +288,71 @@ impl HtmlElementList {
 				.collect::<Vec<String>>()
 				.join("\n"),
 		)
+	}
+}
+
+pub trait SelectWithRoot<'a, 'b> {
+	fn select_with_root(&'a self, selector: &'b Selector) -> SelectRoot<'a, 'b>;
+}
+
+pub struct SelectRoot<'a, 'b> {
+	root: Option<std::iter::Once<ElementRef<'a>>>,
+	select_el: Option<scraper::element_ref::Select<'a, 'b>>,
+	select_doc: Option<scraper::html::Select<'a, 'b>>,
+}
+
+impl<'a> Iterator for SelectRoot<'a, '_> {
+	type Item = ElementRef<'a>;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		if self.root.is_some() {
+			self.root.take().unwrap().next()
+		} else if let Some(select) = self.select_el.as_mut() {
+			select.next()
+		} else if let Some(select) = self.select_doc.as_mut() {
+			select.next()
+		} else {
+			None
+		}
+	}
+}
+
+impl<'a, 'b> SelectWithRoot<'a, 'b> for Html {
+	fn select_with_root(&'a self, selector: &'b Selector) -> SelectRoot<'a, 'b> {
+		let root_el = self.tree.root();
+
+		let root = if let Some(element) = ElementRef::wrap(root_el)
+			&& selector.matches(&element)
+		{
+			Some(std::iter::once(element))
+		} else {
+			None
+		};
+
+		let select = self.select(selector);
+
+		SelectRoot {
+			root,
+			select_el: None,
+			select_doc: Some(select),
+		}
+	}
+}
+
+impl<'a, 'b> SelectWithRoot<'a, 'b> for ElementRef<'a> {
+	fn select_with_root(&'a self, selector: &'b Selector) -> SelectRoot<'a, 'b> {
+		let root = if selector.matches(self) {
+			Some(std::iter::once(*self))
+		} else {
+			None
+		};
+
+		let select = self.select(selector);
+
+		SelectRoot {
+			root,
+			select_el: Some(select),
+			select_doc: None,
+		}
 	}
 }
