@@ -5,14 +5,14 @@
 //!
 //! The backend of this module is [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 use super::{
-	std::{destroy, read_string_and_destroy},
 	FFIResult, Rid,
+	std::{destroy, read_string_and_destroy},
 };
 use crate::alloc::String;
 use core::fmt::Display;
 
 #[link(wasm_import_module = "html")]
-extern "C" {
+unsafe extern "C" {
 	fn parse(
 		html: *const u8,
 		html_len: usize,
@@ -198,7 +198,7 @@ pub struct Document(pub(crate) Element);
 impl Document {
 	/// Get an instance from a [Rid].
 	pub(crate) unsafe fn from(rid: Rid) -> Self {
-		Self(Element::from(rid))
+		Self(unsafe { Element::from(rid) })
 	}
 
 	/// Find elements that match the given CSS (or JQuery) selector.
@@ -598,7 +598,7 @@ pub struct ElementList {
 impl ElementList {
 	/// Get an instance from a [Rid].
 	unsafe fn from(rid: Rid) -> Self {
-		let size = size(rid) as usize;
+		let size = unsafe { size(rid) as usize };
 		Self {
 			rid,
 			lower_bound: 0,

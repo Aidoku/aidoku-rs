@@ -133,7 +133,7 @@ macro_rules! register_source {
 		}
 
 		// once rust supports exporting a wasm start function, we should use that instead
-		#[export_name = "start"]
+		#[unsafe(export_name = "start")]
 		pub extern "C" fn __start() {
 			unsafe {
 				SOURCE =
@@ -141,14 +141,14 @@ macro_rules! register_source {
 			};
 		}
 
-		#[no_mangle]
-		#[export_name = "free_result"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "free_result")]
 		pub unsafe extern "C" fn __wasm_free_result(ptr: i32) {
 			$crate::imports::std::free_result(ptr);
 		}
 
-		#[no_mangle]
-		#[export_name = "get_search_manga_list"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_search_manga_list")]
 		pub unsafe extern "C" fn __wasm_get_search_manga_list(
 			query_descriptor: i32,
 			page: i32,
@@ -165,8 +165,8 @@ macro_rules! register_source {
 			__handle_result(result)
 		}
 
-		#[no_mangle]
-		#[export_name = "get_manga_update"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_manga_update")]
 		pub unsafe extern "C" fn __wasm_get_manga_update(
 			manga_descriptor: i32,
 			needs_details: bool,
@@ -182,8 +182,8 @@ macro_rules! register_source {
 			__handle_result(result)
 		}
 
-		#[no_mangle]
-		#[export_name = "get_page_list"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_page_list")]
 		pub unsafe extern "C" fn __wasm_get_page_list(
 			manga_descriptor: i32,
 			chapter_descriptor: i32,
@@ -218,8 +218,8 @@ macro_rules! register_source {
 	};
 
 	(@single ListingProvider) => {
-		#[no_mangle]
-		#[export_name = "get_manga_list"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_manga_list")]
 		pub unsafe extern "C" fn __wasm_get_manga_list(listing_descriptor: i32, page: i32) -> i32 {
 			let ::core::result::Result::Ok(listing) =
 				$crate::imports::std::read::<$crate::Listing>(listing_descriptor)
@@ -234,8 +234,8 @@ macro_rules! register_source {
 	};
 
 	(@single Home) => {
-		#[no_mangle]
-		#[export_name = "get_home"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_home")]
 		pub unsafe extern "C" fn __wasm_get_home() -> i32 {
 			use $crate::Home;
 			let result = __source().get_home();
@@ -244,8 +244,8 @@ macro_rules! register_source {
 	};
 
 	(@single DynamicListings) => {
-		#[no_mangle]
-		#[export_name = "get_listings"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_listings")]
 		pub unsafe extern "C" fn __wasm_get_listings() -> i32 {
 			use $crate::DynamicListings;
 			let result = __source().get_dynamic_listings();
@@ -254,8 +254,8 @@ macro_rules! register_source {
 	};
 
 	(@single DynamicFilters) => {
-		#[no_mangle]
-		#[export_name = "get_filters"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_filters")]
 		pub unsafe extern "C" fn __wasm_get_filters() -> i32 {
 			use $crate::DynamicFilters;
 			let result = __source().get_dynamic_filters();
@@ -264,8 +264,8 @@ macro_rules! register_source {
 	};
 
 	(@single DynamicSettings) => {
-		#[no_mangle]
-		#[export_name = "get_settings"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_settings")]
 		pub unsafe extern "C" fn __wasm_get_settings() -> i32 {
 			use $crate::DynamicSettings;
 			let result = __source().get_dynamic_settings();
@@ -274,8 +274,8 @@ macro_rules! register_source {
 	};
 
 	(@single PageImageProcessor) => {
-		#[no_mangle]
-		#[export_name = "process_page_image"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "process_page_image")]
 		pub unsafe extern "C" fn __wasm_process_page_image(
 			response_descriptor: i32,
 			context_descriptor: i32,
@@ -305,8 +305,8 @@ macro_rules! register_source {
 	};
 
 	(@single ImageRequestProvider) => {
-		#[no_mangle]
-		#[export_name = "get_image_request"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_image_request")]
 		pub unsafe extern "C" fn __wasm_get_image_request(
 			url_descriptor: i32,
 			context_descriptor: i32,
@@ -336,8 +336,8 @@ macro_rules! register_source {
 	};
 
 	(@single PageDescriptionProvider) => {
-		#[no_mangle]
-		#[export_name = "get_page_description"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_page_description")]
 		pub unsafe extern "C" fn __wasm_get_page_description(page_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(page) =
 				$crate::imports::std::read::<$crate::Page>(page_descriptor)
@@ -351,8 +351,8 @@ macro_rules! register_source {
 	};
 
 	(@single AlternateCoverProvider) => {
-		#[no_mangle]
-		#[export_name = "get_alternate_covers"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_alternate_covers")]
 		pub unsafe extern "C" fn __wasm_get_alternate_covers(manga_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(manga) =
 				$crate::imports::std::read::<$crate::Manga>(manga_descriptor)
@@ -366,8 +366,8 @@ macro_rules! register_source {
 	};
 
 	(@single BaseUrlProvider) => {
-		#[no_mangle]
-		#[export_name = "get_base_url"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "get_base_url")]
 		pub unsafe extern "C" fn __wasm_get_base_url() -> i32 {
 			use $crate::BaseUrlProvider;
 			let result = __source().get_base_url();
@@ -376,8 +376,8 @@ macro_rules! register_source {
 	};
 
 	(@single NotificationHandler) => {
-		#[no_mangle]
-		#[export_name = "handle_notification"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "handle_notification")]
 		pub unsafe extern "C" fn __wasm_handle_notification(string_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(notification) =
 				$crate::imports::std::read::<$crate::alloc::String>(string_descriptor)
@@ -391,8 +391,8 @@ macro_rules! register_source {
 	};
 
 	(@single DeepLinkHandler) => {
-		#[no_mangle]
-		#[export_name = "handle_deep_link"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "handle_deep_link")]
 		pub unsafe extern "C" fn __wasm_handle_deep_link(string_descriptor: i32) -> i32 {
 			let ::core::result::Result::Ok(url) =
 				$crate::imports::std::read::<$crate::alloc::String>(string_descriptor)
@@ -406,8 +406,8 @@ macro_rules! register_source {
 	};
 
 	(@single BasicLoginHandler) => {
-		#[no_mangle]
-		#[export_name = "handle_basic_login"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "handle_basic_login")]
 		pub unsafe extern "C" fn __wasm_handle_basic_login(
 			key_descriptor: i32,
 			username_descriptor: i32,
@@ -435,8 +435,8 @@ macro_rules! register_source {
 	};
 
 	(@single WebLoginHandler) => {
-		#[no_mangle]
-		#[export_name = "handle_web_login"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "handle_web_login")]
 		pub unsafe extern "C" fn __wasm_handle_web_login(
 			key_descriptor: i32,
 			keys_descriptor: i32,
@@ -464,8 +464,8 @@ macro_rules! register_source {
 	};
 
 	(@single MigrationHandler) => {
-		#[no_mangle]
-		#[export_name = "handle_key_migration"]
+		#[unsafe(no_mangle)]
+		#[unsafe(export_name = "handle_key_migration")]
 		pub unsafe extern "C" fn __wasm_handle_key_migration(
 			key_kind: i32,
 			manga_key_descriptor: i32,

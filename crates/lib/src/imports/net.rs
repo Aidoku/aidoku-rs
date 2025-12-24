@@ -1,10 +1,10 @@
 //! Module for creating and sending HTTP requests.
 use super::{
+	FFIResult, Rid,
 	canvas::ImageRef,
 	error::AidokuError,
 	html::Document,
 	std::{destroy, read_string_and_destroy},
-	FFIResult, Rid,
 };
 use crate::alloc::{String, Vec};
 
@@ -24,7 +24,7 @@ pub enum HttpMethod {
 }
 
 #[link(wasm_import_module = "net")]
-extern "C" {
+unsafe extern "C" {
 	fn init(method: HttpMethod) -> Rid;
 	fn send(rid: Rid) -> FFIResult;
 	fn send_all(rd: *mut Rid, len: usize) -> FFIResult;

@@ -26,7 +26,7 @@ struct Test<V> {
 }
 
 macro_rules! value {
-    ($($name:ident($value:expr => $expected:expr))+) => {$(paste! {
+	($($name:ident($value:expr => $expected:expr))+) => {$(paste! {
 		#[test]
 		fn [<$name _value>]() {
 			assert_eq!(

@@ -1,13 +1,13 @@
 //! Module for running JavaScript and managing web views.
 use super::{
+	FFIResult, Rid,
 	net::Request,
 	std::{destroy, read_string_and_destroy},
-	FFIResult, Rid,
 };
 use crate::alloc::String;
 
 #[link(wasm_import_module = "js")]
-extern "C" {
+unsafe extern "C" {
 	fn context_create() -> Rid;
 	fn context_eval(context: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
 	fn context_get(context: Rid, string_ptr: *const u8, len: usize) -> FFIResult;

@@ -1,17 +1,17 @@
 //! Module for interacting with user preferences.
 use super::{
-	std::{encode, free_result, read},
 	FFIResult, Ptr,
+	std::{encode, free_result, read},
 };
 use crate::{
 	alloc::{String, Vec},
 	imports::std::destroy,
 };
 use crate::{prelude::format, structs::HashMap};
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 
 #[link(wasm_import_module = "defaults")]
-extern "C" {
+unsafe extern "C" {
 	fn get(key: *const u8, len: usize) -> FFIResult;
 	fn set(key: *const u8, len: usize, kind: u8, value: Ptr) -> FFIResult;
 }

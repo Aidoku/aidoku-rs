@@ -1,7 +1,10 @@
 [package]
 name = "example-source"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
 
 [dependencies]
 aidoku = { path = "../../crates/lib" }
@@ -9,9 +12,6 @@ aidoku = { path = "../../crates/lib" }
 [dev-dependencies]
 aidoku = { path = "../../crates/lib", features = ["test"] }
 aidoku-test = { path = "../../crates/test-macro" }
-
-[lib]
-crate-type = ["cdylib"]
 
 [profile.dev]
 panic = "abort"

@@ -1,14 +1,14 @@
 //! Module for standard Aidoku source library functions.
 use super::{FFIResult, Ptr, Rid};
 use crate::{
-	alloc::{String, Vec},
 	AidokuError,
+	alloc::{String, Vec},
 };
 use core::ptr::null;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 
 #[link(wasm_import_module = "std")]
-extern "C" {
+unsafe extern "C" {
 	pub(crate) fn destroy(rid: Rid);
 
 	pub(crate) fn buffer_len(rid: Rid) -> FFIResult;
@@ -36,7 +36,7 @@ extern "C" {
 
 // env module
 #[link(wasm_import_module = "env")]
-extern "C" {
+unsafe extern "C" {
 	// #[link_name = "abort"]
 	// fn _abort();
 

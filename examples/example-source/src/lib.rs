@@ -147,7 +147,7 @@ impl ExampleSource {
 			.ok()?
 			.html()
 			.ok()?
-			.select_first(".repository-content .Box a")?
+			.select_first("#repo-content-pjax-container a > div > span")?
 			.text()
 	}
 }

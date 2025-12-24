@@ -1,5 +1,5 @@
 //! Module for working with bitmap canvases.
-use super::{std::destroy, FFIResult, Ptr, Rid};
+use super::{FFIResult, Ptr, Rid, std::destroy};
 use crate::alloc::Vec;
 use crate::imports::std::{encode, free_result, read_buffer};
 use serde::{Deserialize, Serialize};
@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 pub use crate::canvas::*;
 
 #[link(wasm_import_module = "canvas")]
-extern "C" {
+unsafe extern "C" {
 	fn new_context(width: f32, height: f32) -> Rid;
 
 	fn set_transform(
