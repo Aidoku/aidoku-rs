@@ -1,10 +1,9 @@
 use crate::{
-	libs::{HtmlDocument, HttpMethod, ImageData, NetRequest, NetResponse, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
+	libs::{HtmlDocument, HttpMethod, ImageData, NetRequest, NetResponse, StoreItem},
 };
 use image::ImageReader;
 use reqwest::header::{HeaderName, HeaderValue, USER_AGENT};
-use scraper::Html;
 use std::{io::Cursor, str::FromStr};
 use url::Url;
 use wasmer::FunctionEnvMut;
@@ -351,20 +350,15 @@ pub fn html(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	let Some(response) = request.response.take() else {
 		return Result::MissingResponse.into();
 	};
-	let data = response.data.clone();
-	let base_uri = response.url.clone();
+	let document = std::str::from_utf8(&response.data)
+		.map(|text| HtmlDocument::parse(&text, Some(response.url.as_str())));
 	request.response = Some(response);
-	let text = match String::from_utf8(data) {
-		Ok(s) => s,
-		Err(_) => return Result::InvalidString.into(),
+	let Ok(document) = document else {
+		return Result::InvalidString.into();
 	};
-	let html = Html::parse_document(&text);
 	env.data_mut()
 		.store
-		.store(StoreItem::HtmlDocument(HtmlDocument {
-			html,
-			base_uri: Some(base_uri),
-		}))
+		.store(StoreItem::HtmlDocument(document))
 }
 
 pub fn set_rate_limit(_env: FunctionEnvMut<WasmEnv>, _permits: i32, _period: i32, _unit: i32) {

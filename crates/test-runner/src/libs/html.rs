@@ -1,18 +1,19 @@
 use ego_tree::NodeId;
 use scraper::{CaseSensitivity, ElementRef, Html, Selector};
+use std::rc::Rc;
 use url::Url;
 
 #[derive(Debug, Clone)]
 pub struct HtmlDocument {
-	pub html: Html,
-	pub base_uri: Option<Url>,
+	pub html: Rc<Html>,
+	pub base_uri: Option<Rc<Url>>,
 }
 
 #[derive(Debug, Clone)]
 pub struct HtmlElement {
-	pub html: Html,
+	pub html: Rc<Html>,
+	pub base_uri: Option<Rc<Url>>,
 	pub id: NodeId,
-	pub base_uri: Option<Url>,
 }
 
 #[derive(Debug, Clone)]
@@ -21,14 +22,20 @@ pub struct HtmlElementList(pub Vec<HtmlElement>);
 impl HtmlDocument {
 	pub fn parse(html: &str, base_uri: Option<&str>) -> Self {
 		let html = Html::parse_document(html);
-		let base_uri = base_uri.and_then(|s| Url::parse(s).ok());
-		Self { html, base_uri }
+		let base_uri = base_uri.and_then(|s| Url::parse(s).ok()).map(Rc::new);
+		Self {
+			html: Rc::new(html),
+			base_uri,
+		}
 	}
 
 	pub fn parse_fragment(html: &str, base_uri: Option<&str>) -> Self {
 		let html = Html::parse_fragment(html);
-		let base_uri = base_uri.and_then(|s| Url::parse(s).ok());
-		Self { html, base_uri }
+		let base_uri = base_uri.and_then(|s| Url::parse(s).ok()).map(Rc::new);
+		Self {
+			html: Rc::new(html),
+			base_uri,
+		}
 	}
 
 	pub fn select(&self, selector: &Selector) -> HtmlElementList {
@@ -37,8 +44,8 @@ impl HtmlDocument {
 			.select_with_root(selector)
 			.map(|element| HtmlElement {
 				html: self.html.clone(),
-				id: element.id(),
 				base_uri: self.base_uri.clone(),
+				id: element.id(),
 			})
 			.collect();
 
@@ -53,11 +60,7 @@ impl HtmlElement {
 
 		let elements: Vec<HtmlElement> = element
 			.select_with_root(selector)
-			.map(|element| HtmlElement {
-				html: self.html.clone(),
-				id: element.id(),
-				base_uri: self.base_uri.clone(),
-			})
+			.map(|element| self.child(element.id()))
 			.collect();
 
 		Some(HtmlElementList(elements))
@@ -70,11 +73,7 @@ impl HtmlElement {
 		element
 			.select_with_root(selector)
 			.next()
-			.map(|element| HtmlElement {
-				html: self.html.clone(),
-				id: element.id(),
-				base_uri: self.base_uri.clone(),
-			})
+			.map(|element| self.child(element.id()))
 	}
 
 	pub fn attr(&self, name: &str) -> Option<String> {
@@ -129,11 +128,7 @@ impl HtmlElement {
 	pub fn parent(&self) -> Option<HtmlElement> {
 		let node = self.html.tree.get(self.id)?;
 		let element = ElementRef::wrap(node)?;
-		element.parent().map(|element| HtmlElement {
-			html: self.html.clone(),
-			id: element.id(),
-			base_uri: self.base_uri.clone(),
-		})
+		element.parent().map(|element| self.child(element.id()))
 	}
 
 	pub fn children(&self) -> Option<HtmlElementList> {
@@ -142,11 +137,7 @@ impl HtmlElement {
 		Some(HtmlElementList(
 			element
 				.child_elements()
-				.map(|element| HtmlElement {
-					html: self.html.clone(),
-					id: element.id(),
-					base_uri: self.base_uri.clone(),
-				})
+				.map(|element| self.child(element.id()))
 				.collect::<Vec<HtmlElement>>(),
 		))
 	}
@@ -157,11 +148,7 @@ impl HtmlElement {
 		Some(HtmlElementList(
 			element
 				.next_siblings()
-				.map(|element| HtmlElement {
-					html: self.html.clone(),
-					id: element.id(),
-					base_uri: self.base_uri.clone(),
-				})
+				.map(|element| self.child(element.id()))
 				.collect::<Vec<HtmlElement>>(),
 		))
 	}
@@ -169,11 +156,9 @@ impl HtmlElement {
 	pub fn next_sibling(&self) -> Option<HtmlElement> {
 		let node = self.html.tree.get(self.id)?;
 		let element = ElementRef::wrap(node)?;
-		element.next_sibling().map(|element| HtmlElement {
-			html: self.html.clone(),
-			id: element.id(),
-			base_uri: self.base_uri.clone(),
-		})
+		element
+			.next_sibling()
+			.map(|element| self.child(element.id()))
 	}
 
 	pub fn prev_sibling(&self) -> Option<HtmlElement> {
@@ -231,6 +216,14 @@ impl HtmlElement {
 			return false;
 		};
 		element.value().attrs().any(|(k, _)| k == name)
+	}
+
+	fn child(&self, id: NodeId) -> HtmlElement {
+		HtmlElement {
+			html: self.html.clone(),
+			base_uri: self.base_uri.clone(),
+			id,
+		}
 	}
 }
 
