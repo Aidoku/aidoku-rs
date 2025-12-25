@@ -32,7 +32,7 @@ pub fn aidoku_test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 	// create a custom export name so we can read the exports in the test runner
 	let res = quote! {
 		#[cfg(test)]
-		#[export_name = concat!("$aidoku-test$", #ignore, module_path!(), "::",  #name)]
+		#[unsafe(export_name = concat!("$aidoku-test$", #ignore, module_path!(), "::",  #name))]
 		#item
 	};
 	res.into()
