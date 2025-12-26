@@ -66,24 +66,33 @@
 			"required": ["id", "name", "version", "languages"]
 		},
 		"listing": {
-			"type": "object",
-			"properties": {
-				"id": {
-					"type": "string",
-					"description": "The unique identifier of the source listing."
+			"oneOf": [
+				{
+					"type": "object",
+					"properties": {
+						"id": {
+							"type": "string",
+							"description": "The unique identifier of the source listing."
+						},
+						"name": {
+							"type": "string",
+							"description": "The name of the source listing displayed to users. If not specified, the id is used."
+						},
+						"type": {
+							"type": "integer",
+							"description": "The type of the source listing. The default value (0) is a grid, but it can also be a list (1).",
+							"default": 0,
+							"minimum": 0,
+							"maximum": 1
+						}
+					},
+					"required": ["id"]
 				},
-				"name": {
+				{
 					"type": "string",
-					"description": "The name of the source listing displayed to users. If not specified, the id is used."
-				},
-				"type": {
-					"type": "integer",
-					"description": "The type of the source listing. The default value (0) is a grid, but it can also be a list (1).",
-					"minimum": 0,
-					"maximum": 1
+					"description": "The unique identifier of the source listing, which is also used as the name."
 				}
-			},
-			"required": ["id"]
+			]
 		},
 		"config": {
 			"type": "object",
