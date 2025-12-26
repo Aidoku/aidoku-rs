@@ -1,6 +1,6 @@
 //! Build a source list.
 use crate::models::*;
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use rayon::prelude::*;
 use std::io::prelude::*;
 

@@ -1,8 +1,8 @@
 #![cfg(feature = "helpers")]
 
 use aidoku::{
-	helpers::uri::{encode_uri_component, QueryParameters, SerializeError},
 	HashMap,
+	helpers::uri::{QueryParameters, SerializeError, encode_uri_component},
 };
 use paste::paste;
 use serde::Serialize;

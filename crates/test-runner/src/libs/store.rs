@@ -19,7 +19,7 @@ pub enum StoreItem {
 	HtmlElementList(HtmlElementList),
 	JsContext(Box<Context>),
 	Encoded(Vec<u8>),
-	Canvas(DrawTarget),
+	Canvas(Box<DrawTarget>),
 	Font(Font),
 	ImageData(ImageData),
 }

@@ -10,8 +10,8 @@ use alloc::{
 use core::fmt::Display;
 use paste::paste;
 use serde::{
-	ser::{Error as SerError, Impossible, SerializeMap, SerializeStruct},
 	Serialize, Serializer,
+	ser::{Error as SerError, Impossible, SerializeMap, SerializeStruct},
 };
 use thiserror::Error;
 

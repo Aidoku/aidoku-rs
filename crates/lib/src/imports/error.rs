@@ -3,7 +3,7 @@ use super::{html::HtmlError, js::JsError, net::RequestError};
 #[cfg(feature = "json")]
 use crate::alloc::rc::Rc;
 use crate::{
-	alloc::{string::ToString, String},
+	alloc::{String, string::ToString},
 	imports::canvas::CanvasError,
 };
 use core::{fmt::Display, str::Utf8Error};

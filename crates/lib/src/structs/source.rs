@@ -4,7 +4,7 @@ use super::{
 };
 use crate::alloc::{String, Vec};
 use crate::imports::{canvas::ImageRef, net::Request};
-use serde::{ser::SerializeStruct, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::SerializeStruct};
 
 pub use crate::imports::error::{AidokuError, Result};
 

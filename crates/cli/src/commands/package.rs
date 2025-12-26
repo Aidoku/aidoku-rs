@@ -1,5 +1,5 @@
 //! Build and package an Aidoku source.
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use std::io::prelude::*;
 
 pub fn run(path: Option<std::path::PathBuf>) -> anyhow::Result<()> {

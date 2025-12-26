@@ -119,11 +119,7 @@ fn swift_date_format_to_chrono(format: &str) -> String {
 					chars.next();
 					count += 1;
 				}
-				if count == 2 {
-					"%y"
-				} else {
-					"%Y"
-				}
+				if count == 2 { "%y" } else { "%Y" }
 			}
 			// month
 			'M' => {
@@ -187,11 +183,7 @@ fn swift_date_format_to_chrono(format: &str) -> String {
 					chars.next();
 					count += 1;
 				}
-				if count >= 4 {
-					"%A"
-				} else {
-					"%a"
-				}
+				if count >= 4 { "%A" } else { "%a" }
 			}
 			// timezone
 			'z' => {
@@ -200,11 +192,7 @@ fn swift_date_format_to_chrono(format: &str) -> String {
 					chars.next();
 					count += 1;
 				}
-				if count >= 4 {
-					"%Z"
-				} else {
-					"%z"
-				}
+				if count >= 4 { "%Z" } else { "%z" }
 			}
 			'Z' => {
 				while chars.peek() == Some(&c) {

@@ -1,4 +1,4 @@
-use reqwest::{header::HeaderMap, StatusCode};
+use reqwest::{StatusCode, header::HeaderMap};
 use url::Url;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]

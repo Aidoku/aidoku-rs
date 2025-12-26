@@ -1,4 +1,4 @@
-use axum::{body::Bytes, http::StatusCode, response::IntoResponse, routing::post, Router};
+use axum::{Router, body::Bytes, http::StatusCode, response::IntoResponse, routing::post};
 use colored::*;
 use std::net::SocketAddr;
 

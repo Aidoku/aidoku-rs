@@ -1,8 +1,8 @@
 use std::io::Cursor;
 
 use crate::{
-	libs::{ImageData, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
+	libs::{ImageData, StoreItem},
 };
 use aidoku::canvas::{FontWeight, PathOp};
 use euclid::Angle;
@@ -70,7 +70,9 @@ fn path_to_raqote_path(path: aidoku::canvas::Path) -> raqote::Path {
 
 pub fn new_context(mut env: FunctionEnvMut<WasmEnv>, width: f32, height: f32) -> Rid {
 	let canvas = DrawTarget::new(width as i32, height as i32);
-	env.data_mut().store.store(StoreItem::Canvas(canvas))
+	env.data_mut()
+		.store
+		.store(StoreItem::Canvas(Box::new(canvas)))
 }
 pub fn set_transform(
 	mut env: FunctionEnvMut<WasmEnv>,

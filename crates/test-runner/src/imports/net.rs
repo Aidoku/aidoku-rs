@@ -351,7 +351,7 @@ pub fn html(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 		return Result::MissingResponse.into();
 	};
 	let document = std::str::from_utf8(&response.data)
-		.map(|text| HtmlDocument::parse(&text, Some(response.url.as_str())));
+		.map(|text| HtmlDocument::parse(text, Some(response.url.as_str())));
 	request.response = Some(response);
 	let Ok(document) = document else {
 		return Result::InvalidString.into();

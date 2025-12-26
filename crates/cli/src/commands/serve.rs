@@ -1,7 +1,7 @@
 //! Serve an Aidoku source as a local source list.
 use axum::{
-	http::{header::USER_AGENT, Request, Response},
 	Router,
+	http::{Request, Response, header::USER_AGENT},
 };
 use std::{net::SocketAddr, time::Duration};
 use tower_http::{services::ServeDir, trace::TraceLayer};

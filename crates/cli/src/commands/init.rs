@@ -1,6 +1,6 @@
 //! Initialize a new Aidoku source.
 use crate::models::{SourceContentRating, SourceInfo, SourceJson};
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use dialoguer::{Input, MultiSelect, Select};
 use std::io::prelude::*;
 use std::path::PathBuf;

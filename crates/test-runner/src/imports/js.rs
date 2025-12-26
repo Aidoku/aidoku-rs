@@ -1,4 +1,4 @@
-use crate::{libs::StoreItem, FFIResult, Ptr, Rid, WasmEnv};
+use crate::{FFIResult, Ptr, Rid, WasmEnv, libs::StoreItem};
 use boa_engine::{JsString, Source};
 use wasmer::FunctionEnvMut;
 

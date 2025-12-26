@@ -1,4 +1,4 @@
-use serde::{ser::SerializeStruct, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, ser::SerializeStruct};
 
 extern crate alloc;
 use alloc::{borrow::Cow, string::String, vec::Vec};
