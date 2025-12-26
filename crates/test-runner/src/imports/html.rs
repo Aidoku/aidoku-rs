@@ -1,6 +1,6 @@
 use crate::{
-	libs::{HtmlDocument, HtmlElement, StoreItem},
 	FFIResult, Ptr, Rid, WasmEnv,
+	libs::{HtmlDocument, HtmlElement, StoreItem},
 };
 use scraper::Selector;
 use wasmer::FunctionEnvMut;
@@ -283,6 +283,10 @@ pub fn outer_html(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	}
 }
 
+pub fn remove(_env: FunctionEnvMut<WasmEnv>, _rid: Rid) -> FFIResult {
+	-1
+}
+
 pub fn set_text(_env: FunctionEnvMut<WasmEnv>, _rid: Rid, _text: u32, _text_len: u32) -> FFIResult {
 	-1
 }
@@ -426,6 +430,7 @@ pub fn tag_name(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 		Result::InvalidDescriptor.into()
 	}
 }
+
 pub fn class_name(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	let Some(item) = env.data_mut().store.get_mut(rid) else {
 		return Result::InvalidDescriptor.into();
@@ -452,15 +457,28 @@ pub fn has_class(
 		return Result::InvalidDescriptor.into();
 	};
 	if let Some(element) = item.as_html_element() {
-		if element.has_class(&class) {
-			1
-		} else {
-			0
-		}
+		if element.has_class(&class) { 1 } else { 0 }
 	} else {
 		Result::InvalidDescriptor.into()
 	}
 }
+pub fn add_class(
+	_env: FunctionEnvMut<WasmEnv>,
+	_rid: Rid,
+	_class_ptr: Ptr,
+	_class_len: u32,
+) -> FFIResult {
+	-1
+}
+pub fn remove_class(
+	_env: FunctionEnvMut<WasmEnv>,
+	_rid: Rid,
+	_class_ptr: Ptr,
+	_class_len: u32,
+) -> FFIResult {
+	-1
+}
+
 pub fn has_attr(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, attr_ptr: Ptr, attr_len: u32) -> i32 {
 	let Ok(attr) = env.data().read_string(&env, attr_ptr, attr_len) else {
 		return Result::InvalidString.into();
@@ -469,14 +487,28 @@ pub fn has_attr(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, attr_ptr: Ptr, attr_
 		return Result::InvalidDescriptor.into();
 	};
 	if let Some(element) = item.as_html_element() {
-		if element.has_attr(&attr) {
-			1
-		} else {
-			0
-		}
+		if element.has_attr(&attr) { 1 } else { 0 }
 	} else {
 		Result::InvalidDescriptor.into()
 	}
+}
+pub fn set_attr(
+	_env: FunctionEnvMut<WasmEnv>,
+	_rid: Rid,
+	_key_ptr: Ptr,
+	_key_len: u32,
+	_value_ptr: Ptr,
+	_value_len: u32,
+) -> FFIResult {
+	-1
+}
+pub fn remove_attr(
+	_env: FunctionEnvMut<WasmEnv>,
+	_rid: Rid,
+	_attr_ptr: Ptr,
+	_attr_len: u32,
+) -> FFIResult {
+	-1
 }
 
 pub fn first(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {

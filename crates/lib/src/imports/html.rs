@@ -35,6 +35,7 @@ unsafe extern "C" {
 	fn untrimmed_text(rid: Rid) -> FFIResult;
 	fn html(rid: Rid) -> FFIResult;
 	fn outer_html(rid: Rid) -> FFIResult;
+	fn remove(rid: Rid) -> FFIResult;
 
 	fn set_text(rid: Rid, text: *const u8, text_len: usize) -> FFIResult;
 	fn set_html(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
@@ -52,7 +53,17 @@ unsafe extern "C" {
 	fn tag_name(rid: Rid) -> FFIResult;
 	fn class_name(rid: Rid) -> FFIResult;
 	fn has_class(rid: Rid, class: *const u8, class_len: usize) -> bool;
+	fn add_class(rid: Rid, class: *const u8, class_len: usize) -> FFIResult;
+	fn remove_class(rid: Rid, class: *const u8, class_len: usize) -> FFIResult;
 	fn has_attr(rid: Rid, attr: *const u8, attr_len: usize) -> bool;
+	fn set_attr(
+		rid: Rid,
+		key: *const u8,
+		key_len: usize,
+		value: *const u8,
+		value_len: usize,
+	) -> FFIResult;
+	fn remove_attr(rid: Rid, attr: *const u8, attr_len: usize) -> FFIResult;
 
 	fn first(rid: Rid) -> FFIResult;
 	fn last(rid: Rid) -> FFIResult;
@@ -405,6 +416,11 @@ impl Element {
 		read_string_and_destroy(rid)
 	}
 
+	/// Remove this element from the DOM tree.
+	pub fn remove(self) {
+		_ = unsafe { remove(self.rid) };
+	}
+
 	/// Get the element's parent element, returning `None` if there isn't one.
 	pub fn parent(&self) -> Option<Element> {
 		let rid = unsafe { parent(self.rid) };
@@ -567,10 +583,74 @@ impl Element {
 		unsafe { has_class(self.rid, class_name.as_ptr(), class_name.len()) }
 	}
 
+	/// Add a class name to this element's class attribute.
+	pub fn add_class<T: AsRef<str>>(&mut self, class_name: T) -> Result<(), HtmlError> {
+		let class_name = class_name.as_ref();
+		let result = unsafe { add_class(self.rid, class_name.as_ptr(), class_name.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Remove a class name from this element's class attribute.
+	pub fn remove_class<T: AsRef<str>>(&mut self, class_name: T) -> Result<(), HtmlError> {
+		let class_name = class_name.as_ref();
+		let result = unsafe { remove_class(self.rid, class_name.as_ptr(), class_name.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
 	/// Test if this element has an attribute. Case insensitive.
 	pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
 		let attr_name = attr_name.as_ref();
 		unsafe { has_attr(self.rid, attr_name.as_ptr(), attr_name.len()) }
+	}
+
+	/// Set an attribute value on this element.
+	///
+	/// If this element already has an attribute with the key, its value is updated;
+	/// otherwise, a new attribute is added.
+	pub fn set_attr<K: AsRef<str>, V: AsRef<str>>(
+		&mut self,
+		key: K,
+		value: V,
+	) -> Result<(), HtmlError> {
+		let key = key.as_ref();
+		let value = value.as_ref();
+		let result = unsafe {
+			set_attr(
+				self.rid,
+				key.as_ptr(),
+				key.len(),
+				value.as_ptr(),
+				value.len(),
+			)
+		};
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Remove an attribute from this element.
+	pub fn remove_attr<T: AsRef<str>>(&mut self, attr: T) -> Result<(), HtmlError> {
+		let attr = attr.as_ref();
+		let result = unsafe { remove_attr(self.rid, attr.as_ptr(), attr.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
 	}
 }
 
@@ -669,6 +749,11 @@ impl ElementList {
 			return None;
 		}
 		read_string_and_destroy(rid)
+	}
+
+	/// Remove each element from the DOM.
+	pub fn remove(self) {
+		_ = unsafe { remove(self.rid) };
 	}
 
 	/// Get the first element of this element list.

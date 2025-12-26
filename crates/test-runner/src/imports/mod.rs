@@ -61,6 +61,7 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"untrimmed_text" => Function::new_typed_with_env(store, env, html::untrimmed_text),
 			"html" => Function::new_typed_with_env(store, env, html::html),
 			"outer_html" => Function::new_typed_with_env(store, env, html::outer_html),
+			"remove" => Function::new_typed_with_env(store, env, html::remove),
 
 			"set_text" => Function::new_typed_with_env(store, env, html::set_text),
 			"set_html" => Function::new_typed_with_env(store, env, html::set_html),
@@ -78,7 +79,11 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"tag_name" => Function::new_typed_with_env(store, env, html::tag_name),
 			"class_name" => Function::new_typed_with_env(store, env, html::class_name),
 			"has_class" => Function::new_typed_with_env(store, env, html::has_class),
+			"add_class" => Function::new_typed_with_env(store, env, html::add_class),
+			"remove_class" => Function::new_typed_with_env(store, env, html::remove_class),
 			"has_attr" => Function::new_typed_with_env(store, env, html::has_attr),
+			"set_attr" => Function::new_typed_with_env(store, env, html::set_attr),
+			"remove_attr" => Function::new_typed_with_env(store, env, html::remove_attr),
 
 			"first" => Function::new_typed_with_env(store, env, html::first),
 			"last" => Function::new_typed_with_env(store, env, html::last),
