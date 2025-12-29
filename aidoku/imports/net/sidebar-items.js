@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["HttpMethod","RequestError","TimeUnit"],"fn":["set_rate_limit"],"struct":["Request","Response"]};
