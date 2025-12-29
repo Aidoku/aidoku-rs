@@ -38,6 +38,7 @@ unsafe extern "C" {
 		val_len: usize,
 	) -> FFIResult;
 	fn set_body(rid: Rid, value: *const u8, len: usize) -> FFIResult;
+	fn set_timeout(rid: Rid, value: f64) -> FFIResult;
 
 	fn data_len(rid: Rid) -> FFIResult;
 	fn read_data(rid: Rid, buffer: *mut u8, size: usize) -> FFIResult;
@@ -239,10 +240,27 @@ impl Request {
 		self
 	}
 
+	/// Set the request timeout interval in a builder.
+	///
+	/// The request timeout interval controls how long (in seconds) a task
+	/// should wait for additional data to arrive before giving up.
+	pub fn timeout(mut self, value: f64) -> Self {
+		self.set_timeout(value);
+		self
+	}
+
 	/// Set the HTTP body data.
 	pub fn set_body<T: AsRef<[u8]>>(&mut self, data: T) {
 		let data = data.as_ref();
 		unsafe { set_body(self.rid, data.as_ptr(), data.len()) };
+	}
+
+	/// Set the request timeout interval.
+	///
+	/// The request timeout interval controls how long (in seconds) a task
+	/// should wait for additional data to arrive before giving up.
+	pub fn set_timeout(&mut self, value: f64) {
+		unsafe { set_timeout(self.rid, value) };
 	}
 
 	/// Set the URL for the request.

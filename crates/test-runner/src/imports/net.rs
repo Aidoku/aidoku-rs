@@ -100,6 +100,11 @@ fn common_send(env: &mut FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
 	if let Some(body) = request.body.take() {
 		builder = builder.body(body);
 	}
+	if let Some(timeout) = request.timeout.take() {
+		let secs = timeout.trunc() as u64;
+		let nanos = ((timeout.fract()) * 1_000_000_000.0).round() as u32;
+		builder = builder.timeout(std::time::Duration::new(secs, nanos));
+	}
 	// make a blocking request with reqwest
 	let Ok(response) = builder.send() else {
 		return Result::RequestError.into();
@@ -192,7 +197,7 @@ pub fn set_header(
 	request.headers.insert(name, value);
 	Result::Success.into()
 }
-pub fn set_body(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, ptr: Ptr, len: u32) -> i32 {
+pub fn set_body(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, ptr: Ptr, len: u32) -> FFIResult {
 	let Ok(body) = env.data().read_bytes(&env, ptr, len) else {
 		return Result::InvalidString.into();
 	};
@@ -205,6 +210,18 @@ pub fn set_body(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, ptr: Ptr, len: u32) 
 		return Result::InvalidDescriptor.into();
 	};
 	request.body = Some(body);
+	Result::Success.into()
+}
+pub fn set_timeout(mut env: FunctionEnvMut<WasmEnv>, rid: Rid, value: f64) -> FFIResult {
+	let Some(request) = env
+		.data_mut()
+		.store
+		.get_mut(rid)
+		.and_then(|item| item.as_request())
+	else {
+		return Result::InvalidDescriptor.into();
+	};
+	request.timeout = Some(value);
 	Result::Success.into()
 }
 

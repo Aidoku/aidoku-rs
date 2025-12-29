@@ -28,6 +28,7 @@ pub struct NetRequest {
 	pub url: Option<Url>,
 	pub headers: HeaderMap,
 	pub body: Option<Vec<u8>>,
+	pub timeout: Option<f64>,
 	pub response: Option<NetResponse>,
 }
 
@@ -38,6 +39,7 @@ impl NetRequest {
 			url: None,
 			headers: HeaderMap::new(),
 			body: None,
+			timeout: None,
 			response: None,
 		}
 	}

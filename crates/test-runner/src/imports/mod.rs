@@ -109,6 +109,7 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"set_url" => Function::new_typed_with_env(store, env, net::set_url),
 			"set_header" => Function::new_typed_with_env(store, env, net::set_header),
 			"set_body" => Function::new_typed_with_env(store, env, net::set_body),
+			"set_timeout" => Function::new_typed_with_env(store, env, net::set_timeout),
 
 			"data_len" => Function::new_typed_with_env(store, env, net::data_len),
 			"read_data" => Function::new_typed_with_env(store, env, net::read_data),
