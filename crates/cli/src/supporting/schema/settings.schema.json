@@ -290,7 +290,7 @@
 							"description": "Title of a confirmation dialog that will be displayed when the button is pressed.",
 							"type": "string"
 						},
-						"confirmMessage": {
+						"confirmText": {
 							"description": "Message in a confirmation dialog that will be displayed when the button is pressed.",
 							"type": "string"
 						}
