@@ -10,7 +10,8 @@ This repo contains the following crates:
 
 To get started with Aidoku source development, you'll need two things: Rust and aidoku-cli.
 
-If you don't have Rust installed, follow the instructions at [rustup.rs](https://rustup.rs/). For aidoku-cli, run the following command after installing Rust:
+If you don't have Rust installed, follow the instructions at [rustup.rs](https://rustup.rs/).
+For aidoku-cli, run the following command after installing Rust:
 
 ```sh
 cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
@@ -18,4 +19,4 @@ cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
 
 Then, create a new source project by running `aidoku init`.
 
-A more detailed guide will be coming soon, once APIs are finalized for the Aidoku 0.7 release.
+For a more detailed guide, check out the [source development book](https://aidoku.github.io/aidoku-rs/book/).

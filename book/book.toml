@@ -1,0 +1,9 @@
+[book]
+title = "Aidoku Source Development"
+authors = ["Skitty"]
+language = "en"
+description = "This book outlines how to get started with Aidoku source development using aidoku-rs."
+
+[output.html]
+git-repository-url = "https://github.com/Aidoku/aidoku-rs"
+sidebar-header-nav = false
