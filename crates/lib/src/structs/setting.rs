@@ -278,6 +278,7 @@ macro_rules! create_setting_struct {
 			/// - `content`
 			/// - `listings`
 			/// - `settings`
+			/// - `filters`
 			pub refreshes: Option<Vec<Cow<'static, str>>>,
 			$(
 				$(#[$field_meta])*

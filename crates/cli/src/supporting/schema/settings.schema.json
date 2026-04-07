@@ -30,7 +30,7 @@
 					"type": "array",
 					"items": {
 						"type": "string",
-						"enum": ["content", "listings", "settings"]
+						"enum": ["content", "listings", "settings", "filters"]
 					}
 				}
 			}
