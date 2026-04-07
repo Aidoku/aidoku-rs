@@ -1,0 +1,633 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Aidoku Source Development</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="This book outlines how to get started with Aidoku source development using aidoku-rs.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-6a33ce1e.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-c6bb31e9.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Aidoku Source Development</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/Aidoku/aidoku-rs" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>This guide outlines how to create an Aidoku source using the
+<a href="https://github.com/Aidoku/aidoku-rs">aidoku-rs</a> library.</p>
+<h2 id="asking-questions"><a class="header" href="#asking-questions">Asking Questions</a></h2>
+<p>If this guide doesn’t answer any questions you may have, feel free to reach out in the <code>#source-dev</code>
+channel in the <a href="https://discord.gg/aidoku">Aidoku Discord server</a>. Someone there will be happy to
+help.</p>
+<p>Note that Aidoku doesn’t endorse any sources proxying illegal or NSFW content, so please keep
+discussion limited to technical aspects of source development.</p>
+<h2 id="other-resources"><a class="header" href="#other-resources">Other Resources</a></h2>
+<ul>
+<li><a href="https://aidoku.github.io/aidoku-rs/aidoku/">aidoku-rs documentation</a></li>
+<li><a href="https://github.com/Aidoku/aidoku-rs/tree/main/examples/example-source">example source</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>At a high level, Aidoku sources use network requests to read data from websites and parse it into
+content that the Aidoku application can read and display to users. A source can be written for any
+website that provides content that can be grouped into “series” (or, manga) and “chapters” that have
+“pages” that can be read (plain text content, or images).</p>
+<p>Aidoku sources are <a href="https://webassembly.org/">WebAssembly</a> programs, and the
+<a href="https://github.com/Aidoku/aidoku-rs">aidoku-rs</a> library and
+<a href="https://github.com/Aidoku/aidoku-rs/tree/main/crates/cli">aidoku cli</a> tool enable you to write Rust
+programs that can be compiled into source packages that the Aidoku app runs.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="prerequisites-1"><a href="#prerequisites-1" class="header">Prerequisites</a></h1>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Since aidoku-rs is the only maintained wrapper for the Aidoku source API, all sources are written
+using the <a href="https://rust-lang.org/">Rust</a> programming language. In-depth knowledge of Rust isn’t
+necessary, but familiarity with other programming concepts is. For a guide to learning more about
+Rust, check out the <a href="https://doc.rust-lang.org/book/">Rust book</a>.</p>
+<p>Familiarity with HTML and CSS selectors is also necessary when creating sources that rely on web
+scraping.</p>
+<p>Additionally, you will need a physical iOS device or iOS simulator installed through Xcode for
+running sources.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="tooling-1"><a href="#tooling-1" class="header">Tooling</a></h1>
+<h2 id="tooling"><a class="header" href="#tooling">Tooling</a></h2>
+<p>The first step is to install Rust, if not already installed. The recommended method is to do so
+using <a href="https://rustup.rs/">rustup</a>, which makes updating and managing your installation easy later
+on.</p>
+<p>With Rust installed, the next step is to install the proper toolchain for compiling for WebAssembly.
+You can do so with the following command:</p>
+<pre><code class="language-sh">rustup install wasm32-unknown-unknown
+</code></pre>
+<p>In addition to the Rust tooling, the
+<a href="https://github.com/Aidoku/aidoku-rs/tree/main/crates/cli">aidoku cli</a> provides all the other
+necessary functionality for source development. To install it, run:</p>
+<pre><code class="language-sh">cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="creating-a-source"><a class="header" href="#creating-a-source">Creating a Source</a></h1>
+<p>With Rust and the <code>aidoku</code> cli tool installed, you are ready to create an Aidoku source.</p>
+<p>To create a new project, you can use <code>aidoku</code> in a similar fashion as <code>cargo</code> to initialize the
+required files and directory structure:</p>
+<pre><code class="language-sh">aidoku init source_dir
+</code></pre>
+<p>You will then be prompted to enter the following parameters:</p>
+<ul>
+<li>Source name: the name displayed for the installed source.</li>
+<li>Source URL: a link to whatever website you are creating a source for. If the website has multiple
+or alternative domains, you can configure more by editing the <code>source.json</code> file later.</li>
+<li>Languages: if the website language(s) are shown in the list, you can select them using the arrow
+keys and space bar, then press enter to confirm. Otherwise, select the “other” option and you will
+be prompted to enter any additional (ISO 639) language codes, separated by spaces.</li>
+<li>Content rating: if the website content is largely 18+, select “Primarily NSFW content” (or, if you
+open the website and can reasonably expect to see NSFW content). If the website contains no NSFW
+content, select safe. This helps users filter sources they to install or show.</li>
+</ul>
+<p>These parameters are used to populate an initial <code>source.json</code> file that you can edit to provide
+additional functionality for your source. We will explain this in the next section.</p>
+<h2 id="packaging-the-source"><a class="header" href="#packaging-the-source">Packaging the Source</a></h2>
+<p>To compile the Rust program and package the resource files together in an <code>aix</code> file, you can run
+the following command:</p>
+<pre><code class="language-sh">aidoku package
+</code></pre>
+<p>If the build succeeds, you will have a resulting <code>package.aix</code> file in your current directory that
+can be installed in Aidoku. We will explain in a later chapter the best methods for installing and
+iterating through development builds.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="resource-files-1"><a href="#resource-files-1" class="header">Resource Files</a></h1>
+<h2 id="resource-files"><a class="header" href="#resource-files">Resource Files</a></h2>
+<p>Unique to Aidoku source projects is the <code>res</code> directory, which contains additional files that are
+packaged with the source when compiled. There are three different JSON files that are used for
+configuration, each of which has a corresponding JSON schema that can be used for type hints and
+autocompletion in IDEs.</p>
+<p>To configure this for <a href="https://code.visualstudio.com/">Visual Studio Code</a>, you can set the
+<code>json.schemas</code> key in <code>settings.json</code>:</p>
+<pre><code class="language-json">"json.schemas": [
+	{
+		"fileMatch": ["*/res/source.json"],
+		"url": "https://raw.githubusercontent.com/Aidoku/aidoku-rs/refs/heads/main/crates/cli/src/supporting/schema/source.schema.json"
+	},
+	{
+		"fileMatch": ["*/res/filters.json"],
+		"url": "https://raw.githubusercontent.com/Aidoku/aidoku-rs/refs/heads/main/crates/cli/src/supporting/schema/filters.schema.json"
+	},
+	{
+		"fileMatch": ["*/res/settings.json"],
+		"url": "https://raw.githubusercontent.com/Aidoku/aidoku-rs/refs/heads/main/crates/cli/src/supporting/schema/settings.schema.json"
+	}
+]
+</code></pre>
+<p>Similarly for <a href="https://zed.dev/">Zed</a> (recommended for Rust development), you can configure the
+<code>json-language-server</code> parameters with the same array of schemas:</p>
+<pre><code class="language-json">"lsp": {
+	"json-language-server": {
+		"settings": {
+			"json": {
+				"schemas": [
+					...
+				]
+			}
+		}
+	}
+}
+</code></pre>
+<p>Note that these schemas can also be checked against packaged sources by using <code>aidoku</code>:</p>
+<pre><code class="language-sh">aidoku verify package.aix
+</code></pre>
+<h3 id="sourcejson"><a class="header" href="#sourcejson">source.json</a></h3>
+<p>The <code>source.json</code> file is the only required configuration file, which has three components: “info”
+(required), “listings” (optional), and “config” (optional). Here is an example of how the file
+should be structured:</p>
+<pre><code class="language-json">{
+	"info": {
+		"id": "en.example-source",
+		"name": "Example Source",
+		"version": 1,
+		"url": "https://aidoku.app",
+		"contentRating": 0,
+		"languages": ["en"]
+	},
+	"listings": [
+		{
+			"id": "test",
+			"name": "Test"
+		}
+	],
+	"config": {
+		"supportsTagSearch": true
+	}
+}
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>info.id</code></td><td>A unique identifier for the source. Conventionally, this should be the language and source name, concatenated with a period.</td></tr>
+<tr><td><code>info.name</code></td><td>The displayed name of the source.</td></tr>
+<tr><td><code>info.altNames</code></td><td>An array of additional names that the source should be searchable by.</td></tr>
+<tr><td><code>info.version</code></td><td>The source’s version number. It must be a positive integer and incremented with any notable changes.</td></tr>
+<tr><td><code>info.url</code></td><td>The source’s main URL, which can be used for deep linking.</td></tr>
+<tr><td><code>info.urls</code></td><td>An array of the source’s URLs, If the source has multiple domains, this should be used instead of <code>info.url</code>.</td></tr>
+<tr><td><code>info.contentRating</code></td><td>The NSFW level of the source. <code>0</code> for sources with no NSFW content at all, <code>1</code> for some NSFW, and <code>2</code> for majority NSFW sources.</td></tr>
+<tr><td><code>info.languages</code></td><td>An array of ISO 639 language codes that the source supports.</td></tr>
+<tr><td><code>info.minAppVersion</code></td><td>Optional minimum Aidoku app version supported by the source.</td></tr>
+<tr><td><code>info.maxAppVersion</code></td><td>Optional maximum Aidoku app version supported by the source.</td></tr>
+<tr><td><code>listings</code></td><td>An array of listings that the source supports. Listings can have an <code>id</code>, <code>name</code>, and <code>kind</code> being a grid (0) or list (1).</td></tr>
+<tr><td><code>config.languageSelectType</code></td><td>Either “single” or “multi”, defaulting to “single”. If the app should allow selecting multiple enabled languages.</td></tr>
+<tr><td><code>config.supportsArtistSearch</code></td><td>If the source should allow filtering by series artists without having provided an “artist” text filter.</td></tr>
+<tr><td><code>config.supportsAuthorSearch</code></td><td><code>config.supportsArtistSearch</code> but for authors.</td></tr>
+<tr><td><code>config.supportsTagSearch</code></td><td>If the source should allow filtering by pressing on a tag, even if it doesn’t exist in the source filters.</td></tr>
+<tr><td><code>config.allowsBaseUrlSelect</code></td><td>If selecting a URL from <code>info.urls</code> should be enabled in the source settings.</td></tr>
+<tr><td><code>config.breakingChangeVersion</code></td><td>The source version at which a breaking change that requires migration was made.</td></tr>
+<tr><td><code>config.hidesFiltersWhileSearching</code></td><td>If filters should be disabled with an active search query.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="filtersjson-optional"><a class="header" href="#filtersjson-optional">filters.json (optional)</a></h3>
+<p>The <code>filters.json</code> file allows you to configure static filters for Aidoku to display in the UI. In
+addition to providing static filters, you can also programatically define “dynamic” filters using
+the <code>DynamicFilters</code> trait in your source code, which will be appended to whatever static filters
+you have defined. However, static filters are preferred whenever possible due to quicker loading and
+better inference for various features.</p>
+<p>Filters are defined as JSON objects with varying attributes depending on the “type”:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Filter Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>text</code></td><td>An input field for text content (e.g. author or artist searching).</td></tr>
+<tr><td><code>sort</code></td><td>A sort filter, optionally supporting both ascending and descending directions.</td></tr>
+<tr><td><code>check</code></td><td>A single toggle option.</td></tr>
+<tr><td><code>select</code></td><td>A list allowing selection of a single value.</td></tr>
+<tr><td><code>multi-select</code></td><td>A list allowing selection of multiple values, optionally supporting exclusion as well as inclusion.</td></tr>
+<tr><td><code>note</code></td><td>Non-editable text for information or explanation.</td></tr>
+<tr><td><code>range</code></td><td>An editable “from” and “to” range of numeric values.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="settingsjson-optional"><a class="header" href="#settingsjson-optional">settings.json (optional)</a></h3>
+<p>Similar to the <code>filters.json</code> file, the <code>settings.json</code> file allows you to define static settings
+for your source, with dynamic ones able to be provided through the <code>DynamicSettings</code> trait.</p>
+<p>Like filters, settings are JSON objects with varying attributes depending on the “type”:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Setting Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>group</code></td><td>Used to group other settings into sections with optional header and footer text.</td></tr>
+<tr><td><code>select</code></td><td>A list allowing selection of a single value.</td></tr>
+<tr><td><code>multi-select</code></td><td>A list allowing selection of multiple values.</td></tr>
+<tr><td><code>switch</code></td><td>A toggle with an on and off state.</td></tr>
+<tr><td><code>stepper</code></td><td>A number stepper</td></tr>
+<tr><td><code>segment</code></td><td>A segmented control for selecting a single value from a few options.</td></tr>
+<tr><td><code>text</code></td><td>An input field for text content.</td></tr>
+<tr><td><code>button</code></td><td>A button that can trigger an action for the source to execute programmatically.</td></tr>
+<tr><td><code>link</code></td><td>A button that links to a web page.</td></tr>
+<tr><td><code>login</code></td><td>A login setting, allowing for simple username/password entry or oauth flow handling.</td></tr>
+<tr><td><code>page</code></td><td>Used to group settings into a nested page.</td></tr>
+<tr><td><code>editable-list</code></td><td>An editable list of items, allowing the user to add and remove arbitrary text entries.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Settings values can be fetched and set programmatically using the
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/defaults/index.html">defaults</a> functions provided
+by aidoku-rs.</p>
+<h3 id="iconpng"><a class="header" href="#iconpng">icon.png</a></h3>
+<p>Aidoku expects a PNG image file to display as the source icon. The image should be square, and
+ideally 128x128 with no transparency.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-rust-program-1"><a href="#the-rust-program-1" class="header">The Rust Program</a></h1>
+<h2 id="the-rust-program"><a class="header" href="#the-rust-program">The Rust Program</a></h2>
+<p>Aidoku sources are fundamentally <a href="https://docs.rust-embedded.org/book/intro/no-std.html">no_std</a>
+Rust programs that compile to WebAssembly. Thus, any Rust crates that support <code>no_std</code> (or <code>no_std</code>
+with an allocator) can be utilized as dependencies.</p>
+<p>aidoku-rs expects sources to be written by implementing traits that it provides to a struct, then
+passing that struct to the <code>register_source!</code> macro.</p>
+<h3 id="traits"><a class="header" href="#traits">Traits</a></h3>
+<p>All sources must implement the one required
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.Source.html">Source</a> trait, and then can optionally
+implement any other traits for more features. Check
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/index.html#traits">here</a> for a complete list of traits
+that aidoku-rs provides.</p>
+<p>The <code>Source</code> trait has four required functions:</p>
+<ul>
+<li><a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.Source.html#tymethod.new">new</a>: performs any
+setup required for the source to function (e.g. setting global rate limit) and initializes the
+source struct.</li>
+<li><a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.Source.html#tymethod.get_search_manga_list">get_search_manga_list</a>:
+returns a single page of results, with a query and list of filters if input by the user. Filter
+values will correspond to any of the configured filters in <code>filters.json</code>, and page numbers will
+start at <code>1</code>. If the <code>MangaPageResult</code> you return has <code>has_next_page</code> set to <code>true</code>, then the
+function will be called again with the page number incremented if the user scroll down to load
+another page of results. <code>Manga</code> returned in the result entries only need to have the <code>id</code>,
+<code>title</code>, and <code>cover</code> attributes populated.</li>
+<li><a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.Source.html#tymethod.get_manga_update">get_manga_update</a>:
+if the <code>needs_details</code> parameter is <code>true</code>, then as many of the available <code>manga</code> struct
+attributes should be filled as possible to provide the UI with information to display.
+If <code>needs_chapters</code> is <code>true</code>, the <code>chapters</code> attribute should be set. This function may be called
+with either or both of the booleans set to <code>true</code>, but not neither.</li>
+<li><a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.Source.html#tymethod.get_page_list">get_page_list</a>:
+returns a list of pages for a given manga and chapter.</li>
+</ul>
+<p>Most sources should implement the
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.DeepLinkHandler.html">DeepLinkHandler</a> trait, to
+allow users to replace the “http” or “https” in a url with “aidoku” to open the app directly to
+whatever series or chapter the web page was displaying. This may also be used in the future by the
+app to open urls in the app directly.</p>
+<p>After implementing a basic source that supports searching and filtering, your next step would be
+considering if you want to implement listings with the
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.ListingProvider.html">ListingProvider</a> trait and
+a home page with the <a href="https://aidoku.github.io/aidoku-rs/aidoku/trait.Home.html">Home</a> trait.</p>
+<h3 id="registering"><a class="header" href="#registering">Registering</a></h3>
+<p>The <code>register_source!</code> macro should be called with the source struct name as the first parameter,
+and then all the other traits the struct implements apart from the <code>Source</code> trait. For example:</p>
+<pre><code class="language-rust noplayground">struct MySource;
+
+impl Source for MySource { ... }
+
+impl ImageRequestProvider for MySource { ... }
+
+impl DeepLinkHandler for MySource { ... }
+
+register_source!(MySource, ImageRequestProvider, DeepLinkHandler);</code></pre>
+<p>Under the hood, this macro generates the actual functions that are exposed for Aidoku to call
+directly, and converts the raw data sent from the app to the source into Rust structs for the source
+to manipulate, then converts the structs the source returns in its implemented functions back into
+raw data for the app to read. If you implement a trait for your source, the app won’t take it into
+account unless it is properly registered.</p>
+<h3 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h3>
+<p>All aidoku-rs trait functions expect a <code>Result&lt;..., AidokuError&gt;</code> to be returned, and most library
+functions return <code>Result</code>s with an <code>AidokuError</code>, or errors that can be converted into an
+<code>AidokuError</code>. This means that the <code>?</code> operator can be used liberally, allowing the app to handle
+any errors. In addition, there are two helper macros to assist with creating errors yourself:
+<code>error!</code> and <code>bail!</code>. Both macros allow you to provide a message (that supports formatting like
+<code>format!</code> and <code>println!</code>) that the app will display in the UI if encountered.</p>
+<p><code>error!</code> simply constructs an <code>AidokuError</code>, and is typically used for something like this:</p>
+<pre><code class="language-rust noplayground">let img_element = html.select("img").ok_or_else(|| error!("img element not found"))?;</code></pre>
+<p>Whereas <code>bail!</code> will return immediately. It can be used like this:</p>
+<pre><code class="language-rust noplayground">let Some(img_element) = html.select("img") else {
+	bail!("img element not found");
+};</code></pre>
+<h3 id="network-requests"><a class="header" href="#network-requests">Network Requests</a></h3>
+<p>Nearly every Aidoku source will need to use network requests to fetch data from its target website,
+be it HTML content or API responses, such as JSON data. As a simple example:</p>
+<pre><code class="language-rust noplayground">let response: Response = Request::get("http://example.com")?
+	.header("User-Agent", "Aidoku")
+	.send()?;
+assert_eq!(response.status_code(), 200);</code></pre>
+<p>The other commonly used functions that “send” the network request and return a result are
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/net/struct.Request.html#method.data">data</a> to get
+the raw byte data,
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/net/struct.Request.html#method.string">string</a> to
+get the text content, and
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/net/struct.Request.html#method.html">html</a> to
+automatically parse as HTML. If the “json” feature is enabled for the aidoku-rs dependency, the
+<code>json_owned</code> function can be used to automatically parse the response data using
+<a href="https://docs.rs/serde_json/latest/serde_json/">serde_json</a>.</p>
+<p>Note that all function calls that send the network request are blocking, and will pause your source
+execution until the data is available to return. When performing multiple network requests that
+don’t depend on each other, you can consider parallelizing them with
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/net/struct.Request.html#method.send_all">Request::send_all</a>.</p>
+<h3 id="html-parsing"><a class="header" href="#html-parsing">HTML Parsing</a></h3>
+<p>Aidoku provides APIs for interacting with the <a href="https://github.com/scinfu/SwiftSoup">SwiftSoup</a>
+library, which allows you to extract data from HTML elements using CSS selectors. The main functions
+you should be aware of are
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/html/struct.Element.html#method.select">Element::select</a>,
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/html/struct.Element.html#method.select_first">Element::select_first</a>,
+<a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/html/struct.Element.html#method.text">Element::text</a>,
+and <a href="https://aidoku.github.io/aidoku-rs/aidoku/imports/html/struct.Element.html#method.attr">Element::attr</a>.</p>
+<pre><code class="language-rust noplayground">let html = Request::get("http://aidoku.app")?.html()?;
+let text = html
+	.select_first("main.home .features &gt; .feature h2")
+	.and_then(|element| element.text());
+let image = html
+	.select_first(".image &gt; img")
+	.and_then(|element| element.attr("abs:src"));</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="running"><a class="header" href="#running">Running</a></h1>
+<p>After compiling your source with <code>aidoku package</code> (or <code>aidoku pkg</code>), which generates the
+<code>package.aix</code> file, you have a few options for running.</p>
+<h2 id="xcode"><a class="header" href="#xcode">Xcode</a></h2>
+<p>If you are running macOS and have Xcode installed, a convenient method may be using the iOS
+simulator for testing sources, but it requires a more complex setup. Since Aidoku is open source,
+you can clone the <a href="#running">GitHub repo</a> and install it to a simulator. Then, simply drag and drop the
+“package.aix” file onto the simulator. If Aidoku is attached to the debugger in Xcode, logs will be
+displayed in the Xcode log viewer.</p>
+<h2 id="physical-device"><a class="header" href="#physical-device">Physical Device</a></h2>
+<p>Otherwise, you can choose to either transfer the aix file to the device manually (e.g. via AirDrop),
+or serve a source list with <code>aidoku serve package.aix</code>. The latter method will give you a
+<code>localhost</code> URL that you can add as a source list in Aidoku on any device connected to the same
+network. Your source can then be installed from the “add source” view inside Aidoku, and will show
+as an update if you increment the source version number and recompile. Note that you may need to
+pull down to refresh the source lists on the browse tab.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="debugging"><a class="header" href="#debugging">Debugging</a></h1>
+<p>Now with a general understanding of what goes into creating and running an Aidoku source, we can
+discuss methods for debugging issues.</p>
+<h2 id="logging"><a class="header" href="#logging">Logging</a></h2>
+<p>The age-old solution for debugging is a bunch of print statements. Like any standard Rust program,
+you can use the <code>println!</code> macro to do this, but there are a few options for viewing the resulting
+logs. The standard method is to use the “Display Logs” button in the Advanced app settings. As
+mentioned in the previous chapter, logs will also be displayed in the Xcode log viewer if the
+debugger is attached to Aidoku.</p>
+<p>However, you may also notice the “Log Server” setting above the “Display Logs” button. Aidoku will
+post any log messages to the provided server URL, and you can run your own server with <code>aidoku</code>:</p>
+<pre><code class="language-sh">aidoku logcat
+</code></pre>
+<p>Enter the URL given to you by the command execution in the “Log Server” input field on a device
+connected to the same network and all logs should be streamed.</p>
+<h2 id="writing-tests"><a class="header" href="#writing-tests">Writing Tests</a></h2>
+<p>While Rust programs targeting WebAssembly programs don’t support the standard Rust test runner,
+aidoku-rs provides a custom test runner that simulates Aidoku’s environment. This doesn’t provide a
+complete set of the available source APIs, and there may be a few differences from the Aidoku app,
+but it should be enough for simple tests. To get started, install the test runner with the following
+command:</p>
+<pre><code class="language-sh">cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-test-runner
+</code></pre>
+<p>And then configure the project to use the test runner in the <code>.cargo/config.toml</code> file:</p>
+<pre><code class="language-toml">[build]
+target = "wasm32-unknown-unknown"
+
+[target.wasm32-unknown-unknown]
+runner = "aidoku-test-runner"
+</code></pre>
+<p>Projects created with <code>aidoku init</code> should already have the <code>config.toml</code> file configured and
+<code>aidoku-test</code> added as a dev dependency. To use this, you write tests as you normally would in Rust,
+but attach <code>#[aidoku_test]</code> to test functions rather than <code>#[test]</code>:</p>
+<pre class="playground"><code class="language-rust noplayground#[cfg(test)]"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>mod test {
+	use super::*;
+	use aidoku_test::aidoku_test;
+	
+	#[aidoku_test]
+	fn test_js_execution() {
+		use aidoku::imports::js::JsContext;
+		let context = JsContext::new();
+		let result = context.eval("1 + 2");
+		assert_eq!(result, Ok(String::from("3")));
+	}
+}
+<span class="boring">}</span></code></pre>
+<p>If you run into any issues using the test runner, please
+<a href="https://github.com/Aidoku/aidoku-rs/issues">create an issue</a> on the GitHub repo so we can improve
+it.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
