@@ -317,6 +317,22 @@ pub fn get_status_code(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult 
 	request.response = Some(response);
 	status.as_u16() as i32
 }
+pub fn get_url(mut env: FunctionEnvMut<WasmEnv>, rid: Rid) -> FFIResult {
+	let Some(request) = env
+		.data_mut()
+		.store
+		.get_mut(rid)
+		.and_then(|item| item.as_request())
+	else {
+		return Result::InvalidDescriptor.into();
+	};
+	let Some(response) = request.response.take() else {
+		return Result::MissingResponse.into();
+	};
+	let url = response.url.as_str().into();
+	request.response = Some(response);
+	env.data_mut().store.store(StoreItem::String(url))
+}
 pub fn get_header(
 	mut env: FunctionEnvMut<WasmEnv>,
 	rid: Rid,

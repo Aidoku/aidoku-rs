@@ -115,6 +115,7 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"read_data" => Function::new_typed_with_env(store, env, net::read_data),
 			"get_image" => Function::new_typed_with_env(store, env, net::get_image),
 			"get_status_code" => Function::new_typed_with_env(store, env, net::get_status_code),
+			"get_url" => Function::new_typed_with_env(store, env, net::get_url),
 			"get_header" => Function::new_typed_with_env(store, env, net::get_header),
 			"html" => Function::new_typed_with_env(store, env, net::html),
 
