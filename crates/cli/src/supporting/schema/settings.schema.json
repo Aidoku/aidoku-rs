@@ -489,6 +489,42 @@
 				}
 			]
 		},
+		"pickerSetting": {
+			"type": "object",
+			"allOf": [
+				{
+					"$ref": "#/definitions/settingBase"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["picker"]
+						},
+						"values": {
+							"description": "The values for the options, which are stored in defaults.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"titles": {
+							"description": "An optional list of display names for the options to be used instead of the values.",
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"default": {
+							"description": "The default value for this setting.",
+							"type": "string"
+						}
+					},
+					"required": ["type", "key", "title"]
+				}
+			]
+		},
 		"pageSetting": {
 			"type": "object",
 			"allOf": [
@@ -602,6 +638,9 @@
 					"$ref": "#/definitions/editableListSetting"
 				},
 				{
+					"$ref": "#/definitions/pickerSetting"
+				},
+				{
 					"$ref": "#/definitions/pageSetting"
 				}
 			]
@@ -619,6 +658,14 @@
 				},
 				"footer": {
 					"description": "Footer text of the group.",
+					"type": "string"
+				},
+				"requires": {
+					"description": "Require that another setting be enabled before this one can be modified.",
+					"type": "string"
+				},
+				"requiresFalse": {
+					"description": "Require that another setting be disabled before this one can be modified.",
 					"type": "string"
 				},
 				"items": {

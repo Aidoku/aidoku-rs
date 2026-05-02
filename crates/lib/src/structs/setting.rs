@@ -190,6 +190,15 @@ pub enum SettingValue {
 		/// The default list items.
 		default: Option<Vec<Cow<'static, str>>>,
 	},
+	/// An inline picker that allows selection of a single value.
+	Picker {
+		/// The values of the options.
+		values: Vec<Cow<'static, str>>,
+		/// Optional display titles for the options. If not provided, the values will be used as titles.
+		titles: Option<Vec<Cow<'static, str>>>,
+		/// The default selected value.
+		default: Option<String>,
+	},
 }
 
 impl SettingValue {
@@ -207,6 +216,7 @@ impl SettingValue {
 			Self::Login { .. } => "login",
 			Self::Page { .. } => "page",
 			Self::EditableList { .. } => "editable-list",
+			Self::Picker { .. } => "picker",
 		}
 	}
 }
@@ -562,6 +572,25 @@ create_setting_struct!(
 		line_limit: None,
 		inline: false,
 		placeholder: None,
+		default: None,
+	}
+);
+
+create_setting_struct!(
+	PickerSetting,
+	Picker,
+	"An inline picker that allows selection of a single value.",
+	{
+		/// The values of the options.
+		values: Vec<Cow<'static, str>>,
+		/// Optional display titles for the options. If not provided, the values will be used as titles.
+		titles: Option<Vec<Cow<'static, str>>>,
+		/// The default selected value. If not provided, the first value will be selected.
+		default: Option<String>,
+	},
+	{
+		values: Vec::new(),
+		titles: None,
 		default: None,
 	}
 );
