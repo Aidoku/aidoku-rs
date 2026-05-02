@@ -220,6 +220,8 @@ pub fn run(
 			urls: None,
 			content_rating: Some(content_rating),
 			languages,
+			min_app_version: None,
+			max_app_version: None,
 		},
 	};
 
