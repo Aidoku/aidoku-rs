@@ -29,6 +29,10 @@ pub struct SourceInfo {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub content_rating: Option<SourceContentRating>,
 	pub languages: Vec<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub min_app_version: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub max_app_version: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -56,4 +60,8 @@ pub struct SourcesItem {
 	pub alt_names: Option<Vec<String>>,
 	#[serde(rename = "baseURL")]
 	pub base_url: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub min_app_version: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub max_app_version: Option<String>,
 }

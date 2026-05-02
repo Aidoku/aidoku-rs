@@ -100,6 +100,8 @@ pub fn run(
 				url @ Some(_) => url,
 				None => json.info.urls.and_then(|urls| urls.first().cloned()),
 			},
+			min_app_version: json.info.min_app_version,
+			max_app_version: json.info.max_app_version,
 		})
 		.collect();
 
