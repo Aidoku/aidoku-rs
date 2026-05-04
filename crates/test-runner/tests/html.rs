@@ -25,7 +25,7 @@ fn test_select_root_matches() {
 	let items = root.select(&selector).expect("select failed").0;
 	assert_eq!(items.len(), 2);
 
-	let id = items.first().unwrap().id;
+	let id = items.first().unwrap().0.id;
 	let node = html.html.tree.get(id).unwrap();
 	let element = ElementRef::wrap(node).unwrap();
 	assert_eq!(element.value().id(), Some("root"));

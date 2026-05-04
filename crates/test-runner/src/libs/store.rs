@@ -1,4 +1,4 @@
-use super::{HtmlDocument, HtmlElement, HtmlElementList, NetRequest, Rid};
+use super::{HtmlDocument, HtmlElement, HtmlElementList, HtmlNode, NetRequest, Rid};
 use boa_engine::Context;
 use font_kit::font::Font;
 use raqote::DrawTarget;
@@ -16,6 +16,8 @@ pub enum StoreItem {
 	Request(Box<NetRequest>),
 	HtmlDocument(HtmlDocument),
 	HtmlElement(HtmlElement),
+	HtmlNode(HtmlNode),
+	HtmlNodeList(Vec<HtmlNode>),
 	HtmlElementList(HtmlElementList),
 	JsContext(Box<Context>),
 	Encoded(Vec<u8>),
@@ -48,6 +50,16 @@ impl StoreItem {
 	pub fn as_html_document(&mut self) -> Option<&mut HtmlDocument> {
 		if let StoreItem::HtmlDocument(h) = self {
 			Some(h)
+		} else {
+			None
+		}
+	}
+
+	pub fn as_html_node(&mut self) -> Option<&mut HtmlNode> {
+		if let StoreItem::HtmlNode(h) = self {
+			Some(h)
+		} else if let StoreItem::HtmlElement(h) = self {
+			Some(&mut h.0)
 		} else {
 			None
 		}

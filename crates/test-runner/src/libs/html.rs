@@ -1,6 +1,6 @@
 use ego_tree::NodeId;
 use scraper::{CaseSensitivity, ElementRef, Html, Selector};
-use std::rc::Rc;
+use std::{ops::Deref, rc::Rc};
 use url::Url;
 
 #[derive(Debug, Clone)]
@@ -10,7 +10,10 @@ pub struct HtmlDocument {
 }
 
 #[derive(Debug, Clone)]
-pub struct HtmlElement {
+pub struct HtmlElement(pub HtmlNode);
+
+#[derive(Debug, Clone)]
+pub struct HtmlNode {
 	pub html: Rc<Html>,
 	pub base_uri: Option<Rc<Url>>,
 	pub id: NodeId,
@@ -42,10 +45,12 @@ impl HtmlDocument {
 		let elements: Vec<HtmlElement> = self
 			.html
 			.select_with_root(selector)
-			.map(|element| HtmlElement {
-				html: self.html.clone(),
-				base_uri: self.base_uri.clone(),
-				id: element.id(),
+			.map(|element| {
+				HtmlElement(HtmlNode {
+					html: self.html.clone(),
+					base_uri: self.base_uri.clone(),
+					id: element.id(),
+				})
 			})
 			.collect();
 
@@ -53,9 +58,89 @@ impl HtmlDocument {
 	}
 }
 
+impl HtmlNode {
+	pub fn is_element(&self) -> bool {
+		let Some(node) = self.html.tree.get(self.id) else {
+			return false;
+		};
+		node.value().is_element()
+	}
+
+	pub fn is_document(&self) -> bool {
+		let Some(node) = self.html.tree.get(self.id) else {
+			return false;
+		};
+		node.value().is_document()
+	}
+
+	pub fn is_text(&self) -> bool {
+		let Some(node) = self.html.tree.get(self.id) else {
+			return false;
+		};
+		node.value().is_text()
+	}
+
+	pub fn is_comment(&self) -> bool {
+		let Some(node) = self.html.tree.get(self.id) else {
+			return false;
+		};
+		node.value().is_comment()
+	}
+
+	pub fn child_nodes(&self) -> Option<Vec<HtmlNode>> {
+		let node = self.html.tree.get(self.id)?;
+		Some(
+			node.children()
+				.map(|node| self.child_node(node.id()))
+				.collect::<Vec<HtmlNode>>(),
+		)
+	}
+
+	pub fn parent(&self) -> Option<HtmlNode> {
+		let node = self.html.tree.get(self.id)?;
+		node.parent().map(|node| self.child_node(node.id()))
+	}
+
+	pub fn siblings(&self) -> Option<Vec<HtmlNode>> {
+		let node = self.html.tree.get(self.id)?;
+		Some(
+			node.next_siblings()
+				.map(|node| self.child_node(node.id()))
+				.collect::<Vec<HtmlNode>>(),
+		)
+	}
+
+	pub fn next_sibling(&self) -> Option<HtmlNode> {
+		let node = self.html.tree.get(self.id)?;
+		node.next_sibling().map(|node| self.child_node(node.id()))
+	}
+
+	pub fn prev_sibling(&self) -> Option<HtmlNode> {
+		let node = self.html.tree.get(self.id)?;
+		node.prev_sibling().map(|node| self.child_node(node.id()))
+	}
+
+	pub fn text(&self) -> Option<String> {
+		let node = self.html.tree.get(self.id)?;
+		if let Some(text) = node.value().as_text() {
+			Some(text.deref().into())
+		} else {
+			None
+		}
+	}
+
+	fn child_node(&self, id: NodeId) -> HtmlNode {
+		HtmlNode {
+			html: self.html.clone(),
+			base_uri: self.base_uri.clone(),
+			id,
+		}
+	}
+}
+
 impl HtmlElement {
 	pub fn select(&self, selector: &Selector) -> Option<HtmlElementList> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 
 		let elements: Vec<HtmlElement> = element
@@ -67,7 +152,7 @@ impl HtmlElement {
 	}
 
 	pub fn select_first(&self, selector: &Selector) -> Option<HtmlElement> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 
 		element
@@ -79,11 +164,11 @@ impl HtmlElement {
 	pub fn attr(&self, name: &str) -> Option<String> {
 		let has_abs_prefix = name.starts_with("abs:");
 		let name = if has_abs_prefix { &name[4..] } else { name };
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		let attr = element.attr(name).map(|value| value.to_string());
 		if has_abs_prefix {
-			if let Some(base_uri) = self.base_uri.as_ref() {
+			if let Some(base_uri) = self.0.base_uri.as_ref() {
 				attr.as_ref()
 					// if the attribute is already a url, return it
 					.and_then(|value| Url::parse(value).ok())
@@ -103,7 +188,7 @@ impl HtmlElement {
 	}
 
 	pub fn text(&self, trimmed: bool) -> Option<String> {
-		let result = ElementRef::wrap(self.html.tree.get(self.id)?)?
+		let result = ElementRef::wrap(self.0.html.tree.get(self.0.id)?)?
 			.text()
 			.collect::<String>();
 		if trimmed {
@@ -114,25 +199,25 @@ impl HtmlElement {
 	}
 
 	pub fn html(&self) -> Option<String> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		Some(element.inner_html())
 	}
 
 	pub fn outer_html(&self) -> Option<String> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		Some(element.html())
 	}
 
 	pub fn parent(&self) -> Option<HtmlElement> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		element.parent().map(|element| self.child(element.id()))
 	}
 
 	pub fn children(&self) -> Option<HtmlElementList> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		Some(HtmlElementList(
 			element
@@ -143,7 +228,7 @@ impl HtmlElement {
 	}
 
 	pub fn siblings(&self) -> Option<HtmlElementList> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		Some(HtmlElementList(
 			element
@@ -154,7 +239,7 @@ impl HtmlElement {
 	}
 
 	pub fn next_sibling(&self) -> Option<HtmlElement> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		element
 			.next_sibling()
@@ -162,42 +247,40 @@ impl HtmlElement {
 	}
 
 	pub fn prev_sibling(&self) -> Option<HtmlElement> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
-		element.prev_sibling().map(|element| HtmlElement {
-			html: self.html.clone(),
-			id: element.id(),
-			base_uri: self.base_uri.clone(),
-		})
+		element
+			.prev_sibling()
+			.map(|element| self.child(element.id()))
 	}
 
 	pub fn own_text(&self) -> Option<String> {
-		ElementRef::wrap(self.html.tree.get(self.id)?)?
+		ElementRef::wrap(self.0.html.tree.get(self.0.id)?)?
 			.text()
 			.next()
 			.map(|text| text.to_string())
 	}
 
 	pub fn id(&self) -> Option<String> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		element.value().id().map(|s| s.to_string())
 	}
 
 	pub fn tag_name(&self) -> Option<String> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		Some(element.value().name().to_string())
 	}
 
 	pub fn class_name(&self) -> Option<String> {
-		let node = self.html.tree.get(self.id)?;
+		let node = self.0.html.tree.get(self.0.id)?;
 		let element = ElementRef::wrap(node)?;
 		Some(element.value().classes().collect::<Vec<&str>>().join(" "))
 	}
 
 	pub fn has_class(&self, class: &str) -> bool {
-		let Some(node) = self.html.tree.get(self.id) else {
+		let Some(node) = self.0.html.tree.get(self.0.id) else {
 			return false;
 		};
 		let Some(element) = ElementRef::wrap(node) else {
@@ -209,7 +292,7 @@ impl HtmlElement {
 	}
 
 	pub fn has_attr(&self, name: &str) -> bool {
-		let Some(node) = self.html.tree.get(self.id) else {
+		let Some(node) = self.0.html.tree.get(self.0.id) else {
 			return false;
 		};
 		let Some(element) = ElementRef::wrap(node) else {
@@ -219,10 +302,30 @@ impl HtmlElement {
 	}
 
 	fn child(&self, id: NodeId) -> HtmlElement {
-		HtmlElement {
-			html: self.html.clone(),
-			base_uri: self.base_uri.clone(),
+		HtmlElement(self.child_node(id))
+	}
+
+	fn child_node(&self, id: NodeId) -> HtmlNode {
+		HtmlNode {
+			html: self.0.html.clone(),
+			base_uri: self.0.base_uri.clone(),
 			id,
+		}
+	}
+}
+
+pub enum ConversionError {
+	NotElement,
+}
+
+impl TryFrom<HtmlNode> for HtmlElement {
+	type Error = ConversionError;
+
+	fn try_from(value: HtmlNode) -> Result<Self, Self::Error> {
+		if value.is_element() {
+			Ok(Self(value))
+		} else {
+			Err(ConversionError::NotElement)
 		}
 	}
 }

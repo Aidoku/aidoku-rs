@@ -8,7 +8,7 @@ use super::{
 	FFIResult, Rid,
 	std::{destroy, read_string_and_destroy},
 };
-use crate::alloc::String;
+use crate::alloc::{String, Vec};
 use core::fmt::Display;
 
 #[link(wasm_import_module = "html")]
@@ -28,33 +28,9 @@ unsafe extern "C" {
 	fn escape(text: *const u8, text_len: usize) -> FFIResult;
 	fn unescape(text: *const u8, text_len: usize) -> FFIResult;
 
-	fn select(rid: Rid, query: *const u8, query_len: usize) -> FFIResult;
-	fn select_first(rid: Rid, query: *const u8, query_len: usize) -> FFIResult;
-	fn attr(rid: Rid, key: *const u8, key_len: usize) -> FFIResult;
-	fn text(rid: Rid) -> FFIResult;
-	fn untrimmed_text(rid: Rid) -> FFIResult;
-	fn html(rid: Rid) -> FFIResult;
-	fn outer_html(rid: Rid) -> FFIResult;
-	fn remove(rid: Rid) -> FFIResult;
+	fn kind(rid: Rid) -> FFIResult;
 
-	fn set_text(rid: Rid, text: *const u8, text_len: usize) -> FFIResult;
-	fn set_html(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
-	fn prepend(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
-	fn append(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
-	fn parent(rid: Rid) -> FFIResult;
-	fn children(rid: Rid) -> FFIResult;
-	fn siblings(rid: Rid) -> FFIResult;
-	fn next(rid: Rid) -> FFIResult;
-	fn previous(rid: Rid) -> FFIResult;
-	fn base_uri(rid: Rid) -> FFIResult;
-	fn own_text(rid: Rid) -> FFIResult;
-	fn data(rid: Rid) -> FFIResult;
-	fn id(rid: Rid) -> FFIResult;
-	fn tag_name(rid: Rid) -> FFIResult;
-	fn class_name(rid: Rid) -> FFIResult;
-	fn has_class(rid: Rid, class: *const u8, class_len: usize) -> bool;
-	fn add_class(rid: Rid, class: *const u8, class_len: usize) -> FFIResult;
-	fn remove_class(rid: Rid, class: *const u8, class_len: usize) -> FFIResult;
+	fn child_nodes(rid: Rid) -> FFIResult;
 	fn has_attr(rid: Rid, attr: *const u8, attr_len: usize) -> bool;
 	fn set_attr(
 		rid: Rid,
@@ -65,12 +41,42 @@ unsafe extern "C" {
 	) -> FFIResult;
 	fn remove_attr(rid: Rid, attr: *const u8, attr_len: usize) -> FFIResult;
 
+	fn set_text(rid: Rid, text: *const u8, text_len: usize) -> FFIResult;
+	fn set_html(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
+	fn prepend(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
+	fn append(rid: Rid, html: *const u8, html_len: usize) -> FFIResult;
+	fn children(rid: Rid) -> FFIResult;
+	fn base_uri(rid: Rid) -> FFIResult;
+	fn own_text(rid: Rid) -> FFIResult;
+	fn data(rid: Rid) -> FFIResult;
+	fn id(rid: Rid) -> FFIResult;
+	fn tag_name(rid: Rid) -> FFIResult;
+	fn class_name(rid: Rid) -> FFIResult;
+	fn has_class(rid: Rid, class: *const u8, class_len: usize) -> bool;
+	fn add_class(rid: Rid, class: *const u8, class_len: usize) -> FFIResult;
+	fn remove_class(rid: Rid, class: *const u8, class_len: usize) -> FFIResult;
+
 	fn first(rid: Rid) -> FFIResult;
 	fn last(rid: Rid) -> FFIResult;
 	#[allow(clashing_extern_declarations)]
 	#[link_name = "get"]
 	fn html_get(rid: Rid, index: usize) -> FFIResult;
 	fn size(rid: Rid) -> FFIResult;
+
+	fn parent(rid: Rid) -> FFIResult;
+	fn siblings(rid: Rid) -> FFIResult;
+	fn next(rid: Rid) -> FFIResult;
+	fn previous(rid: Rid) -> FFIResult;
+
+	fn attr(rid: Rid, key: *const u8, key_len: usize) -> FFIResult;
+	fn outer_html(rid: Rid) -> FFIResult;
+	fn remove(rid: Rid) -> FFIResult;
+
+	fn select(rid: Rid, query: *const u8, query_len: usize) -> FFIResult;
+	fn select_first(rid: Rid, query: *const u8, query_len: usize) -> FFIResult;
+	fn text(rid: Rid) -> FFIResult;
+	fn untrimmed_text(rid: Rid) -> FFIResult;
+	fn html(rid: Rid) -> FFIResult;
 }
 
 /// Error type for HTML operations.
@@ -203,6 +209,579 @@ impl Html {
 	}
 }
 
+#[derive(PartialEq, Eq, Debug)]
+pub enum Kind {
+	Unknown,
+	Node,
+	TextNode,
+	DataNode,
+	Comment,
+	Element,
+	ElementList,
+	Document,
+}
+
+impl From<FFIResult> for Kind {
+	fn from(value: FFIResult) -> Self {
+		match value {
+			0 => Kind::Unknown,
+			1 => Kind::Node,
+			2 => Kind::TextNode,
+			3 => Kind::DataNode,
+			4 => Kind::Comment,
+			5 => Kind::Element,
+			6 => Kind::ElementList,
+			7 => Kind::Document,
+			_ => Kind::Unknown,
+		}
+	}
+}
+
+/// A single HTML node.
+pub struct Node {
+	rid: Rid,
+}
+
+impl Node {
+	/// Get an instance from a [Rid].
+	unsafe fn from(rid: Rid) -> Self {
+		Self { rid }
+	}
+
+	/// Get the kind of the node.
+	pub fn kind(&self) -> Kind {
+		unsafe { kind(self.rid) }.into()
+	}
+
+	/// Get the node's parent node, returning `None` if there isn't one.
+	pub fn parent(&self) -> Option<Node> {
+		let rid = unsafe { parent(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Node::from(rid) })
+	}
+
+	fn read_node_list(rid: i32) -> Vec<Node> {
+		let mut nodes = Vec::new();
+		if rid < 0 {
+			return nodes;
+		}
+		let len = unsafe { size(rid) };
+		if len <= 0 {
+			return nodes;
+		}
+		for index in 0..len as usize {
+			let node_rid = unsafe { html_get(rid, index) };
+			if node_rid < 0 {
+				continue;
+			}
+			nodes.push(unsafe { Node::from(node_rid) });
+		}
+		nodes
+	}
+
+	/// Get the node's child nodes.
+	pub fn child_nodes(&self) -> Vec<Node> {
+		let rid = unsafe { child_nodes(self.rid) };
+		Self::read_node_list(rid)
+	}
+
+	/// Get the sibling nodes of the node.
+	pub fn siblings(&self) -> Vec<Node> {
+		let rid = unsafe { siblings(self.rid) };
+		Self::read_node_list(rid)
+	}
+
+	/// Get the next sibling of the node, returning `None` if there isn't one.
+	pub fn next(&self) -> Option<Node> {
+		let rid = unsafe { next(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Node::from(rid) })
+	}
+
+	/// Get the previous sibling of the node, returning `None` if there isn't one.
+	pub fn prev(&self) -> Option<Node> {
+		let rid = unsafe { previous(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Node::from(rid) })
+	}
+
+	/// Get the node's outer HTML.
+	pub fn outer_html(&self) -> Option<String> {
+		let rid = unsafe { outer_html(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Test if this node has an attribute. Case insensitive.
+	pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
+		let attr_name = attr_name.as_ref();
+		unsafe { has_attr(self.rid, attr_name.as_ptr(), attr_name.len()) }
+	}
+
+	/// Set an attribute value on this node.
+	///
+	/// If this node already has an attribute with the key, its value is updated;
+	/// otherwise, a new attribute is added.
+	pub fn set_attr<K: AsRef<str>, V: AsRef<str>>(
+		&mut self,
+		key: K,
+		value: V,
+	) -> Result<(), HtmlError> {
+		let key = key.as_ref();
+		let value = value.as_ref();
+		let result = unsafe {
+			set_attr(
+				self.rid,
+				key.as_ptr(),
+				key.len(),
+				value.as_ptr(),
+				value.len(),
+			)
+		};
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Remove an attribute from this node.
+	pub fn remove_attr<T: AsRef<str>>(&mut self, attr: T) -> Result<(), HtmlError> {
+		let attr = attr.as_ref();
+		let result = unsafe { remove_attr(self.rid, attr.as_ptr(), attr.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Get the text of this node, if it is a text node.
+	pub fn text(&self) -> Option<String> {
+		let kind = self.kind();
+		if !matches!(kind, Kind::TextNode | Kind::Element) {
+			return None;
+		}
+		let rid = unsafe { text(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the data of this node, if it is a data node or comment.
+	pub fn data(&self) -> Option<String> {
+		let kind = self.kind();
+		if !matches!(kind, Kind::DataNode | Kind::Comment | Kind::Element) {
+			return None;
+		}
+		let rid = unsafe { data(self.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+}
+
+impl Display for Node {
+	/// Returns the outer HTML of the node.
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		write!(f, "{}", self.outer_html().unwrap_or_default())
+	}
+}
+
+impl Drop for Node {
+	fn drop(&mut self) {
+		unsafe { destroy(self.rid) }
+	}
+}
+
+/// A single HTML element.
+pub struct Element(pub(crate) Node);
+
+impl Element {
+	/// Get an instance from a [Rid].
+	unsafe fn from(rid: Rid) -> Self {
+		Self(unsafe { Node::from(rid) })
+	}
+
+	/// Get the kind of the element.
+	pub fn kind(&self) -> Kind {
+		self.0.kind()
+	}
+
+	/// Find elements that match the given CSS (or JQuery) selector.
+	pub fn select<T: AsRef<str>>(&self, css_query: T) -> Option<ElementList> {
+		let query = css_query.as_ref();
+		let rid = unsafe { select(self.0.rid, query.as_ptr(), query.len()) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { ElementList::from(rid) })
+	}
+
+	/// Find the first element that matches the given CSS (or JQuery) selector.
+	pub fn select_first<T: AsRef<str>>(&self, css_query: T) -> Option<Element> {
+		let query = css_query.as_ref();
+		let rid = unsafe { select_first(self.0.rid, query.as_ptr(), query.len()) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Element::from(rid) })
+	}
+
+	/// Get an attribute value by its key.
+	///
+	/// To get an absolute URL from an attribute that may be a relative URL,
+	/// prefix the key with `abs:`.
+	///
+	/// # Examples
+	/// ```ignore
+	/// use aidoku::imports::html::Html;
+	/// let html = Html::parse_with_url("<img src=\"/image.jpg\" />", "https://example.com").unwrap();
+	/// let el = html.select_first("img").unwrap();
+	/// assert_eq!(
+	///     el.attr("abs:src"),
+	///     Some("https://example.com/image.jpg".into())
+	/// );
+	/// ```
+	pub fn attr<T: AsRef<str>>(&self, attr_name: T) -> Option<String> {
+		let attr_name = attr_name.as_ref();
+		let rid = unsafe { attr(self.0.rid, attr_name.as_ptr(), attr_name.len()) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the normalized, combined text of this element and its children.
+	///
+	/// Whitespace is normalized and trimmed.
+	///
+	/// Note that this method returns text that would be presented to a reader.
+	/// The contents of data nodes (e.g. `<script>` tags) are not considered text,
+	/// and instead, [Element::html] or [Element::data] can be used for them.
+	///
+	/// # Examples
+	/// ```ignore
+	/// use aidoku::imports::html::Html;
+	/// let html = Html::parse("<p>Hello <b>there</b> now! </p>").unwrap();
+	/// let el = html.select_first("p").unwrap();
+	/// assert_eq!(el.text(), Some("Hello there now!".into()));
+	/// ```
+	pub fn text(&self) -> Option<String> {
+		let rid = unsafe { text(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the text of this element and its children.
+	///
+	/// Whitespace is *not* normalized and trimmed.
+	///
+	/// Notices from [Element::text] apply.
+	///
+	/// # Examples
+	/// ```ignore
+	/// use aidoku::imports::html::Html;
+	/// let html = Html::parse("<p>Hello <b>there</b> now! </p>").unwrap();
+	/// let el = html.select_first("p").unwrap();
+	/// assert_eq!(el.untrimmed_text(), Some("Hello there now! ".into()));
+	/// ```
+	pub fn untrimmed_text(&self) -> Option<String> {
+		let rid = unsafe { untrimmed_text(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the element's inner HTML.
+	///
+	/// # Examples
+	/// ```ignore
+	/// use aidoku::imports::html::Html;
+	/// let html = Html::parse("<div><p></p></div>").unwrap();
+	/// let div = html.select_first("div").unwrap();
+	/// assert_eq!(div.html(), Some("<p></p>".into()));
+	/// ```
+	pub fn html(&self) -> Option<String> {
+		let rid = unsafe { html(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the element's outer HTML.
+	///
+	/// # Examples
+	/// ```ignore
+	/// use aidoku::imports::html::Html;
+	/// let html = Html::parse("<div><p></p></div>").unwrap();
+	/// let div = html.select_first("div").unwrap();
+	/// assert_eq!(div.outer_html(), Some("<div><p></p></div>".into()));
+	/// ```
+	pub fn outer_html(&self) -> Option<String> {
+		self.0.outer_html()
+	}
+
+	/// Remove this element from the DOM tree.
+	pub fn remove(self) {
+		_ = unsafe { remove(self.0.rid) };
+	}
+
+	/// Get the element's parent element, returning `None` if there isn't one.
+	pub fn parent(&self) -> Option<Element> {
+		let rid = unsafe { parent(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Element::from(rid) })
+	}
+
+	/// Get the elements's child nodes.
+	pub fn child_nodes(&self) -> Vec<Node> {
+		self.0.child_nodes()
+	}
+
+	/// Get the element's children elements.
+	pub fn children(&self) -> ElementList {
+		let rid = unsafe { children(self.0.rid) };
+		unsafe { ElementList::from(rid) }
+	}
+
+	/// Get the sibling elements of the element.
+	pub fn siblings(&self) -> ElementList {
+		let rid = unsafe { siblings(self.0.rid) };
+		unsafe { ElementList::from(rid) }
+	}
+
+	/// Get the next sibling element of the element, returning `None` if there isn't one.
+	pub fn next(&self) -> Option<Element> {
+		let rid = unsafe { next(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Element::from(rid) })
+	}
+
+	/// Get the previous sibling element of the element, returning `None` if there isn't one.
+	pub fn prev(&self) -> Option<Element> {
+		let rid = unsafe { previous(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		Some(unsafe { Element::from(rid) })
+	}
+
+	/// Set the element's text content, clearing any existing content.
+	pub fn set_text<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
+		let text = text.as_ref();
+		let result = unsafe { set_text(self.0.rid, text.as_ptr(), text.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Set the element's inner HTML, clearing the existing HTML.
+	pub fn set_html<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
+		let text = text.as_ref();
+		let result = unsafe { set_html(self.0.rid, text.as_ptr(), text.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Prepend inner HTML into this element.
+	///
+	/// The given HTML will be parsed, and each node prepended to the start
+	/// of the element's children.
+	pub fn prepend<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
+		let text = text.as_ref();
+		let result = unsafe { prepend(self.0.rid, text.as_ptr(), text.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Append inner HTML into this element.
+	///
+	/// The given HTML will be parsed, and each node appended to the end
+	/// of the element's children.
+	pub fn append<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
+		let text = text.as_ref();
+		let result = unsafe { append(self.0.rid, text.as_ptr(), text.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Get the base URI of this Element.
+	pub fn base_uri(&self) -> Option<String> {
+		let rid = unsafe { base_uri(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Gets the (normalized) text owned by this element.
+	pub fn own_text(&self) -> Option<String> {
+		let rid = unsafe { own_text(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the combined data (e.g. the inside of a `<script>` tag) of this element.
+	///
+	/// Note that data is NOT the text of the element. Use [Element::text]
+	/// to get the text that would be visible to a user, and [Element::data]
+	/// for the contents of scripts, comments, CSS styles, etc.
+	pub fn data(&self) -> Option<String> {
+		let rid = unsafe { data(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the `id` attribute of this element.
+	pub fn id(&self) -> Option<String> {
+		let rid = unsafe { id(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the name of the tag for this element.
+	///
+	/// This will always be the lowercased version. For example, `<DIV>` and
+	/// `<div>` would both return `div`.
+	pub fn tag_name(&self) -> Option<String> {
+		let rid = unsafe { tag_name(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Get the literal value of this node's `class` attribute.
+	///
+	/// For example, on `<div class="header gray">` this would return `header gray`.
+	pub fn class_name(&self) -> Option<String> {
+		let rid = unsafe { class_name(self.0.rid) };
+		if HtmlError::from(rid).is_some() {
+			return None;
+		}
+		read_string_and_destroy(rid)
+	}
+
+	/// Test if this element has a class. Case insensitive.
+	pub fn has_class<T: AsRef<str>>(&self, class_name: T) -> bool {
+		let class_name = class_name.as_ref();
+		unsafe { has_class(self.0.rid, class_name.as_ptr(), class_name.len()) }
+	}
+
+	/// Add a class name to this element's class attribute.
+	pub fn add_class<T: AsRef<str>>(&mut self, class_name: T) -> Result<(), HtmlError> {
+		let class_name = class_name.as_ref();
+		let result = unsafe { add_class(self.0.rid, class_name.as_ptr(), class_name.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Remove a class name from this element's class attribute.
+	pub fn remove_class<T: AsRef<str>>(&mut self, class_name: T) -> Result<(), HtmlError> {
+		let class_name = class_name.as_ref();
+		let result = unsafe { remove_class(self.0.rid, class_name.as_ptr(), class_name.len()) };
+
+		if let Some(error) = HtmlError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Test if this element has an attribute. Case insensitive.
+	pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
+		self.0.has_attr(attr_name)
+	}
+
+	/// Set an attribute value on this element.
+	///
+	/// If this element already has an attribute with the key, its value is updated;
+	/// otherwise, a new attribute is added.
+	pub fn set_attr<K: AsRef<str>, V: AsRef<str>>(
+		&mut self,
+		key: K,
+		value: V,
+	) -> Result<(), HtmlError> {
+		self.0.set_attr(key, value)
+	}
+
+	/// Remove an attribute from this element.
+	pub fn remove_attr<T: AsRef<str>>(&mut self, attr: T) -> Result<(), HtmlError> {
+		self.0.remove_attr(attr)
+	}
+}
+
+impl Display for Element {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		self.0.fmt(f)
+	}
+}
+
+impl From<Element> for Node {
+	fn from(value: Element) -> Self {
+		value.0
+	}
+}
+
+impl TryFrom<Node> for Element {
+	type Error = HtmlError;
+
+	fn try_from(value: Node) -> Result<Self, HtmlError> {
+		let kind = value.kind();
+		match kind {
+			Kind::Element => Ok(Self(value)),
+			Kind::Document => Ok(Self(value)),
+			_ => Err(HtmlError::InvalidDescriptor),
+		}
+	}
+}
+
 /// A complete HTML document.
 pub struct Document(pub(crate) Element);
 
@@ -283,387 +862,33 @@ impl Document {
 	}
 }
 
-/// A single HTML element.
-pub struct Element {
-	rid: Rid,
+impl From<Document> for Element {
+	fn from(value: Document) -> Self {
+		value.0
+	}
 }
 
-impl Element {
-	/// Get an instance from a [Rid].
-	unsafe fn from(rid: Rid) -> Self {
-		Self { rid }
-	}
+impl TryFrom<Node> for Document {
+	type Error = HtmlError;
 
-	/// Find elements that match the given CSS (or JQuery) selector.
-	pub fn select<T: AsRef<str>>(&self, css_query: T) -> Option<ElementList> {
-		let query = css_query.as_ref();
-		let rid = unsafe { select(self.rid, query.as_ptr(), query.len()) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		Some(unsafe { ElementList::from(rid) })
-	}
-
-	/// Find the first element that matches the given CSS (or JQuery) selector.
-	pub fn select_first<T: AsRef<str>>(&self, css_query: T) -> Option<Element> {
-		let query = css_query.as_ref();
-		let rid = unsafe { select_first(self.rid, query.as_ptr(), query.len()) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		Some(unsafe { Element::from(rid) })
-	}
-
-	/// Get an attribute value by its key.
-	///
-	/// To get an absolute URL from an attribute that may be a relative URL,
-	/// prefix the key with `abs:`.
-	///
-	/// # Examples
-	/// ```ignore
-	/// use aidoku::imports::html::Html;
-	/// let html = Html::parse_with_url("<img src=\"/image.jpg\" />", "https://example.com").unwrap();
-	/// let el = html.select_first("img").unwrap();
-	/// assert_eq!(
-	///     el.attr("abs:src"),
-	///     Some("https://example.com/image.jpg".into())
-	/// );
-	/// ```
-	pub fn attr<T: AsRef<str>>(&self, attr_name: T) -> Option<String> {
-		let attr_name = attr_name.as_ref();
-		let rid = unsafe { attr(self.rid, attr_name.as_ptr(), attr_name.len()) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the normalized, combined text of this element and its children.
-	///
-	/// Whitespace is normalized and trimmed.
-	///
-	/// Note that this method returns text that would be presented to a reader.
-	/// The contents of data nodes (e.g. `<script>` tags) are not considered text,
-	/// and instead, [Element::html] or [Element::data] can be used for them.
-	///
-	/// # Examples
-	/// ```ignore
-	/// use aidoku::imports::html::Html;
-	/// let html = Html::parse("<p>Hello <b>there</b> now! </p>").unwrap();
-	/// let el = html.select_first("p").unwrap();
-	/// assert_eq!(el.text(), Some("Hello there now!".into()));
-	/// ```
-	pub fn text(&self) -> Option<String> {
-		let rid = unsafe { text(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the text of this element and its children.
-	///
-	/// Whitespace is *not* normalized and trimmed.
-	///
-	/// Notices from [Element::text] apply.
-	///
-	/// # Examples
-	/// ```ignore
-	/// use aidoku::imports::html::Html;
-	/// let html = Html::parse("<p>Hello <b>there</b> now! </p>").unwrap();
-	/// let el = html.select_first("p").unwrap();
-	/// assert_eq!(el.untrimmed_text(), Some("Hello there now! ".into()));
-	/// ```
-	pub fn untrimmed_text(&self) -> Option<String> {
-		let rid = unsafe { untrimmed_text(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the element's inner HTML.
-	///
-	/// # Examples
-	/// ```ignore
-	/// use aidoku::imports::html::Html;
-	/// let html = Html::parse("<div><p></p></div>").unwrap();
-	/// let div = html.select_first("div").unwrap();
-	/// assert_eq!(div.html(), Some("<p></p>".into()));
-	/// ```
-	pub fn html(&self) -> Option<String> {
-		let rid = unsafe { html(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the element's outer HTML.
-	///
-	/// # Examples
-	/// ```ignore
-	/// use aidoku::imports::html::Html;
-	/// let html = Html::parse("<div><p></p></div>").unwrap();
-	/// let div = html.select_first("div").unwrap();
-	/// assert_eq!(div.outer_html(), Some("<div><p></p></div>".into()));
-	/// ```
-	pub fn outer_html(&self) -> Option<String> {
-		let rid = unsafe { outer_html(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Remove this element from the DOM tree.
-	pub fn remove(self) {
-		_ = unsafe { remove(self.rid) };
-	}
-
-	/// Get the element's parent element, returning `None` if there isn't one.
-	pub fn parent(&self) -> Option<Element> {
-		let rid = unsafe { parent(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		Some(unsafe { Element::from(rid) })
-	}
-
-	/// Get the element's children elements.
-	pub fn children(&self) -> ElementList {
-		let rid = unsafe { children(self.rid) };
-		unsafe { ElementList::from(rid) }
-	}
-
-	/// Get the sibling elements of the element.
-	pub fn siblings(&self) -> ElementList {
-		let rid = unsafe { siblings(self.rid) };
-		unsafe { ElementList::from(rid) }
-	}
-
-	/// Get the next sibling of the element, returning `None` if there isn't one.
-	pub fn next(&self) -> Option<Element> {
-		let rid = unsafe { next(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		Some(unsafe { Element::from(rid) })
-	}
-
-	/// Get the previous sibling of the element, returning `None` if there isn't one.
-	pub fn prev(&self) -> Option<Element> {
-		let rid = unsafe { previous(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		Some(unsafe { Element::from(rid) })
-	}
-
-	/// Set the element's text content, clearing any existing content.
-	pub fn set_text<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
-		let text = text.as_ref();
-		let result = unsafe { set_text(self.rid, text.as_ptr(), text.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Set the element's inner HTML, clearing the existing HTML.
-	pub fn set_html<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
-		let text = text.as_ref();
-		let result = unsafe { set_html(self.rid, text.as_ptr(), text.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Prepend inner HTML into this element.
-	///
-	/// The given HTML will be parsed, and each node prepended to the start
-	/// of the element's children.
-	pub fn prepend<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
-		let text = text.as_ref();
-		let result = unsafe { prepend(self.rid, text.as_ptr(), text.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Append inner HTML into this element.
-	///
-	/// The given HTML will be parsed, and each node appended to the end
-	/// of the element's children.
-	pub fn append<T: AsRef<str>>(&mut self, text: T) -> Result<(), HtmlError> {
-		let text = text.as_ref();
-		let result = unsafe { append(self.rid, text.as_ptr(), text.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Get the base URI of this Element.
-	pub fn base_uri(&self) -> Option<String> {
-		let rid = unsafe { base_uri(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Gets the (normalized) text owned by this element.
-	pub fn own_text(&self) -> Option<String> {
-		let rid = unsafe { own_text(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the combined data (e.g. the inside of a `<script>` tag) of this element.
-	///
-	/// Note that data is NOT the text of the element. Use [Element::text]
-	/// to get the text that would be visible to a user, and [Element::data]
-	/// for the contents of scripts, comments, CSS styles, etc.
-	pub fn data(&self) -> Option<String> {
-		let rid = unsafe { data(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the `id` attribute of this element.
-	pub fn id(&self) -> Option<String> {
-		let rid = unsafe { id(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the name of the tag for this element.
-	///
-	/// This will always be the lowercased version. For example, `<DIV>` and
-	/// `<div>` would both return `div`.
-	pub fn tag_name(&self) -> Option<String> {
-		let rid = unsafe { tag_name(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Get the literal value of this node's `class` attribute.
-	///
-	/// For example, on `<div class="header gray">` this would return `header gray`.
-	pub fn class_name(&self) -> Option<String> {
-		let rid = unsafe { class_name(self.rid) };
-		if HtmlError::from(rid).is_some() {
-			return None;
-		}
-		read_string_and_destroy(rid)
-	}
-
-	/// Test if this element has a class. Case insensitive.
-	pub fn has_class<T: AsRef<str>>(&self, class_name: T) -> bool {
-		let class_name = class_name.as_ref();
-		unsafe { has_class(self.rid, class_name.as_ptr(), class_name.len()) }
-	}
-
-	/// Add a class name to this element's class attribute.
-	pub fn add_class<T: AsRef<str>>(&mut self, class_name: T) -> Result<(), HtmlError> {
-		let class_name = class_name.as_ref();
-		let result = unsafe { add_class(self.rid, class_name.as_ptr(), class_name.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Remove a class name from this element's class attribute.
-	pub fn remove_class<T: AsRef<str>>(&mut self, class_name: T) -> Result<(), HtmlError> {
-		let class_name = class_name.as_ref();
-		let result = unsafe { remove_class(self.rid, class_name.as_ptr(), class_name.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Test if this element has an attribute. Case insensitive.
-	pub fn has_attr<T: AsRef<str>>(&self, attr_name: T) -> bool {
-		let attr_name = attr_name.as_ref();
-		unsafe { has_attr(self.rid, attr_name.as_ptr(), attr_name.len()) }
-	}
-
-	/// Set an attribute value on this element.
-	///
-	/// If this element already has an attribute with the key, its value is updated;
-	/// otherwise, a new attribute is added.
-	pub fn set_attr<K: AsRef<str>, V: AsRef<str>>(
-		&mut self,
-		key: K,
-		value: V,
-	) -> Result<(), HtmlError> {
-		let key = key.as_ref();
-		let value = value.as_ref();
-		let result = unsafe {
-			set_attr(
-				self.rid,
-				key.as_ptr(),
-				key.len(),
-				value.as_ptr(),
-				value.len(),
-			)
-		};
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
-		}
-	}
-
-	/// Remove an attribute from this element.
-	pub fn remove_attr<T: AsRef<str>>(&mut self, attr: T) -> Result<(), HtmlError> {
-		let attr = attr.as_ref();
-		let result = unsafe { remove_attr(self.rid, attr.as_ptr(), attr.len()) };
-
-		if let Some(error) = HtmlError::from(result) {
-			Err(error)
-		} else {
-			Ok(())
+	fn try_from(value: Node) -> Result<Self, HtmlError> {
+		let kind = value.kind();
+		match kind {
+			Kind::Document => Ok(Self(Element(value))),
+			_ => Err(HtmlError::InvalidDescriptor),
 		}
 	}
 }
 
-impl Drop for Element {
-	fn drop(&mut self) {
-		unsafe { destroy(self.rid) }
-	}
-}
+impl TryFrom<Element> for Document {
+	type Error = HtmlError;
 
-impl Display for Element {
-	/// Returns the outer HTML of the node.
-	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-		write!(f, "{}", self.outer_html().unwrap_or_default())
+	fn try_from(value: Element) -> Result<Self, HtmlError> {
+		let kind = value.kind();
+		match kind {
+			Kind::Document => Ok(Self(value)),
+			_ => Err(HtmlError::InvalidDescriptor),
+		}
 	}
 }
 
