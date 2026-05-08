@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SerializeError"],"fn":["decode_uri","encode_uri","encode_uri_component","internal_encode_uri"],"struct":["QueryParameters"]};
