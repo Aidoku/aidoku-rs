@@ -96,6 +96,7 @@ should be structured:
 | `config.allowsBaseUrlSelect`        | If selecting a URL from `info.urls` should be enabled in the source settings.                                       |
 | `config.breakingChangeVersion`      | The source version at which a breaking change that requires migration was made.                                     |
 | `config.hidesFiltersWhileSearching` | If filters should be disabled with an active search query.                                                          |
+| `config.maximumParallelRequests`    | The maximum allowable parallel requests the source can handle (e.g. when downloading pages).                        |
 
 ### filters.json (optional)
 

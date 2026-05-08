@@ -132,6 +132,13 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Whether the source hides filters with a search query."
+				},
+				"maximumParallelRequests": {
+					"type": "integer",
+					"description": "The maximum allowable parallel requests the source can handle (e.g. when downloading pages).",
+					"minimum": 1,
+					"maximum": 5,
+					"default": 5
 				}
 			}
 		}
