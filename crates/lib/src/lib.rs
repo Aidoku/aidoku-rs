@@ -25,6 +25,7 @@ static ALLOCATOR: talc::TalckWasm = unsafe { talc::TalckWasm::new_global() };
 #[cfg(not(feature = "test"))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
+	#[link(wasm_import_module = "std")]
 	unsafe extern "C" {
 		fn abort();
 		fn print(string: *const u8, size: usize);
