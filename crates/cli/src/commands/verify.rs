@@ -3,9 +3,9 @@ use crate::models::SourceJson;
 use anyhow::anyhow;
 use colored::Colorize;
 use image::GenericImageView;
-use semver::Version;
 use serde_json::Value;
 use std::io::prelude::*;
+use version_number::{FullVersion, Version};
 use wasmparser::{Parser, Payload};
 
 // include json schemas as static strings
@@ -247,7 +247,7 @@ fn validate_wasm(
 	}
 
 	let mut exports = RequiredExports::new();
-	let mut api_min_version = Version::new(0, 7, 0);
+	let mut api_min_version = FullVersion::new(0, 7, 0);
 
 	let mut exports_checked = false;
 	let mut imports_checked = false;
@@ -268,23 +268,23 @@ fn validate_wasm(
 							module: "html",
 							name: "kind" | "child_nodes",
 							..
-						} => Version::new(0, 8, 3),
+						} => FullVersion::new(0, 8, 3),
 						Import {
 							module: "net",
 							name: "get_url" | "set_timeout",
 							..
-						} => Version::new(0, 8, 3),
+						} => FullVersion::new(0, 8, 3),
 						Import {
 							module: "html",
 							name:
 								"remove" | "add_class" | "remove_class" | "set_attr" | "remove_attr",
 							..
-						} => Version::new(0, 8, 0),
+						} => FullVersion::new(0, 8, 0),
 						Import {
 							module: "std",
 							name: "parse_date",
 							..
-						} => Version::new(0, 7, 1),
+						} => FullVersion::new(0, 7, 1),
 						_ => continue,
 					};
 					if v > api_min_version {
@@ -311,8 +311,9 @@ fn validate_wasm(
 
 	let defined_min_version = source_json
 		.and_then(|json| json.info.min_app_version)
-		.and_then(|v| Version::parse(&v).ok())
-		.unwrap_or(Version::new(0, 7, 0));
+		.and_then(|s| Version::parse(&s).ok())
+		.map(|v| FullVersion::new(v.major(), v.minor(), v.patch().unwrap_or(0)))
+		.unwrap_or(FullVersion::new(0, 7, 0));
 
 	let api_valid = api_min_version <= defined_min_version;
 	println!(

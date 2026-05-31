@@ -80,7 +80,6 @@ dependencies = [
  "jsonschema",
  "local-ip-address",
  "rayon",
- "semver 1.0.28",
  "serde",
  "serde_json",
  "serde_repr",
@@ -89,6 +88,7 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "version-number",
  "wasmparser 0.248.0",
  "zip",
 ]
@@ -5129,6 +5129,15 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "version-number"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a358afacbc237789eb922a6b1e986ea63d3a0563b2422650da448d094ba5fb7c"
+dependencies = [
+ "thiserror 1.0.69",
+]
 
 [[package]]
 name = "version_check"

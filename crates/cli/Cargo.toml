@@ -21,7 +21,6 @@ image = "0.25"
 jsonschema = "0.38"
 local-ip-address = "0.6"
 rayon = "1.10"
-semver = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_repr = "0.1"
@@ -30,5 +29,6 @@ tower = { version = "0.5", features = ["timeout"] }
 tower-http = { version = "0.6", features = ["fs", "trace"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
+version-number = "0.4"
 wasmparser = "0.248"
 zip = "4.2"
