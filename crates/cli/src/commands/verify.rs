@@ -265,6 +265,15 @@ fn validate_wasm(
 					use wasmparser::Import;
 					let v = match import {
 						Import {
+							module: "js",
+							name:
+								"context_eval_async"
+								| "webview_eval_async"
+								| "webview_set_rule_list"
+								| "webview_add_user_script",
+							..
+						} => FullVersion::new(0, 8, 4),
+						Import {
 							module: "html",
 							name: "kind" | "child_nodes",
 							..

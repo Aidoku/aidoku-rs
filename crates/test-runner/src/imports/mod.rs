@@ -99,13 +99,17 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 		"js" => {
 			"context_create" => Function::new_typed_with_env(store, env, js::context_create),
 			"context_eval" => Function::new_typed_with_env(store, env, js::context_eval),
+			"context_eval_async" => Function::new_typed_with_env(store, env, js::context_eval_async),
 			"context_get" => Function::new_typed_with_env(store, env, js::context_get),
 
 			"webview_create" => Function::new_typed_with_env(store, env, js::webview_create),
+			"webview_set_rule_list" => Function::new_typed_with_env(store, env, js::webview_set_rule_list),
 			"webview_load" => Function::new_typed_with_env(store, env, js::webview_load),
 			"webview_load_html" => Function::new_typed_with_env(store, env, js::webview_load_html),
 			"webview_wait_for_load" => Function::new_typed_with_env(store, env, js::webview_wait_for_load),
 			"webview_eval" => Function::new_typed_with_env(store, env, js::webview_eval),
+			"webview_eval_async" => Function::new_typed_with_env(store, env, js::webview_eval_async),
+			"webview_add_user_script" => Function::new_typed_with_env(store, env, js::webview_add_user_script),
 		},
 		"net" => {
 			"init" => Function::new_typed_with_env(store, env, net::init),

@@ -10,6 +10,7 @@ enum Result {
 	InvalidString,
 	// InvalidHandler,
 	// InvalidRequest,
+	// InvalidRuleList,
 }
 
 impl From<Result> for i32 {
@@ -21,6 +22,7 @@ impl From<Result> for i32 {
 			Result::InvalidString => -3,
 			// Result::InvalidHandler => -4,
 			// Result::InvalidRequest => -5,
+			// Result::InvalidRuleList => -6,
 		}
 	}
 }
@@ -61,6 +63,14 @@ pub fn context_eval(
 	};
 	env.data_mut().store.store(StoreItem::String(result_string))
 }
+pub fn context_eval_async(
+	_env: FunctionEnvMut<WasmEnv>,
+	_context: Rid,
+	_string_ptr: u32,
+	_len: u32,
+) -> FFIResult {
+	-1
+}
 pub fn context_get(
 	mut env: FunctionEnvMut<WasmEnv>,
 	rid: Rid,
@@ -95,6 +105,14 @@ pub fn context_get(
 pub fn webview_create(_env: FunctionEnvMut<WasmEnv>) -> Rid {
 	-1
 }
+pub fn webview_set_rule_list(
+	_env: FunctionEnvMut<WasmEnv>,
+	_webview: Rid,
+	_string_ptr: u32,
+	_len: u32,
+) -> FFIResult {
+	-1
+}
 pub fn webview_load(_env: FunctionEnvMut<WasmEnv>, _webview: Rid, _request: Rid) -> FFIResult {
 	-1
 }
@@ -116,6 +134,24 @@ pub fn webview_eval(
 	_webview: Rid,
 	_string_ptr: u32,
 	_len: u32,
+) -> FFIResult {
+	-1
+}
+pub fn webview_eval_async(
+	_env: FunctionEnvMut<WasmEnv>,
+	_webview: Rid,
+	_string_ptr: u32,
+	_len: u32,
+) -> FFIResult {
+	-1
+}
+pub fn webview_add_user_script(
+	_env: FunctionEnvMut<WasmEnv>,
+	_webview: Rid,
+	_string_ptr: u32,
+	_len: u32,
+	_at_document_end: i32,
+	_for_main_frame_only: i32,
 ) -> FFIResult {
 	-1
 }

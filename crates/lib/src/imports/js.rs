@@ -10,9 +10,11 @@ use crate::alloc::String;
 unsafe extern "C" {
 	fn context_create() -> Rid;
 	fn context_eval(context: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
+	fn context_eval_async(context: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
 	fn context_get(context: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
 
 	fn webview_create() -> Rid;
+	fn webview_set_rule_list(webview: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
 	fn webview_load(webview: Rid, request: Rid) -> FFIResult;
 	fn webview_load_html(
 		webview: Rid,
@@ -23,6 +25,14 @@ unsafe extern "C" {
 	) -> FFIResult;
 	fn webview_wait_for_load(webview: Rid) -> FFIResult;
 	fn webview_eval(webview: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
+	fn webview_eval_async(webview: Rid, string_ptr: *const u8, len: usize) -> FFIResult;
+	fn webview_add_user_script(
+		webview: Rid,
+		string_ptr: *const u8,
+		len: usize,
+		at_document_end: bool,
+		for_main_frame_only: bool,
+	) -> FFIResult;
 }
 
 /// Error type for JavaScript operations.
@@ -33,6 +43,7 @@ pub enum JsError {
 	InvalidString,
 	InvalidHandler,
 	InvalidRequest,
+	InvalidRuleList,
 }
 
 impl JsError {
@@ -43,6 +54,7 @@ impl JsError {
 			-3 => Some(Self::InvalidString),
 			-4 => Some(Self::InvalidHandler),
 			-5 => Some(Self::InvalidRequest),
+			-6 => Some(Self::InvalidRuleList),
 			_ => None,
 		}
 	}
@@ -64,6 +76,17 @@ impl JsContext {
 	pub fn eval(&self, js: &str) -> Result<String, JsError> {
 		let js_bytes = js.as_bytes();
 		let result = unsafe { context_eval(self.rid, js_bytes.as_ptr(), js_bytes.len()) };
+		if let Some(error) = JsError::from(result) {
+			Err(error)
+		} else {
+			Ok(read_string_and_destroy(result).unwrap_or_default())
+		}
+	}
+
+	/// Evaluates asynchronous JavaScript code in the context.
+	pub fn eval_async(&self, js: &str) -> Result<String, JsError> {
+		let js_bytes = js.as_bytes();
+		let result = unsafe { context_eval_async(self.rid, js_bytes.as_ptr(), js_bytes.len()) };
 		if let Some(error) = JsError::from(result) {
 			Err(error)
 		} else {
@@ -107,6 +130,21 @@ impl WebView {
 	pub fn new() -> Self {
 		let rid = unsafe { webview_create() };
 		Self { rid }
+	}
+
+	/// Sets a content rule list for the web view.
+	///
+	/// For information on formatting the rule list json, see Apple's documentation on
+	/// [Creating a content blocker](https://developer.apple.com/documentation/SafariServices/creating-a-content-blocker).
+	pub fn set_rule_list(&self, json: &str) -> Result<(), JsError> {
+		let json_bytes = json.as_bytes();
+		let result =
+			unsafe { webview_set_rule_list(self.rid, json_bytes.as_ptr(), json_bytes.len()) };
+		if let Some(error) = JsError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
 	}
 
 	/// Loads a web page in the web view.
@@ -169,6 +207,36 @@ impl WebView {
 			Ok(read_string_and_destroy(result).unwrap_or_default())
 		}
 	}
+
+	/// Evaluates asynchronous JavaScript code in the web view, blocking until the result is available.
+	pub fn eval_async(&self, js: &str) -> Result<String, JsError> {
+		let js_bytes = js.as_bytes();
+		let result = unsafe { webview_eval_async(self.rid, js_bytes.as_ptr(), js_bytes.len()) };
+		if let Some(error) = JsError::from(result) {
+			Err(error)
+		} else {
+			Ok(read_string_and_destroy(result).unwrap_or_default())
+		}
+	}
+
+	/// Adds a user script to the web view.
+	pub fn add_user_script(&self, script: WebViewUserScript) -> Result<(), JsError> {
+		let source_bytes = script.source.as_bytes();
+		let result = unsafe {
+			webview_add_user_script(
+				self.rid,
+				source_bytes.as_ptr(),
+				source_bytes.len(),
+				script.at_document_end,
+				script.for_main_frame_only,
+			)
+		};
+		if let Some(error) = JsError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
 }
 
 impl Default for WebView {
@@ -180,5 +248,26 @@ impl Default for WebView {
 impl Drop for WebView {
 	fn drop(&mut self) {
 		unsafe { destroy(self.rid) }
+	}
+}
+
+#[derive(Default)]
+/// An object that represents a script that can be injected into webpages
+pub struct WebViewUserScript {
+	/// The script source.
+	pub source: String,
+	/// Whether script should be injected at the end of a document or the start.
+	pub at_document_end: bool,
+	/// Whether the script should be injected into all frames or just the main frame.
+	pub for_main_frame_only: bool,
+}
+
+impl WebViewUserScript {
+	/// Creates a new user script.
+	pub fn new(source: String) -> Self {
+		Self {
+			source,
+			..Default::default()
+		}
 	}
 }
