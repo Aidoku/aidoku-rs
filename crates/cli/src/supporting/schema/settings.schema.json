@@ -381,6 +381,11 @@
 									"items": {
 										"type": "string"
 									}
+								},
+								"clearCookiesOnLogOut": {
+									"description": "Whether to clear cookies from the web view on log out.",
+									"type": "boolean",
+									"default": false
 								}
 							},
 							"required": ["method"],
@@ -414,7 +419,8 @@
 								},
 								"pkce": {
 									"description": "Whether to use PKCE in the login flow.",
-									"type": "boolean"
+									"type": "boolean",
+									"default": false
 								},
 								"tokenUrl": {
 									"description": "The token URL to post when using PKCE.",
