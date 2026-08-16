@@ -266,9 +266,15 @@ fn validate_wasm(
 					let v = match import {
 						Import {
 							module: "js",
+							// webview_eval_async was introduced in 0.8.4, but it crashes until a fix in 0.9
+							name:
+								"webview_eval_async" | "webview_get_cookies" | "webview_delete_cookie",
+							..
+						} => FullVersion::new(0, 9, 0),
+						Import {
+							module: "js",
 							name:
 								"context_eval_async"
-								| "webview_eval_async"
 								| "webview_set_rule_list"
 								| "webview_add_user_script",
 							..

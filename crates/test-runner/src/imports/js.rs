@@ -11,6 +11,8 @@ enum Result {
 	// InvalidHandler,
 	// InvalidRequest,
 	// InvalidRuleList,
+	// FailedEncoding,
+	// MissingCookie,
 }
 
 impl From<Result> for i32 {
@@ -23,6 +25,8 @@ impl From<Result> for i32 {
 			// Result::InvalidHandler => -4,
 			// Result::InvalidRequest => -5,
 			// Result::InvalidRuleList => -6,
+			// Result::FailedEncoding => -7,
+			// Result::MissingCookie => -8,
 		}
 	}
 }
@@ -152,6 +156,21 @@ pub fn webview_add_user_script(
 	_len: u32,
 	_at_document_end: i32,
 	_for_main_frame_only: i32,
+) -> FFIResult {
+	-1
+}
+pub fn webview_get_cookies(_env: FunctionEnvMut<WasmEnv>, _webview: Rid) -> FFIResult {
+	-1
+}
+pub fn webview_delete_cookie(
+	_env: FunctionEnvMut<WasmEnv>,
+	_webview: Rid,
+	_name_ptr: u32,
+	_name_len: u32,
+	_value_ptr: u32,
+	_value_len: u32,
+	_domain_ptr: u32,
+	_domain_len: u32,
 ) -> FFIResult {
 	-1
 }

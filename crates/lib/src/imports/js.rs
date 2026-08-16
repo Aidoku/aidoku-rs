@@ -4,7 +4,11 @@ use super::{
 	net::Request,
 	std::{destroy, read_string_and_destroy},
 };
-use crate::alloc::String;
+use crate::{
+	AidokuError,
+	alloc::{String, Vec},
+	imports::std::read,
+};
 
 #[link(wasm_import_module = "js")]
 unsafe extern "C" {
@@ -33,6 +37,16 @@ unsafe extern "C" {
 		at_document_end: bool,
 		for_main_frame_only: bool,
 	) -> FFIResult;
+	fn webview_get_cookies(webview: Rid) -> FFIResult;
+	fn webview_delete_cookie(
+		webview: Rid,
+		name_ptr: *const u8,
+		name_len: usize,
+		value_ptr: *const u8,
+		value_len: usize,
+		domain_ptr: *const u8,
+		domain_len: usize,
+	) -> FFIResult;
 }
 
 /// Error type for JavaScript operations.
@@ -44,6 +58,8 @@ pub enum JsError {
 	InvalidHandler,
 	InvalidRequest,
 	InvalidRuleList,
+	FailedEncoding,
+	MissingCookie,
 }
 
 impl JsError {
@@ -55,6 +71,8 @@ impl JsError {
 			-4 => Some(Self::InvalidHandler),
 			-5 => Some(Self::InvalidRequest),
 			-6 => Some(Self::InvalidRuleList),
+			-7 => Some(Self::FailedEncoding),
+			-8 => Some(Self::MissingCookie),
 			_ => None,
 		}
 	}
@@ -237,6 +255,56 @@ impl WebView {
 			Ok(())
 		}
 	}
+
+	/// Returns all cookies in the web view cookie store.
+	pub fn get_cookies(&self) -> Result<Vec<Cookie>, AidokuError> {
+		let result = unsafe { webview_get_cookies(self.rid) };
+		if let Some(error) = JsError::from(result) {
+			Err(error.into())
+		} else {
+			read(result)
+		}
+	}
+
+	/// Deletes a cookie from the web view cookie store.
+	pub fn delete_cookie(&self, cookie: Cookie) -> Result<(), JsError> {
+		let result = unsafe {
+			webview_delete_cookie(
+				self.rid,
+				cookie.name.as_ptr(),
+				cookie.name.len(),
+				cookie.value.as_ptr(),
+				cookie.value.len(),
+				cookie.domain.as_ptr(),
+				cookie.domain.len(),
+			)
+		};
+		if let Some(error) = JsError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
+
+	/// Deletes all cookies in the web view cookie store.
+	pub fn delete_all_cookies(&self) -> Result<(), JsError> {
+		let result = unsafe {
+			webview_delete_cookie(
+				self.rid,
+				core::ptr::null(),
+				-1i32 as usize,
+				core::ptr::null(),
+				0,
+				core::ptr::null(),
+				0,
+			)
+		};
+		if let Some(error) = JsError::from(result) {
+			Err(error)
+		} else {
+			Ok(())
+		}
+	}
 }
 
 impl Default for WebView {
@@ -270,4 +338,15 @@ impl WebViewUserScript {
 			..Default::default()
 		}
 	}
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct Cookie {
+	pub name: String,
+	pub value: String,
+	pub expires_date: Option<i64>,
+	pub domain: String,
+	pub path: String,
+	pub is_secure: bool,
+	pub is_http_only: bool,
 }

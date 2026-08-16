@@ -110,6 +110,8 @@ pub fn generate_imports(store: &mut Store, env: &FunctionEnv<WasmEnv>) -> Import
 			"webview_eval" => Function::new_typed_with_env(store, env, js::webview_eval),
 			"webview_eval_async" => Function::new_typed_with_env(store, env, js::webview_eval_async),
 			"webview_add_user_script" => Function::new_typed_with_env(store, env, js::webview_add_user_script),
+			"webview_get_cookies" => Function::new_typed_with_env(store, env, js::webview_get_cookies),
+			"webview_delete_cookie" => Function::new_typed_with_env(store, env, js::webview_delete_cookie),
 		},
 		"net" => {
 			"init" => Function::new_typed_with_env(store, env, net::init),
