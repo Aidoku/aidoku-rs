@@ -113,6 +113,12 @@ macro_rules! register_source {
 			match error {
 				$crate::imports::error::AidokuError::Unimplemented => -2,
 				$crate::imports::error::AidokuError::RequestError(_) => -3,
+				$crate::imports::error::AidokuError::HtmlError(_) => -4,
+				$crate::imports::error::AidokuError::JsError(_) => -5,
+				$crate::imports::error::AidokuError::CanvasError(_) => -6,
+				$crate::imports::error::AidokuError::Utf8Error(_) => -7,
+				$crate::imports::error::AidokuError::JsonParseError(_) => -8,
+				$crate::imports::error::AidokuError::DeserializeError => -9,
 				$crate::imports::error::AidokuError::Message(string) => {
 					let mut buffer = (-1 as i32).to_le_bytes().to_vec();
 
