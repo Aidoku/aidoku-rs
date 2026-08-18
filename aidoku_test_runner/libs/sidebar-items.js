@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ConversionError","DefaultKind","DefaultValue","HttpMethod","StoreItem"],"struct":["GlobalStore","HtmlDocument","HtmlElement","HtmlElementList","HtmlNode","ImageData","NetRequest","NetResponse","SelectRoot","UserDefaults","WasmEnv"],"trait":["SelectWithRoot"],"type":["FFIResult","Ptr","Rid"]};
