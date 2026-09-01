@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_debug_implementations)]
-#![feature(pattern, let_chains)]
+#![feature(pattern)]
 extern crate alloc;
 
 pub mod cfemail;

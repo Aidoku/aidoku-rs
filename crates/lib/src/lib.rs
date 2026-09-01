@@ -10,6 +10,7 @@ static ALLOCATOR: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
 // Set panic handlers
 
 fn as_abort<T: AsRef<str>>(message: T, file: T, line: u32, column: u32) -> ! {
+    #[link(wasm_import_module = "env")]
     extern "C" {
         #[link_name = "abort"]
         fn _abort(message: *const u8, file: *const u8, line: i32, column: i32);
