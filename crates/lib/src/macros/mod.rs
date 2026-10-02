@@ -12,10 +12,10 @@
 #[macro_export]
 macro_rules! println {
 	() => {
-		$crate::alloc::print("");
+		$crate::alloc::print("")
 	};
 	($($arg:tt)*) => {
-		$crate::imports::std::print(&$crate::prelude::format!($($arg)*));
+		$crate::imports::std::print(&$crate::prelude::format!($($arg)*))
 	};
 }
 
@@ -57,7 +57,7 @@ macro_rules! error {
 #[macro_export]
 macro_rules! bail {
 	($($arg:tt)*) => {
-		return ::core::result::Result::Err($crate::error!($($arg)*));
+		return ::core::result::Result::Err($crate::error!($($arg)*))
 	};
 }
 
