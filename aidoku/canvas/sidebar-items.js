@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FontWeight","LineCap","LineJoin","PathOp"],"struct":["Color","Path","PathBuilder","Point","Rect","StrokeStyle"],"type":["Angle","Transform"]};

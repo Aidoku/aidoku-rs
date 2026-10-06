@@ -1,0 +1,150 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Traits, helpers, and type definitions for core I/O functionality."><title>aidoku::alloc::io - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-0c87338a.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="aidoku" data-themes="" data-resource-suffix="" data-rustdoc-version="1.99.0 (b940084d7 2026-09-28)" data-channel="1.99.0" data-search-js="search-cf4fc35e.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-170eb4bf.js" ><script src="../../../static.files/storage-41dd4d93.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module io</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../aidoku/index.html">aidoku</a><span class="version">0.3.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module io</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#read-and-write" title="Read and Write">Read and Write</a></li><li><a href="#seek-and-bufread" title="Seek and BufRead">Seek and BufRead</a></li><li><a href="#bufreader-and-bufwriter" title="BufReader and BufWriter">BufReader and BufWriter</a></li><li><a href="#iterator-types" title="Iterator types">Iterator types</a></li><li><a href="#ioresult" title="io::Result">io::Result</a></li></ul><h3><a href="#modules">Module Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#macros" title="Macros">Macros</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#functions" title="Functions">Functions</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In aidoku::<wbr>alloc</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../../index.html">aidoku</a>::<wbr><a href="../index.html">alloc</a></div><h1>Module <span>io</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="https://doc.rust-lang.org/1.99.0/src/alloc/lib.rs.html#257">Source</a> </span></div><span class="item-info"><div class="stab unstable"><span class="emoji">🔬</span><span>This is a nightly-only experimental API. (<code>alloc_io</code>)</span></div></span><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Traits, helpers, and type definitions for core I/O functionality.</p>
+<p>The <code>io</code> module contains a number of common things you’ll need
+when doing input and output. The most core part of this module is
+the <a href="trait.Read.html" title="trait aidoku::alloc::io::Read"><code>Read</code></a> and <a href="trait.Write.html" title="trait aidoku::alloc::io::Write"><code>Write</code></a> traits, which provide the
+most general interface for reading and writing input and output.</p>
+<h3 id="read-and-write"><a class="doc-anchor" href="#read-and-write">§</a>Read and Write</h3>
+<p>Because they are traits, <a href="trait.Read.html" title="trait aidoku::alloc::io::Read"><code>Read</code></a> and <a href="trait.Write.html" title="trait aidoku::alloc::io::Write"><code>Write</code></a> are implemented by a number
+of other types, and you can implement them for your types too. As such,
+you’ll see a few different types of I/O throughout the documentation in
+this module: <a href="../../std/fs/struct.File.html"><code>File</code></a>s, <a href="../../std/net/struct.TcpStream.html"><code>TcpStream</code></a>s, and sometimes even <a href="../struct.Vec.html" title="struct aidoku::alloc::Vec"><code>Vec&lt;T&gt;</code></a>s. For
+example, <a href="trait.Read.html" title="trait aidoku::alloc::io::Read"><code>Read</code></a> adds a <a href="trait.Read.html#method.read" title="method aidoku::alloc::io::Read::read"><code>read</code></a> method, which we can use on
+<a href="../../std/fs/struct.File.html"><code>File</code></a>s:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::io;
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::fs::File;
+
+<span class="kw">fn </span>main() -&gt; io::Result&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>f = File::open(<span class="string">"foo.txt"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>buffer = [<span class="number">0</span>; <span class="number">10</span>];
+
+    <span class="comment">// read up to 10 bytes
+    </span><span class="kw">let </span>n = f.read(<span class="kw-2">&amp;mut </span>buffer)<span class="question-mark">?</span>;
+
+    <span class="macro">println!</span>(<span class="string">"The bytes: {:?}"</span>, <span class="kw-2">&amp;</span>buffer[..n]);
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<p><a href="trait.Read.html" title="trait aidoku::alloc::io::Read"><code>Read</code></a> and <a href="trait.Write.html" title="trait aidoku::alloc::io::Write"><code>Write</code></a> are so important, implementors of the two traits have a
+nickname: readers and writers. So you’ll sometimes see ‘a reader’ instead
+of ‘a type that implements the <a href="trait.Read.html" title="trait aidoku::alloc::io::Read"><code>Read</code></a> trait’. Much easier!</p>
+<h3 id="seek-and-bufread"><a class="doc-anchor" href="#seek-and-bufread">§</a>Seek and BufRead</h3>
+<p>Beyond that, there are two important traits that are provided: <a href="trait.Seek.html" title="trait aidoku::alloc::io::Seek"><code>Seek</code></a>
+and <a href="trait.BufRead.html" title="trait aidoku::alloc::io::BufRead"><code>BufRead</code></a>. Both of these build on top of a reader to control
+how the reading happens. <a href="trait.Seek.html" title="trait aidoku::alloc::io::Seek"><code>Seek</code></a> lets you control where the next byte is
+coming from:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::io;
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::SeekFrom;
+<span class="kw">use </span>std::fs::File;
+
+<span class="kw">fn </span>main() -&gt; io::Result&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>f = File::open(<span class="string">"foo.txt"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>buffer = [<span class="number">0</span>; <span class="number">10</span>];
+
+    <span class="comment">// skip to the last 10 bytes of the file
+    </span>f.seek(SeekFrom::End(-<span class="number">10</span>))<span class="question-mark">?</span>;
+
+    <span class="comment">// read up to 10 bytes
+    </span><span class="kw">let </span>n = f.read(<span class="kw-2">&amp;mut </span>buffer)<span class="question-mark">?</span>;
+
+    <span class="macro">println!</span>(<span class="string">"The bytes: {:?}"</span>, <span class="kw-2">&amp;</span>buffer[..n]);
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<p><a href="trait.BufRead.html" title="trait aidoku::alloc::io::BufRead"><code>BufRead</code></a> uses an internal buffer to provide a number of other ways to read, but
+to show it off, we’ll need to talk about buffers in general. Keep reading!</p>
+<h3 id="bufreader-and-bufwriter"><a class="doc-anchor" href="#bufreader-and-bufwriter">§</a>BufReader and BufWriter</h3>
+<p>Byte-based interfaces are unwieldy and can be inefficient, as we’d need to be
+making near-constant calls to the operating system. To help with this,
+<code>std::io</code> comes with two structs, <a href="struct.BufReader.html" title="struct aidoku::alloc::io::BufReader"><code>BufReader</code></a> and <a href="struct.BufWriter.html" title="struct aidoku::alloc::io::BufWriter"><code>BufWriter</code></a>, which wrap
+readers and writers. The wrapper uses a buffer, reducing the number of
+calls and providing nicer methods for accessing exactly what you want.</p>
+<p>For example, <a href="struct.BufReader.html" title="struct aidoku::alloc::io::BufReader"><code>BufReader</code></a> works with the <a href="trait.BufRead.html" title="trait aidoku::alloc::io::BufRead"><code>BufRead</code></a> trait to add extra
+methods to any reader:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::io;
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::BufReader;
+<span class="kw">use </span>std::fs::File;
+
+<span class="kw">fn </span>main() -&gt; io::Result&lt;()&gt; {
+    <span class="kw">let </span>f = File::open(<span class="string">"foo.txt"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>reader = BufReader::new(f);
+    <span class="kw">let </span><span class="kw-2">mut </span>buffer = String::new();
+
+    <span class="comment">// read a line into buffer
+    </span>reader.read_line(<span class="kw-2">&amp;mut </span>buffer)<span class="question-mark">?</span>;
+
+    <span class="macro">println!</span>(<span class="string">"{buffer}"</span>);
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<p><a href="struct.BufWriter.html" title="struct aidoku::alloc::io::BufWriter"><code>BufWriter</code></a> doesn’t add any new ways of writing; it just buffers every call
+to <a href="trait.Write.html#tymethod.write" title="method aidoku::alloc::io::Write::write"><code>write</code></a>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::io;
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::BufWriter;
+<span class="kw">use </span>std::fs::File;
+
+<span class="kw">fn </span>main() -&gt; io::Result&lt;()&gt; {
+    <span class="kw">let </span>f = File::create(<span class="string">"foo.txt"</span>)<span class="question-mark">?</span>;
+    {
+        <span class="kw">let </span><span class="kw-2">mut </span>writer = BufWriter::new(f);
+
+        <span class="comment">// write a byte to the buffer
+        </span>writer.write(<span class="kw-2">&amp;</span>[<span class="number">42</span>])<span class="question-mark">?</span>;
+
+    } <span class="comment">// the buffer is flushed once writer goes out of scope
+
+    </span><span class="prelude-val">Ok</span>(())
+}</code></pre></div><h3 id="iterator-types"><a class="doc-anchor" href="#iterator-types">§</a>Iterator types</h3>
+<p>A large number of the structures provided by <code>std::io</code> are for various
+ways of iterating over I/O. For example, <a href="struct.Lines.html" title="struct aidoku::alloc::io::Lines"><code>Lines</code></a> is used to split over
+lines:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::io;
+<span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::io::BufReader;
+<span class="kw">use </span>std::fs::File;
+
+<span class="kw">fn </span>main() -&gt; io::Result&lt;()&gt; {
+    <span class="kw">let </span>f = File::open(<span class="string">"foo.txt"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>reader = BufReader::new(f);
+
+    <span class="kw">for </span>line <span class="kw">in </span>reader.lines() {
+        <span class="macro">println!</span>(<span class="string">"{}"</span>, line<span class="question-mark">?</span>);
+    }
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div><h3 id="ioresult"><a class="doc-anchor" href="#ioresult">§</a>io::Result</h3>
+<p>Last, but certainly not least, is <a href="type.Result.html" title="type aidoku::alloc::io::Result"><code>io::Result</code></a>. This type is used
+as the return type of many <code>std::io</code> functions that can cause an error, and
+can be returned from your own functions as well. Many of the examples in this
+module use the <a href="../../book/appendix-02-operators.html"><code>?</code> operator</a>:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::io;
+
+<span class="kw">fn </span>read_input() -&gt; io::Result&lt;()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>input = String::new();
+
+    io::stdin().read_line(<span class="kw-2">&amp;mut </span>input)<span class="question-mark">?</span>;
+
+    <span class="macro">println!</span>(<span class="string">"You typed: {}"</span>, input.trim());
+
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<p>The return type of <code>read_input()</code>, <a href="type.Result.html" title="type aidoku::alloc::io::Result"><code>io::Result&lt;()&gt;</code></a>, is a very
+common type for functions which don’t have a ‘real’ return value, but do want to
+return errors if they happen. In this case, the only purpose of this function is
+to read the line and print it, so we use <code>()</code>.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="prelude/index.html" title="mod aidoku::alloc::io::prelude">prelude</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>The I/O Prelude.</dd></dl><h2 id="macros" class="section-header">Macros<a href="#macros" class="anchor">§</a></h2><dl class="item-table"><dt><a class="macro" href="macro.const_error.html" title="macro aidoku::alloc::io::const_error">const_<wbr>error</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Creates a new I/O error from a known kind of error and a string literal.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.BorrowedBuf.html" title="struct aidoku::alloc::io::BorrowedBuf">Borrowed<wbr>Buf</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A borrowed buffer of initially uninitialized elements, which is incrementally filled.</dd><dt><a class="struct" href="struct.BorrowedCursor.html" title="struct aidoku::alloc::io::BorrowedCursor">Borrowed<wbr>Cursor</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A writeable view of the unfilled portion of a <a href="struct.BorrowedBuf.html" title="struct aidoku::alloc::io::BorrowedBuf"><code>BorrowedBuf</code></a>.</dd><dt><a class="struct" href="struct.BufReader.html" title="struct aidoku::alloc::io::BufReader">BufReader</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>The <code>BufReader&lt;R&gt;</code> struct adds buffering to any reader.</dd><dt><a class="struct" href="struct.BufWriter.html" title="struct aidoku::alloc::io::BufWriter">BufWriter</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Wraps a writer and buffers its output.</dd><dt><a class="struct" href="struct.Bytes.html" title="struct aidoku::alloc::io::Bytes">Bytes</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>An iterator over <code>u8</code> values of a reader.</dd><dt><a class="struct" href="struct.Chain.html" title="struct aidoku::alloc::io::Chain">Chain</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Adapter to chain together two readers.</dd><dt><a class="struct" href="struct.Cursor.html" title="struct aidoku::alloc::io::Cursor">Cursor</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A <code>Cursor</code> wraps an in-memory buffer and provides it with a
+<a href="trait.Seek.html" title="trait aidoku::alloc::io::Seek"><code>Seek</code></a> implementation.</dd><dt><a class="struct" href="struct.Empty.html" title="struct aidoku::alloc::io::Empty">Empty</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd><code>Empty</code> ignores any data written via <a href="trait.Write.html" title="trait aidoku::alloc::io::Write"><code>Write</code></a>, and will always be empty
+(returning zero bytes) when read via <a href="../../std/io/trait.Read.html"><code>Read</code></a>.</dd><dt><a class="struct" href="struct.Error.html" title="struct aidoku::alloc::io::Error">Error</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>The error type for I/O operations of the <a href="../../std/io/trait.Read.html"><code>Read</code></a>, <a href="trait.Write.html" title="trait aidoku::alloc::io::Write"><code>Write</code></a>, <a href="trait.Seek.html" title="trait aidoku::alloc::io::Seek"><code>Seek</code></a>, and
+associated traits.</dd><dt><a class="struct" href="struct.IntoInnerError.html" title="struct aidoku::alloc::io::IntoInnerError">Into<wbr>Inner<wbr>Error</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>An error returned by <a href="struct.BufWriter.html#method.into_inner" title="method aidoku::alloc::io::BufWriter::into_inner"><code>BufWriter::into_inner</code></a> which combines an error that
+happened while writing out the buffer, and the buffered writer object
+which may be used to recover from the condition.</dd><dt><a class="struct" href="struct.IoSlice.html" title="struct aidoku::alloc::io::IoSlice">IoSlice</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A buffer type used with <code>Write::write_vectored</code>.</dd><dt><a class="struct" href="struct.IoSliceMut.html" title="struct aidoku::alloc::io::IoSliceMut">IoSlice<wbr>Mut</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A buffer type used with <code>Read::read_vectored</code>.</dd><dt><a class="struct" href="struct.LineWriter.html" title="struct aidoku::alloc::io::LineWriter">Line<wbr>Writer</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Wraps a writer and buffers output to it, flushing whenever a newline
+(<code>0x0a</code>, <code>'\n'</code>) is detected.</dd><dt><a class="struct" href="struct.Lines.html" title="struct aidoku::alloc::io::Lines">Lines</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>An iterator over the lines of an instance of <a href="trait.BufRead.html" title="trait aidoku::alloc::io::BufRead"><code>BufRead</code></a>.</dd><dt><a class="struct" href="struct.Repeat.html" title="struct aidoku::alloc::io::Repeat">Repeat</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A reader which yields one byte over and over and over and over and over and…</dd><dt><a class="struct" href="struct.Sink.html" title="struct aidoku::alloc::io::Sink">Sink</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A writer which will move data into the void.</dd><dt><a class="struct" href="struct.Split.html" title="struct aidoku::alloc::io::Split">Split</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>An iterator over the contents of an instance of <code>BufRead</code> split on a
+particular byte.</dd><dt><a class="struct" href="struct.Take.html" title="struct aidoku::alloc::io::Take">Take</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Reader adapter which limits the bytes read from an underlying reader.</dd><dt><a class="struct" href="struct.WriterPanicked.html" title="struct aidoku::alloc::io::WriterPanicked">Writer<wbr>Panicked</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Error returned for the buffered data from <code>BufWriter::into_parts</code>, when the underlying
+writer has previously panicked.  Contains the (possibly partly written) buffered data.</dd></dl><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><dl class="item-table"><dt><a class="enum" href="enum.ErrorKind.html" title="enum aidoku::alloc::io::ErrorKind">Error<wbr>Kind</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A list specifying general categories of I/O error.</dd><dt><a class="enum" href="enum.SeekFrom.html" title="enum aidoku::alloc::io::SeekFrom">Seek<wbr>From</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Enumeration of possible methods to seek within an I/O object.</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.BufRead.html" title="trait aidoku::alloc::io::BufRead">BufRead</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A <code>BufRead</code> is a type of <a href="trait.Read.html" title="trait aidoku::alloc::io::Read"><code>Read</code></a>er which has an internal buffer, allowing it
+to perform extra ways of reading.</dd><dt><a class="trait" href="trait.Read.html" title="trait aidoku::alloc::io::Read">Read</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>The <code>Read</code> trait allows for reading bytes from a source.</dd><dt><a class="trait" href="trait.Seek.html" title="trait aidoku::alloc::io::Seek">Seek</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>The <code>Seek</code> trait provides a cursor which can be moved within a stream of
+bytes.</dd><dt><a class="trait" href="trait.Write.html" title="trait aidoku::alloc::io::Write">Write</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A trait for objects which are byte-oriented sinks.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.copy.html" title="fn aidoku::alloc::io::copy">copy</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Copies the entire contents of a reader into a writer.</dd><dt><a class="fn" href="fn.empty.html" title="fn aidoku::alloc::io::empty">empty</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Creates a value that is always at EOF for reads, and ignores all data written.</dd><dt><a class="fn" href="fn.read_to_string.html" title="fn aidoku::alloc::io::read_to_string">read_<wbr>to_<wbr>string</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Reads all bytes from a <a href="trait.Read.html" title="trait aidoku::alloc::io::Read">reader</a> into a new <a href="../struct.String.html" title="struct aidoku::alloc::String"><code>String</code></a>.</dd><dt><a class="fn" href="fn.repeat.html" title="fn aidoku::alloc::io::repeat">repeat</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Creates an instance of a reader that infinitely repeats one byte.</dd><dt><a class="fn" href="fn.sink.html" title="fn aidoku::alloc::io::sink">sink</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>Creates an instance of a writer which will successfully consume all data.</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.RawOsError.html" title="type aidoku::alloc::io::RawOsError">RawOs<wbr>Error</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>The type of raw OS error codes.</dd><dt><a class="type" href="type.Result.html" title="type aidoku::alloc::io::Result">Result</a><wbr><span class="stab unstable" title="">Experimental</span></dt><dd>A specialized <a href="https://doc.rust-lang.org/1.99.0/core/result/enum.Result.html" title="enum core::result::Result"><code>Result</code></a> type for I/O operations.</dd></dl></section></div></main></body></html>

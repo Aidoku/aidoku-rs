@@ -1,0 +1,1 @@
+rd_("faidokujaidoku_clikaidoku_testAbaidoku_test_runner")
